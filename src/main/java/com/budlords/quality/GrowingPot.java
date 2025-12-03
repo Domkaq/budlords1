@@ -176,16 +176,15 @@ public class GrowingPot {
     }
 
     /**
-     * Gets the material for the pot block based on star rating.
+     * Gets the material for the pot block.
+     * Note: All pots use FLOWER_POT as the base block. The visual distinction
+     * comes from the item display name and lore, not the block type.
+     * Minecraft's FLOWER_POT is the only valid pot-like block available.
      */
     public Material getPotMaterial() {
-        return switch (starRating) {
-            case ONE_STAR -> Material.FLOWER_POT;
-            case TWO_STAR -> Material.FLOWER_POT;
-            case THREE_STAR -> Material.FLOWER_POT;
-            case FOUR_STAR -> Material.FLOWER_POT;
-            case FIVE_STAR -> Material.FLOWER_POT;
-        };
+        // All star ratings use FLOWER_POT as the block type
+        // Visual distinction is provided through item lore and particles
+        return Material.FLOWER_POT;
     }
 
     /**

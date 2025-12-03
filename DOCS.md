@@ -3,9 +3,11 @@
 ## Table of Contents
 1. [Installation Guide](#installation-guide)
 2. [Feature Usage Guide](#feature-usage-guide)
-3. [Admin Commands Reference](#admin-commands-reference)
-4. [Configuration Guide](#configuration-guide)
-5. [Troubleshooting](#troubleshooting)
+3. [Star Quality System](#star-quality-system)
+4. [Pot-Based Growing](#pot-based-growing)
+5. [Admin Commands Reference](#admin-commands-reference)
+6. [Configuration Guide](#configuration-guide)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -29,6 +31,7 @@
 
 3. **Verify Installation**
    - Check console for: `[BudLords] BudLords has been enabled successfully!`
+   - Check console for: `[BudLords] ★ Star Quality System enabled!`
    - Run `/budlords` in-game to see the help menu
 
 4. **Configure (Optional)**
@@ -46,29 +49,69 @@ As an admin, use the Strain Creator GUI:
 ```
 /straincreator
 ```
-This opens a GUI where you can:
-- Click the name tag to rename the strain
+This opens a modern GUI where you can:
+- Click the name tag to rename the strain (type name in chat, auto-returns to GUI)
 - Click rarity icon to cycle through: Common → Uncommon → Rare → Legendary
+- Click the star icon to select seed quality (★1-5)
 - Use +/- buttons to adjust Potency, Yield, and Packaging Quality
+- Shift-click for larger adjustments (+10 instead of +5)
 - Drag an item onto the icon slot to set the strain's appearance
 - Click the emerald block to save and receive 5 seeds
 
-#### 2. Planting Seeds
+#### 2. Planting Seeds (Pot-Based - Recommended)
+
+**New Pot-Based Growing System:**
+1. Obtain a **Growing Pot** ★ (via admin commands or crafting)
+2. Place the pot on any solid surface (right-click)
+3. Hold seeds in your main hand
+4. Right-click the pot to plant
+
+**Legacy Farmland Growing:**
 1. Create farmland using a hoe on dirt/grass
 2. Hold seeds in your main hand
 3. Right-click on the farmland
 
 **Growth Tips:**
-- Ensure light level 12+ for quality bonus
-- Keep farmland hydrated (near water) for bonus
+- Use higher ★ pots for faster growth and better quality
+- Water your plants regularly with a bucket
+- Apply fertilizer for nutrient boost
+- Place grow lamps nearby for quality bonus
 - Surround plants with walls for enclosed growing bonus
 
-#### 3. Harvesting
+#### 3. Caring for Plants
+
+**Watering:**
+- Right-click on a plant with a water bucket
+- Water level slowly decreases over time
+- Keep water level above 70% for quality bonus
+
+**Fertilizing:**
+- Craft or obtain fertilizer (★1-5 quality)
+- Right-click on a plant with fertilizer
+- Higher ★ fertilizer gives better nutrient boost
+
+**Lighting:**
+- Place Grow Lamps (★1-5) near your plants
+- Better lamps provide more light and quality bonus
+- Special glow particles show lamp effect
+
+#### 4. Harvesting
+
+**Without Scissors:**
 - Wait for plants to reach the mature stage (4th stage)
 - Right-click or break the plant to harvest
 - You'll receive buds based on the strain's yield and quality bonuses
 
-#### 4. Packaging
+**With Harvest Scissors (Recommended):**
+- Obtain Harvest Scissors (★1-5 quality)
+- Right-click on mature plant with scissors
+- Benefits:
+  - Yield bonus based on scissors quality
+  - Chance to upgrade bud quality
+  - Chance for rare bonus seeds
+  - Better final bud ★ rating
+
+#### 5. Packaging
 Convert raw buds into sellable packages:
 ```
 /package 1   - Creates 1g package (×1.0 multiplier)
@@ -77,7 +120,7 @@ Convert raw buds into sellable packages:
 /package 10  - Creates 10g package (×2.0 multiplier)
 ```
 
-#### 5. Selling
+#### 6. Selling
 1. Find or spawn a trader:
    - **Market Joe** - Regular prices (admin: `/spawnmarket`)
    - **BlackMarket Joe** - Better prices for rare strains (admin: `/spawnblackmarket`)
@@ -110,19 +153,110 @@ Shows:
 | Cartel Boss | $150,000 | 95% |
 | BudLord | $500,000 | 100% |
 
-### Trading System
+---
 
-#### Success Chance Factors
-- **Rank Bonus**: Higher ranks = better success rate
-- **Potency**: Very high potency slightly reduces success
-- **Rarity**: Rarer strains are riskier to sell
-- **Weight**: Larger packages are riskier
-- **Trader Type**: BlackMarket Joe gives +10% success bonus
+## Star Quality System
 
-#### Failed Deals
-- No product lost
-- Cooldown applied (default 30 seconds)
-- Try again after cooldown expires
+The ★ Star Quality System (1-5 stars) applies to all growing equipment and affects the final bud quality.
+
+### Star Ratings
+
+| Rating | Display | Color | Quality Mult | Growth Speed |
+|--------|---------|-------|--------------|--------------|
+| ★☆☆☆☆ | 1 Star | Gray | ×1.0 | 0.8x |
+| ★★☆☆☆ | 2 Star | Yellow | ×1.15 | 0.9x |
+| ★★★☆☆ | 3 Star | Green | ×1.35 | 1.0x |
+| ★★★★☆ | 4 Star | Blue | ×1.6 | 1.15x |
+| ★★★★★ | 5 Star | Gold | ×2.0 | 1.35x |
+
+### Items with Star Ratings
+
+#### Growing Pot ★
+- Base for pot-based growing
+- Affects overall growth speed
+- Higher ★ = faster growth, better base quality
+- Place on any solid surface
+
+#### Seeds ★
+- Set during strain creation
+- Affects final bud potential
+- Better seeds = better maximum quality
+
+#### Grow Lamp ★
+- Provides light to plants
+- Affects quality bonus
+- Higher ★ = more light, better efficiency
+
+#### Fertilizer ★
+- Boosts nutrient levels
+- Affects quality and growth
+- Higher ★ = more nutrients, longer duration
+
+#### Harvest Scissors ★
+- Used for harvesting
+- Affects yield and quality
+- Higher ★ = bonus yield, quality upgrade chance, rare drops
+
+### Final Bud Rating Calculation
+
+The final bud ★ rating is calculated from a weighted combination:
+- **Pot**: 20%
+- **Seed**: 25%
+- **Lamp**: 20%
+- **Fertilizer**: 15%
+- **Scissors**: 10%
+- **Care Quality**: 10%
+
+**Example:**
+- 5★ Pot + 4★ Seed + 3★ Lamp + 4★ Fertilizer + 5★ Scissors + 90% care
+- = (5×0.2) + (4×0.25) + (3×0.2) + (4×0.15) + (5×0.1) + (4.5×0.1)
+- = 1.0 + 1.0 + 0.6 + 0.6 + 0.5 + 0.45 = 4.15 → **4★ Bud**
+
+---
+
+## Pot-Based Growing
+
+### Overview
+The new pot-based growing system replaces farmland planting with a more interactive and rewarding experience.
+
+### Growing Pot Types
+Growing pots are placed on any solid surface and act as containers for your plants.
+
+| Star | Growth Speed | Quality Bonus |
+|------|--------------|---------------|
+| ★☆☆☆☆ | -20% slower | +0% |
+| ★★☆☆☆ | -10% slower | +15% |
+| ★★★☆☆ | Normal | +35% |
+| ★★★★☆ | +15% faster | +60% |
+| ★★★★★ | +35% faster | +100% |
+
+### Care System
+
+**Water Level (0-100%)**
+- Starts at 70% in new pots
+- Decreases slowly over time
+- Water with bucket to refill to 100%
+- Below 30%: Quality penalty
+- Above 70%: Quality bonus
+
+**Nutrient Level (0-100%)**
+- Starts at 50% in new pots
+- Decreases slowly over time
+- Apply fertilizer to boost
+- Affects growth speed and quality
+
+### Plant Status Display
+Right-click a growing plant to see status:
+```
+━━━━ OG Kush ━━━━
+Stage: Sprout (2/4)
+Pot: ★★★☆☆
+Seed: ★★★★☆
+Water: 85%
+Nutrients: 60%
+Lamp: ★★★★★
+Quality: ★★★☆☆ Good
+```
 
 ---
 
@@ -160,14 +294,20 @@ Spawn BlackMarket Joe at your location.
 Open the Strain Creator GUI.
 - Permission: `budlords.admin`
 
-**GUI Layout:**
-```
-[Border]  [Border]  [Border]  [Border]  [Name Tag] [Border]  [Border]  [Border]  [Border]
-[Border]  [        ] [Rarity] [- Pot] [Potency] [+ Pot] [        ] [Icon]   [Border]
-[Border]  [        ] [       ] [- Yld] [Yield  ] [+ Yld] [        ] [Display] [Border]
-[Border]  [        ] [       ] [- Qlt] [Quality] [+ Qlt] [        ] [        ] [Border]
-[Cancel]  [Border]  [Border]  [Border]  [SAVE]   [Border]  [Border]  [Border]  [Border]
-```
+**Modernized GUI Features:**
+- Visual progress bars for stats
+- Sound effects on interactions
+- Shift-click for larger adjustments
+- Seed star rating selector
+- Strain preview display
+- Gradient border styling
+
+**Name Entry Flow:**
+1. Click the name tag button
+2. GUI closes, type name in chat
+3. Name is validated (2-32 chars, alphanumeric + spaces)
+4. GUI reopens automatically with new name
+5. Type "cancel" to return without changing
 
 ### Configuration
 
@@ -187,18 +327,27 @@ Reload the plugin configuration.
 autosave-interval-seconds: 300
 
 economy:
-  # Currency symbol shown before amounts
   currency-symbol: "$"
-  # Starting balance for new players
   starting-balance: 0.0
 
 farming:
-  # How often to check for plant growth (seconds)
   growth-check-interval-seconds: 60
-  # Time between growth stages (seconds)
   growth-interval-seconds: 300
-  # Particle effect interval (ticks, 20 = 1 second)
   particle-interval-ticks: 40
+  # New pot-based growing system
+  pot-based-growing: true
+  # Legacy farmland support
+  allow-farmland-growing: true
+
+# Star Quality System settings
+quality:
+  enabled: true
+  star-weights:
+    one-star: 40
+    two-star: 30
+    three-star: 18
+    four-star: 9
+    five-star: 3
 
 packaging:
   multipliers:
@@ -208,7 +357,6 @@ packaging:
     10g: 2.0
 
 trading:
-  # Cooldown after failed deal (seconds)
   failed-deal-cooldown-seconds: 30
 ```
 
@@ -235,12 +383,6 @@ ranks:
     required-earnings: 0
     success-chance-bonus: 0.6
     unlocked-strains: []
-  rank2:
-    name: "Amateur"
-    required-earnings: 500
-    success-chance-bonus: 0.7
-    unlocked-strains:
-      - "og_kush"
 ```
 
 ---
@@ -249,27 +391,24 @@ ranks:
 
 ### Common Issues
 
-#### "Seeds can only be planted on farmland!"
-- Use a hoe on dirt/grass to create farmland
-- Seeds must be placed on farmland blocks
+#### "Seeds can only be planted on farmland or in Growing Pots!"
+- Use a Growing Pot (right-click on solid surface with pot)
+- Or use a hoe on dirt/grass to create farmland (legacy mode)
 
-#### "You need at least X buds to package!"
-- Ensure you have enough buds of the same strain
-- Check that you're holding bud items, not seeds
+#### Plants Not Growing Fast Enough
+- Use higher ★ rated pots
+- Keep water level above 70%
+- Apply fertilizer for nutrient boost
+- Add a grow lamp nearby
 
-#### "This trader doesn't buy weed."
-- Interact with Market Joe, BlackMarket Joe, or unemployed villagers
-- Other villager types don't participate in trading
+#### Harvest Scissors Not Working
+- Ensure they are BudLords Harvest Scissors (with ★ rating in lore)
+- Regular shears won't provide bonuses
 
-#### "You're too suspicious! Wait X seconds."
-- A previous deal failed, triggering a cooldown
-- Wait for the cooldown to expire
-
-#### Plants Not Growing
-- Ensure chunks are loaded
-- Check light levels (12+ optimal)
-- Verify farmland is hydrated
-- Wait for growth interval (default 5 minutes per stage)
+#### Low Bud Quality
+- Use better ★ rated equipment (pot, seed, lamp, fertilizer, scissors)
+- Maintain high water and nutrient levels
+- Higher star ratings across all components = higher final rating
 
 ### Data Files
 
@@ -277,7 +416,7 @@ All data is stored in `plugins/BudLords/`:
 - `config.yml` - Main configuration
 - `strains.yml` - Strain definitions
 - `players.yml` - Player balances and stats
-- `plants.yml` - Active plant locations
+- `plants.yml` - Active plant locations and star ratings
 
 ### Getting Help
 
@@ -308,4 +447,4 @@ target/BudLords-1.0.0.jar
 
 ---
 
-*BudLords v1.0.0 - A weed farming economy plugin for Minecraft*
+*BudLords v1.0.0 - A weed farming economy plugin for Minecraft with ★ Star Quality System*

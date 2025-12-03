@@ -182,15 +182,21 @@ public class FarmingManager {
         }, intervalTicks, intervalTicks);
     }
     
+    // Decay rate constants for plant care system
+    // These values determine how quickly water and nutrients deplete per minute
+    private static final double WATER_DECAY_RATE = 0.02;    // 2% per minute
+    private static final double NUTRIENT_DECAY_RATE = 0.01; // 1% per minute
+    private static final long DECAY_INTERVAL_TICKS = 1200L; // 1 minute in ticks
+    
     private void startCareDecayTask() {
         // Decay water and nutrients over time
-        plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+        careDecayTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (Plant plant : plants.values()) {
                 // Slowly decrease water and nutrients
-                plant.setWaterLevel(plant.getWaterLevel() - 0.02);
-                plant.setNutrientLevel(plant.getNutrientLevel() - 0.01);
+                plant.setWaterLevel(plant.getWaterLevel() - WATER_DECAY_RATE);
+                plant.setNutrientLevel(plant.getNutrientLevel() - NUTRIENT_DECAY_RATE);
             }
-        }, 1200L, 1200L); // Every minute
+        }, DECAY_INTERVAL_TICKS, DECAY_INTERVAL_TICKS);
     }
 
     private void processGrowth(Plant plant) {
