@@ -114,18 +114,26 @@ public class StrainManager {
     }
 
     public ItemStack createSeedItem(Strain strain, int amount) {
+        return createSeedItem(strain, amount, com.budlords.quality.StarRating.ONE_STAR);
+    }
+    
+    public ItemStack createSeedItem(Strain strain, int amount, com.budlords.quality.StarRating starRating) {
         ItemStack seed = new ItemStack(Material.WHEAT_SEEDS, amount);
         ItemMeta meta = seed.getItemMeta();
         
         if (meta != null) {
-            meta.setDisplayName("§a" + strain.getName() + " Seed");
+            meta.setDisplayName(starRating.getColorCode() + strain.getName() + " Seed " + starRating.getDisplay());
             List<String> lore = new ArrayList<>();
             lore.add("§7Strain: §f" + strain.getName());
+            lore.add("§7Quality: " + starRating.getDisplay());
             lore.add("§7Rarity: " + strain.getRarity().getDisplayName());
             lore.add("§7Potency: §e" + strain.getPotency() + "%");
             lore.add("§7Yield: §e" + strain.getYield() + " buds");
             lore.add("");
+            lore.add("§7Plant in a Growing Pot!");
+            lore.add("");
             lore.add("§8ID: " + strain.getId());
+            lore.add("§8Rating: " + starRating.getStars());
             meta.setLore(lore);
             seed.setItemMeta(meta);
         }
@@ -134,25 +142,60 @@ public class StrainManager {
     }
 
     public ItemStack createBudItem(Strain strain, int amount) {
+        return createBudItem(strain, amount, com.budlords.quality.StarRating.ONE_STAR);
+    }
+    
+    public ItemStack createBudItem(Strain strain, int amount, com.budlords.quality.StarRating starRating) {
         ItemStack bud = new ItemStack(Material.GREEN_DYE, amount);
         ItemMeta meta = bud.getItemMeta();
         
         if (meta != null) {
-            meta.setDisplayName("§a" + strain.getName() + " Bud");
+            meta.setDisplayName(starRating.getColorCode() + strain.getName() + " Bud " + starRating.getDisplay());
             List<String> lore = new ArrayList<>();
             lore.add("§7Strain: §f" + strain.getName());
+            lore.add("§7Quality: " + starRating.getDisplay());
             lore.add("§7Rarity: " + strain.getRarity().getDisplayName());
             lore.add("§7Potency: §e" + strain.getPotency() + "%");
-            lore.add("§7Quality: §e" + strain.getPackagingQuality() + "%");
+            lore.add("§7Packaging Quality: §e" + strain.getPackagingQuality() + "%");
             lore.add("");
             lore.add("§7Use §f/package §7to package for sale");
             lore.add("");
             lore.add("§8ID: " + strain.getId());
+            lore.add("§8Rating: " + starRating.getStars());
             meta.setLore(lore);
             bud.setItemMeta(meta);
         }
         
         return bud;
+    }
+
+    public com.budlords.quality.StarRating getSeedStarRating(ItemStack item) {
+        return getStarRatingFromItem(item);
+    }
+
+    public com.budlords.quality.StarRating getBudStarRating(ItemStack item) {
+        return getStarRatingFromItem(item);
+    }
+
+    private com.budlords.quality.StarRating getStarRatingFromItem(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return null;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return null;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) return null;
+        
+        for (String line : lore) {
+            if (line.startsWith("§8Rating: ")) {
+                try {
+                    int rating = Integer.parseInt(line.substring(10).trim());
+                    return com.budlords.quality.StarRating.fromValue(rating);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     public String getStrainIdFromItem(ItemStack item) {
