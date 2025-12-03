@@ -224,11 +224,11 @@ public class FarmingManager {
         
         if (plant.isFullyGrown()) {
             // Green sparkles for fully grown
-            loc.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, particleLoc, 3, 0.3, 0.3, 0.3, 0);
+            loc.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, particleLoc, 3, 0.3, 0.3, 0.3, 0);
         } else {
             // Growing particles based on stage
             switch (plant.getGrowthStage()) {
-                case 0 -> loc.getWorld().spawnParticle(Particle.DRIPPING_WATER, particleLoc, 1, 0.2, 0.2, 0.2, 0);
+                case 0 -> loc.getWorld().spawnParticle(Particle.DRIP_WATER, particleLoc, 1, 0.2, 0.2, 0.2, 0);
                 case 1 -> loc.getWorld().spawnParticle(Particle.COMPOSTER, particleLoc, 2, 0.2, 0.2, 0.2, 0);
                 case 2 -> loc.getWorld().spawnParticle(Particle.COMPOSTER, particleLoc, 3, 0.3, 0.3, 0.3, 0);
             }
@@ -294,7 +294,7 @@ public class FarmingManager {
 
         // Spawn harvest particles
         Location particleLoc = location.clone().add(0.5, 0.5, 0.5);
-        location.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, particleLoc, 20, 0.5, 0.5, 0.5, 0.1);
+        location.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, particleLoc, 20, 0.5, 0.5, 0.5, 0.1);
 
         return plant;
     }
