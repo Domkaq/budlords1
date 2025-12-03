@@ -245,7 +245,7 @@ public class ItemDropListener implements Listener {
         if (budRating == null) budRating = StarRating.ONE_STAR;
         
         // Calculate final rating (average of grinder and bud, with small boost)
-        int combinedStars = (grinderRating.getStars() + budRating.getStars() + 1) / 2;
+        int combinedStars = (int) Math.round((grinderRating.getStars() + budRating.getStars() + 1) / 2.0);
         StarRating finalRating = StarRating.fromValue(combinedStars);
         
         // Create grinded bud

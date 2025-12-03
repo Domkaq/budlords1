@@ -44,6 +44,8 @@ public class RollingShopGUI implements InventoryHolder, Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    // Using deprecated Inventory title API for Bukkit/Spigot compatibility
+    // Paper servers can replace with Adventure API's title(Component) method
     @SuppressWarnings("deprecation")
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(this, 54, "§6§l✦ Rolling & Packaging Shop");

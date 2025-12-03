@@ -81,7 +81,6 @@ public class DroppedBudTracker {
      * Cleans up expired entries.
      */
     public void cleanup() {
-        long now = System.currentTimeMillis();
         trackedBuds.entrySet().removeIf(entry -> isExpired(entry.getValue()));
     }
 

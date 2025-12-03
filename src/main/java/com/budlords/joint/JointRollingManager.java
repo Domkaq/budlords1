@@ -107,6 +107,8 @@ public class JointRollingManager implements InventoryHolder {
     /**
      * Opens the minigame GUI for the current stage.
      */
+    // Using deprecated Inventory title API for Bukkit/Spigot compatibility
+    // Paper servers can replace with Adventure API's title(Component) method
     @SuppressWarnings("deprecation")
     public void openMinigameGUI(Player player, JointRollingSession session) {
         String title = getMinigameTitle(session.getCurrentStage());
@@ -130,7 +132,6 @@ public class JointRollingManager implements InventoryHolder {
         };
     }
 
-    @SuppressWarnings("deprecation")
     private void updateMinigameGUI(Inventory inv, Player player, JointRollingSession session) {
         inv.clear();
         
