@@ -4,6 +4,7 @@ import com.budlords.commands.*;
 import com.budlords.data.DataManager;
 import com.budlords.economy.EconomyManager;
 import com.budlords.farming.FarmingManager;
+import com.budlords.gui.MarketShopGUI;
 import com.budlords.listeners.FarmingListener;
 import com.budlords.listeners.NPCListener;
 import com.budlords.listeners.PlayerListener;
@@ -27,6 +28,7 @@ public class BudLords extends JavaPlugin {
     private PackagingManager packagingManager;
     private RankManager rankManager;
     private QualityItemManager qualityItemManager;
+    private MarketShopGUI marketShopGUI;
 
     @Override
     public void onEnable() {
@@ -43,6 +45,7 @@ public class BudLords extends JavaPlugin {
             this.farmingManager = new FarmingManager(this, dataManager, strainManager);
             this.npcManager = new NPCManager(this, economyManager, strainManager, rankManager, packagingManager);
             this.qualityItemManager = new QualityItemManager(this);
+            this.marketShopGUI = new MarketShopGUI(this, economyManager, qualityItemManager);
             
             // Register commands
             registerCommands();
@@ -110,7 +113,7 @@ public class BudLords extends JavaPlugin {
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new FarmingListener(this, farmingManager, strainManager), this);
-        getServer().getPluginManager().registerEvents(new NPCListener(npcManager, economyManager, rankManager, packagingManager), this);
+        getServer().getPluginManager().registerEvents(new NPCListener(npcManager, economyManager, rankManager, packagingManager, marketShopGUI, strainManager), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager), this);
     }
 

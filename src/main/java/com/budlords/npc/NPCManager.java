@@ -109,6 +109,11 @@ public class NPCManager {
             return new TradeResult(false, "§cYou're too suspicious! Wait " + (remaining / 1000) + " seconds.", 0);
         }
 
+        // BlackMarket Joe does NOT buy seeds
+        if (npcType == NPCType.BLACKMARKET_JOE && strainManager.isSeedItem(item)) {
+            return new TradeResult(false, "§5BlackMarket Joe doesn't buy seeds! §7Sell packaged buds instead.", 0);
+        }
+
         if (!packagingManager.isPackagedProduct(item)) {
             return new TradeResult(false, "§cYou can only sell packaged products!", 0);
         }
