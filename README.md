@@ -62,14 +62,40 @@ Each strain has:
 - Dynamic pricing based on strain value and ★ rating
 
 ### 📦 Packaging System
-| Weight | Pattern | Sell Multiplier |
-|--------|---------|-----------------|
-| 1g | `<Strain> - 1g` | ×1.0 |
-| 3g | `<Strain> - 3g` | ×1.25 |
-| 5g | `<Strain> - 5g` | ×1.5 |
-| 10g | `<Strain> - 10g` | ×2.0 |
+Two ways to package your buds:
 
-Command: `/package <amount>`
+#### Drag-and-Drop Packaging (NEW!)
+1. Drop buds on the ground
+2. Drop a pack (1g, 3g, 5g, or 10g) on the buds
+3. Pick up your packaged product!
+
+Buy packs from Market Joe's Rolling & Packaging Shop.
+
+#### Command Packaging
+Use `/package <amount>` to package buds from your inventory.
+
+| Weight | Sell Multiplier |
+|--------|-----------------|
+| 1g | ×1.0 |
+| 3g | ×1.25 |
+| 5g | ×1.5 |
+| 10g | ×2.0 |
+
+### 🚬 Joint Rolling System (NEW!)
+Roll joints through an interactive 4-stage minigame:
+
+1. **Paper Pull** - Timing game: Click the paper when it reaches the green zone
+2. **Tobacco Roll** - Click rapidly to fill the progress bar before time runs out
+3. **Ganja Grinding** - Follow the moving target to grind the bud
+4. **Final Roll** - Time your clicks when the power meter is in the perfect zone
+
+**How to Roll:**
+1. Buy a **Grinder** and **Tobacco** from Market Joe
+2. Grind your buds (right-click with grinder while holding bud)
+3. Right-click with grinded bud (with rolling paper and tobacco in inventory)
+4. Complete the 4-stage minigame!
+
+Better performance = higher quality joints!
 
 ### 🎲 Deal Success System
 Success chance depends on:
