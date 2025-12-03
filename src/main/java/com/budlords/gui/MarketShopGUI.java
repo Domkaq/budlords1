@@ -173,6 +173,25 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 "§7Hold packaged buds and",
                 "§7right-click me!"
             )));
+        
+        // Rolling Shop button
+        inv.setItem(43, createShopItem(Material.STICK, 
+            "§6§l✦ Rolling & Packaging Shop",
+            0,
+            Arrays.asList(
+                "",
+                "§7Buy rolling supplies:",
+                "§f• Rolling Paper",
+                "§6• Tobacco",
+                "§a• Grinders",
+                "",
+                "§7Buy packaging supplies:",
+                "§6• 1g, 3g, 5g, 10g Packs",
+                "",
+                "§a▶ Click to open"
+            ),
+            "rolling_shop"
+        ));
 
         // Close button
         inv.setItem(49, createItem(Material.BARRIER, "§c§l✗ Close Shop",
@@ -259,7 +278,16 @@ public class MarketShopGUI implements InventoryHolder, Listener {
             }
         }
 
-        if (itemId == null || price <= 0) return;
+        if (itemId == null) return;
+        
+        // Handle rolling shop button
+        if (itemId.equals("rolling_shop")) {
+            player.closeInventory();
+            plugin.getRollingShopGUI().open(player);
+            return;
+        }
+
+        if (price <= 0) return;
 
         // Process purchase
         if (!canAfford(player, price)) {

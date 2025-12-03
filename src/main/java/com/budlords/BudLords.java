@@ -5,10 +5,14 @@ import com.budlords.data.DataManager;
 import com.budlords.economy.EconomyManager;
 import com.budlords.farming.FarmingManager;
 import com.budlords.gui.MarketShopGUI;
+import com.budlords.gui.RollingShopGUI;
+import com.budlords.joint.JointRollingManager;
 import com.budlords.listeners.FarmingListener;
+import com.budlords.listeners.ItemDropListener;
 import com.budlords.listeners.NPCListener;
 import com.budlords.listeners.PlayerListener;
 import com.budlords.npc.NPCManager;
+import com.budlords.packaging.DroppedBudTracker;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
 import com.budlords.quality.QualityItemManager;
@@ -29,6 +33,9 @@ public class BudLords extends JavaPlugin {
     private RankManager rankManager;
     private QualityItemManager qualityItemManager;
     private MarketShopGUI marketShopGUI;
+    private RollingShopGUI rollingShopGUI;
+    private JointRollingManager jointRollingManager;
+    private DroppedBudTracker droppedBudTracker;
 
     @Override
     public void onEnable() {
@@ -46,6 +53,9 @@ public class BudLords extends JavaPlugin {
             this.npcManager = new NPCManager(this, economyManager, strainManager, rankManager, packagingManager);
             this.qualityItemManager = new QualityItemManager(this);
             this.marketShopGUI = new MarketShopGUI(this, economyManager, qualityItemManager);
+            this.rollingShopGUI = new RollingShopGUI(this, economyManager);
+            this.jointRollingManager = new JointRollingManager(this, strainManager);
+            this.droppedBudTracker = new DroppedBudTracker();
             
             // Register commands
             registerCommands();
@@ -60,6 +70,8 @@ public class BudLords extends JavaPlugin {
             getLogger().info("Loaded " + strainManager.getStrainCount() + " strains.");
             getLogger().info("Loaded " + farmingManager.getPlantCount() + " active plants.");
             getLogger().info("★ Star Quality System enabled!");
+            getLogger().info("✦ Drag-and-Drop Packaging enabled!");
+            getLogger().info("✦ Joint Rolling Minigame enabled!");
             
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to enable BudLords!", e);
@@ -115,6 +127,7 @@ public class BudLords extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new FarmingListener(this, farmingManager, strainManager), this);
         getServer().getPluginManager().registerEvents(new NPCListener(npcManager, economyManager, rankManager, packagingManager, marketShopGUI, strainManager), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager), this);
+        getServer().getPluginManager().registerEvents(new ItemDropListener(this, strainManager, packagingManager, droppedBudTracker, jointRollingManager), this);
     }
 
     private void startAutosaveTask() {
@@ -158,5 +171,17 @@ public class BudLords extends JavaPlugin {
     
     public QualityItemManager getQualityItemManager() {
         return qualityItemManager;
+    }
+    
+    public RollingShopGUI getRollingShopGUI() {
+        return rollingShopGUI;
+    }
+    
+    public JointRollingManager getJointRollingManager() {
+        return jointRollingManager;
+    }
+    
+    public DroppedBudTracker getDroppedBudTracker() {
+        return droppedBudTracker;
     }
 }
