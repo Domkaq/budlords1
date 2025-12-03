@@ -10,6 +10,7 @@ import com.budlords.listeners.PlayerListener;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
+import com.budlords.quality.QualityItemManager;
 import com.budlords.strain.StrainManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,6 +26,7 @@ public class BudLords extends JavaPlugin {
     private NPCManager npcManager;
     private PackagingManager packagingManager;
     private RankManager rankManager;
+    private QualityItemManager qualityItemManager;
 
     @Override
     public void onEnable() {
@@ -40,6 +42,7 @@ public class BudLords extends JavaPlugin {
             this.packagingManager = new PackagingManager(this, strainManager);
             this.farmingManager = new FarmingManager(this, dataManager, strainManager);
             this.npcManager = new NPCManager(this, economyManager, strainManager, rankManager, packagingManager);
+            this.qualityItemManager = new QualityItemManager(this);
             
             // Register commands
             registerCommands();
@@ -53,6 +56,7 @@ public class BudLords extends JavaPlugin {
             getLogger().info("BudLords has been enabled successfully!");
             getLogger().info("Loaded " + strainManager.getStrainCount() + " strains.");
             getLogger().info("Loaded " + farmingManager.getPlantCount() + " active plants.");
+            getLogger().info("★ Star Quality System enabled!");
             
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to enable BudLords!", e);
@@ -147,5 +151,9 @@ public class BudLords extends JavaPlugin {
 
     public RankManager getRankManager() {
         return rankManager;
+    }
+    
+    public QualityItemManager getQualityItemManager() {
+        return qualityItemManager;
     }
 }

@@ -16,10 +16,28 @@ economy:
 farming:
   # How often to check for plant growth (seconds)
   growth-check-interval-seconds: 60
-  # Time between growth stages (seconds)
+  # Base time between growth stages (seconds)
+  # Higher star pots and better care reduce this time
   growth-interval-seconds: 300
   # Particle effect interval (ticks, 20 = 1 second)
   particle-interval-ticks: 40
+  # Enable pot-based growing (new system)
+  pot-based-growing: true
+  # Legacy farmland growing (for backward compatibility)
+  allow-farmland-growing: true
+
+# Star Quality System (★ 1-5)
+quality:
+  # Enable star quality system for all items
+  enabled: true
+  # Probability weights for random star generation
+  # Values don't need to sum to 100, they are relative weights
+  star-weights:
+    one-star: 40
+    two-star: 30
+    three-star: 18
+    four-star: 9
+    five-star: 3
 
 # Packaging multipliers
 # Value = base price × multiplier

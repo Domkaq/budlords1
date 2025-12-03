@@ -4,13 +4,30 @@ A comprehensive weed farming RPG + black market economy system for Minecraft Pap
 
 ## Features
 
-### 🌱 Planting & Growing System
-- Seeds plantable only on farmland
-- Multi-stage growth (seed → small → mid → full plant)
-- Growth influenced by light level, soil hydration, and surrounding walls
-- Visual particle effects during growth
-- Async autosave to YAML files
-- Plants persist through server restarts
+### 🌱 Pot-Based Growing System (NEW!)
+- Plant seeds in **Growing Pots** instead of farmland
+- Every item has a **★ Star Quality Rating (1-5★)**:
+  - **Pots** ★ - Base growth speed and quality
+  - **Seeds** ★ - Affects final bud potential
+  - **Lamps** ★ - Light level and quality bonus
+  - **Fertilizers** ★ - Nutrient boost and duration
+  - **Harvest Scissors** ★ - Better drops and quality chance
+- Final **Weed Bud ★** calculated from all component ratings
+- 📈 Higher star ratings = faster growth, better yields, rarer quality
+
+### ✨ Visual & Animation Updates
+- Modern particle effects for all growth stages
+- Animated growth transitions (seed → sprout → growing → mature)
+- Lamp glow effects based on ★ rating
+- Special legendary bud animations and effects
+- Harvest celebration particles
+
+### 🧩 Modern GUI & UX
+- Redesigned **Strain Creator GUI** with visual feedback
+- Progress bars and modern styling
+- Sound effects on interactions
+- Plant status display with care indicators
+- Drag-and-drop item handling
 
 ### 🌿 Strain System
 Each strain has:
@@ -19,11 +36,15 @@ Each strain has:
 - **Potency** - THC strength (1-100%)
 - **Yield** - Number of buds produced (1-20)
 - **Packaging Quality** - Affects final sale value
+- **Seed Star Rating** - Quality of seeds created
 
 ### 🧪 Strain Creator GUI (Admin)
 - Command: `/straincreator`
 - Permission: `budlords.admin`
-- Rename strain, adjust stats, save and register new strains
+- Rename strain with chat input → automatically returns to GUI
+- Adjust stats with visual feedback
+- Select seed star rating
+- Save and register new strains
 
 ### 💰 Custom Economy System
 - No Vault dependency required
@@ -34,7 +55,7 @@ Each strain has:
 - **Market Joe** - Farmer villager NPC (`/spawnmarket`)
 - **BlackMarket Joe** - Wandering trader NPC (`/spawnblackmarket`)
 - Village vendors (any unemployed villager)
-- Dynamic pricing based on strain value
+- Dynamic pricing based on strain value and ★ rating
 
 ### 📦 Packaging System
 | Weight | Pattern | Sell Multiplier |
@@ -131,13 +152,37 @@ The compiled JAR will be in `target/BudLords-1.0.0.jar`
 
 ## How to Play
 
-1. Get seeds from an admin using the Strain Creator or find them in the world
+### New Pot-Based Growing (Recommended)
+1. Obtain a **Growing Pot** ★ (from admin or crafting)
+2. Place the pot on any solid surface
+3. Get seeds from `/straincreator` or find them
+4. Right-click the pot with seeds to plant
+5. **Care for your plant:**
+   - Water with bucket → increases water level
+   - Apply fertilizer → boosts nutrients
+   - Add grow lamp nearby → improves light and quality
+6. Wait for the plant to grow through 4 stages
+7. Harvest with **Harvest Scissors** ★ for best results
+8. Package and sell for profit!
+
+### Legacy Farmland Growing
+1. Get seeds from an admin using the Strain Creator
 2. Plant seeds on farmland (right-click with seed on farmland)
 3. Wait for plants to grow through 4 stages
 4. Harvest mature plants (right-click or break)
 5. Package harvested buds using `/package <amount>`
 6. Sell packaged products to NPCs
 7. Earn money and rank up!
+
+## Star Quality Guide
+
+| Rating | Color | Quality Mult | Growth Speed |
+|--------|-------|--------------|--------------|
+| ★☆☆☆☆ | Gray | ×1.0 | 0.8x |
+| ★★☆☆☆ | Yellow | ×1.15 | 0.9x |
+| ★★★☆☆ | Green | ×1.35 | 1.0x |
+| ★★★★☆ | Blue | ×1.6 | 1.15x |
+| ★★★★★ | Gold | ×2.0 | 1.35x |
 
 ## License
 
