@@ -43,6 +43,8 @@ public class MarketShopGUI implements InventoryHolder, Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    // Using deprecated Inventory title API for Bukkit/Spigot compatibility
+    // Paper servers can replace with Adventure API's title(Component) method
     @SuppressWarnings("deprecation")
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(this, 54, "§a§l🛒 Market Joe's Shop");
@@ -251,6 +253,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 try {
                     price = Double.parseDouble(line.substring(9));
                 } catch (NumberFormatException e) {
+                    plugin.getLogger().warning("Failed to parse price from shop item lore: " + line);
                     return;
                 }
             }
