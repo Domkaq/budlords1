@@ -1,9 +1,11 @@
 package com.budlords.listeners;
 
 import com.budlords.economy.EconomyManager;
+import com.budlords.gui.MarketShopGUI;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
+import com.budlords.strain.StrainManager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,13 +21,18 @@ public class NPCListener implements Listener {
     private final EconomyManager economyManager;
     private final RankManager rankManager;
     private final PackagingManager packagingManager;
+    private final MarketShopGUI marketShopGUI;
+    private final StrainManager strainManager;
 
     public NPCListener(NPCManager npcManager, EconomyManager economyManager, 
-                       RankManager rankManager, PackagingManager packagingManager) {
+                       RankManager rankManager, PackagingManager packagingManager,
+                       MarketShopGUI marketShopGUI, StrainManager strainManager) {
         this.npcManager = npcManager;
         this.economyManager = economyManager;
         this.rankManager = rankManager;
         this.packagingManager = packagingManager;
+        this.marketShopGUI = marketShopGUI;
+        this.strainManager = strainManager;
     }
 
     // Using deprecated sendMessage and BungeeCord Chat API for Bukkit/Spigot compatibility
@@ -45,6 +52,15 @@ public class NPCListener implements Listener {
 
         ItemStack item = player.getInventory().getItemInMainHand();
 
+        // Check if holding seeds - BlackMarket Joe doesn't buy seeds
+        if (strainManager.isSeedItem(item)) {
+            if (npcType == NPCManager.NPCType.BLACKMARKET_JOE) {
+                player.sendMessage("§5BlackMarket Joe doesn't buy seeds!");
+                player.sendMessage("§7Sell packaged buds instead.");
+                return;
+            }
+        }
+
         // Check if holding a packaged product
         if (packagingManager.isPackagedProduct(item)) {
             NPCManager.TradeResult result = npcManager.attemptTrade(player, entity, item);
@@ -61,7 +77,13 @@ public class NPCListener implements Listener {
                 );
             }
         } else {
-            // Show trader info
+            // Market Joe opens shop GUI when not holding packaged product
+            if (npcType == NPCManager.NPCType.MARKET_JOE) {
+                marketShopGUI.open(player);
+                return;
+            }
+
+            // Show trader info for other traders
             String traderName = switch (npcType) {
                 case MARKET_JOE -> "§a§lMarket Joe";
                 case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
