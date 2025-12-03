@@ -1,0 +1,57 @@
+name: BudLords
+version: '${project.version}'
+main: com.budlords.BudLords
+api-version: '1.20'
+description: A weed farming RPG + black market economy system for Minecraft
+author: BudLords Team
+
+commands:
+  bal:
+    description: Check your balance
+    usage: /<command>
+    permission: budlords.balance
+  addmoney:
+    description: Add money to a player
+    usage: /<command> <player> <amount>
+    permission: budlords.admin
+  pay:
+    description: Pay another player
+    usage: /<command> <player> <amount>
+    permission: budlords.pay
+  straincreator:
+    description: Open the strain creator GUI
+    usage: /<command>
+    permission: budlords.admin
+  spawnmarket:
+    description: Spawn Market Joe NPC
+    usage: /<command>
+    permission: budlords.admin
+  spawnblackmarket:
+    description: Spawn BlackMarket Joe NPC
+    usage: /<command>
+    permission: budlords.admin
+  package:
+    description: Package weed buds
+    usage: /<command> <amount>
+    permission: budlords.package
+  budlords:
+    description: Main BudLords command
+    usage: /<command>
+    permission: budlords.use
+
+permissions:
+  budlords.use:
+    description: Basic BudLords usage
+    default: true
+  budlords.balance:
+    description: Check balance
+    default: true
+  budlords.pay:
+    description: Pay other players
+    default: true
+  budlords.package:
+    description: Package weed
+    default: true
+  budlords.admin:
+    description: Admin commands
+    default: op

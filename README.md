@@ -1,1 +1,144 @@
-# budlords1
+# BudLords - Minecraft Weed Economy Plugin
+
+A comprehensive weed farming RPG + black market economy system for Minecraft Paper/Spigot 1.20.4.
+
+## Features
+
+### 🌱 Planting & Growing System
+- Seeds plantable only on farmland
+- Multi-stage growth (seed → small → mid → full plant)
+- Growth influenced by light level, soil hydration, and surrounding walls
+- Visual particle effects during growth
+- Async autosave to YAML files
+- Plants persist through server restarts
+
+### 🌿 Strain System
+Each strain has:
+- **Name** - Custom strain name
+- **Rarity** - Common, Uncommon, Rare, or Legendary
+- **Potency** - THC strength (1-100%)
+- **Yield** - Number of buds produced (1-20)
+- **Packaging Quality** - Affects final sale value
+
+### 🧪 Strain Creator GUI (Admin)
+- Command: `/straincreator`
+- Permission: `budlords.admin`
+- Rename strain, adjust stats, save and register new strains
+
+### 💰 Custom Economy System
+- No Vault dependency required
+- Commands: `/bal`, `/addmoney`, `/pay`
+- Full tab-completion
+
+### 🧑‍🌾 NPC Trading System
+- **Market Joe** - Farmer villager NPC (`/spawnmarket`)
+- **BlackMarket Joe** - Wandering trader NPC (`/spawnblackmarket`)
+- Village vendors (any unemployed villager)
+- Dynamic pricing based on strain value
+
+### 📦 Packaging System
+| Weight | Pattern | Sell Multiplier |
+|--------|---------|-----------------|
+| 1g | `<Strain> - 1g` | ×1.0 |
+| 3g | `<Strain> - 3g` | ×1.25 |
+| 5g | `<Strain> - 5g` | ×1.5 |
+| 10g | `<Strain> - 10g` | ×2.0 |
+
+Command: `/package <amount>`
+
+### 🎲 Deal Success System
+Success chance depends on:
+- Player rank
+- Strain potency and rarity
+- Package weight
+- Trader type (black market bonus)
+- Failed deals result in a cooldown
+
+### 🏆 Rank Progression
+Ranks based on total earnings:
+1. **Novice** - $0+
+2. **Dealer** - $1,000+
+3. **Supplier** - $5,000+
+4. **Distributor** - $15,000+
+5. **Kingpin** - $50,000+
+6. **Cartel Boss** - $150,000+
+7. **BudLord** - $500,000+
+
+## Installation
+
+1. Download `BudLords-1.0.0.jar`
+2. Place in your server's `plugins/` folder
+3. Restart/reload the server
+4. Configure `plugins/BudLords/config.yml` as needed
+
+## Commands
+
+### Player Commands
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/bal` | Check your balance and rank | `budlords.balance` |
+| `/pay <player> <amount>` | Pay another player | `budlords.pay` |
+| `/package <amount>` | Package buds (1, 3, 5, or 10g) | `budlords.package` |
+| `/budlords` | View plugin help | `budlords.use` |
+
+### Admin Commands
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/addmoney <player> <amount>` | Add money to a player | `budlords.admin` |
+| `/straincreator` | Open strain creator GUI | `budlords.admin` |
+| `/spawnmarket` | Spawn Market Joe NPC | `budlords.admin` |
+| `/spawnblackmarket` | Spawn BlackMarket Joe NPC | `budlords.admin` |
+| `/budlords reload` | Reload configuration | `budlords.admin` |
+
+## Permissions
+
+| Permission | Description | Default |
+|------------|-------------|---------|
+| `budlords.use` | Basic plugin usage | true |
+| `budlords.balance` | Check balance | true |
+| `budlords.pay` | Pay other players | true |
+| `budlords.package` | Package weed | true |
+| `budlords.admin` | Admin commands | op |
+
+## Configuration Files
+
+The plugin auto-generates these files:
+- `config.yml` - Main configuration
+- `strains.yml` - Strain definitions
+- `players.yml` - Player balances and earnings
+- `plants.yml` - Active plant data
+
+## Building from Source
+
+Requirements:
+- Java 17+
+- Maven 3.6+
+
+```bash
+mvn clean package
+```
+
+The compiled JAR will be in `target/BudLords-1.0.0.jar`
+
+## Default Strains
+
+| Strain | Rarity | Potency | Yield |
+|--------|--------|---------|-------|
+| OG Kush | Common | 40% | 3 |
+| Purple Haze | Uncommon | 60% | 4 |
+| White Widow | Rare | 75% | 5 |
+| Northern Lights | Legendary | 95% | 7 |
+
+## How to Play
+
+1. Get seeds from an admin using the Strain Creator or find them in the world
+2. Plant seeds on farmland (right-click with seed on farmland)
+3. Wait for plants to grow through 4 stages
+4. Harvest mature plants (right-click or break)
+5. Package harvested buds using `/package <amount>`
+6. Sell packaged products to NPCs
+7. Earn money and rank up!
+
+## License
+
+MIT License
