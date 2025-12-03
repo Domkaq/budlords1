@@ -7,6 +7,8 @@ import com.budlords.strain.StrainManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.type.Farmland;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -150,7 +152,7 @@ public class FarmingManager {
         // Water/hydration bonus (farmland moisture)
         Block below = loc.getBlock().getRelative(BlockFace.DOWN);
         if (below.getType() == Material.FARMLAND) {
-            if (below.getBlockData() instanceof org.bukkit.block.data.type.Farmland farmland) {
+            if (below.getBlockData() instanceof Farmland farmland) {
                 if (farmland.getMoisture() == farmland.getMaximumMoisture()) {
                     qualityBonus += 5;
                 }
@@ -190,30 +192,23 @@ public class FarmingManager {
         Location loc = plant.getLocation();
         Block block = loc.getBlock();
         
-        // Use different crops stages to represent growth
-        switch (plant.getGrowthStage()) {
-            case 0 -> block.setType(Material.WHEAT);
-            case 1 -> {
-                block.setType(Material.WHEAT);
-                if (block.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
-                    ageable.setAge(2);
-                    block.setBlockData(ageable);
-                }
-            }
-            case 2 -> {
-                block.setType(Material.WHEAT);
-                if (block.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
-                    ageable.setAge(4);
-                    block.setBlockData(ageable);
-                }
-            }
-            case 3 -> {
-                block.setType(Material.WHEAT);
-                if (block.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
-                    ageable.setAge(ageable.getMaximumAge());
-                    block.setBlockData(ageable);
-                }
-            }
+        // Set block to wheat first
+        block.setType(Material.WHEAT);
+        
+        // Determine age based on growth stage
+        int targetAge = switch (plant.getGrowthStage()) {
+            case 0 -> 0;  // Seed
+            case 1 -> 2;  // Small
+            case 2 -> 4;  // Mid
+            case 3 -> 7;  // Full (max age)
+            default -> 0;
+        };
+        
+        // Apply age to the crop block
+        if (block.getBlockData() instanceof Ageable ageable) {
+            int age = Math.min(targetAge, ageable.getMaximumAge());
+            ageable.setAge(age);
+            block.setBlockData(ageable);
         }
     }
 

@@ -28,6 +28,8 @@ public class NPCListener implements Listener {
         this.packagingManager = packagingManager;
     }
 
+    // Using deprecated sendMessage and BungeeCord Chat API for Bukkit/Spigot compatibility
+    // Paper servers can replace with Adventure API's sendActionBar(Component) method
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {

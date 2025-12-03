@@ -18,8 +18,8 @@ public class MessageUtil {
         return ChatColor.stripColor(message);
     }
 
-    public static String formatMoney(double amount) {
-        return String.format("$%.2f", amount);
+    public static String formatMoney(double amount, String currencySymbol) {
+        return currencySymbol + String.format("%.2f", amount);
     }
 
     public static String createProgressBar(double progress, int length, String filledChar, String emptyChar) {

@@ -2,7 +2,6 @@ package com.budlords.listeners;
 
 import com.budlords.BudLords;
 import com.budlords.data.DataManager;
-import com.budlords.economy.EconomyManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

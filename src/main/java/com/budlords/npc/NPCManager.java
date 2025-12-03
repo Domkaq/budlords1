@@ -44,6 +44,8 @@ public class NPCManager {
         this.tradeCooldowns = new ConcurrentHashMap<>();
     }
 
+    // Using deprecated setCustomName() for Bukkit/Spigot compatibility
+    // Paper servers can replace with Adventure API's customName(Component) method
     @SuppressWarnings("deprecation")
     public void spawnMarketJoe(Location location) {
         Villager villager = (Villager) location.getWorld().spawnEntity(location, EntityType.VILLAGER);
@@ -59,6 +61,7 @@ public class NPCManager {
         pdc.set(npcTypeKey, PersistentDataType.STRING, "market_joe");
     }
 
+    // Using deprecated setCustomName() for Bukkit/Spigot compatibility
     @SuppressWarnings("deprecation")
     public void spawnBlackMarketJoe(Location location) {
         WanderingTrader trader = (WanderingTrader) location.getWorld().spawnEntity(location, EntityType.WANDERING_TRADER);

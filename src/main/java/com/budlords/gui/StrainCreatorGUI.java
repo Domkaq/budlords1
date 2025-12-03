@@ -30,6 +30,8 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    // Using deprecated createInventory(InventoryHolder, int, String) for Bukkit/Spigot compatibility
+    // Paper servers can replace with Adventure API's Component-based version
     @SuppressWarnings("deprecation")
     public void open(Player player) {
         StrainBuilder builder = new StrainBuilder();
@@ -229,6 +231,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         player.sendMessage("§7You received §e5 seeds§7 to get started!");
     }
 
+    // Using deprecated createInventory for Bukkit/Spigot compatibility
     @SuppressWarnings("deprecation")
     public void reopenForPlayer(Player player) {
         StrainBuilder builder = activeBuilders.get(player.getUniqueId());
