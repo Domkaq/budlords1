@@ -53,6 +53,65 @@ trading:
   # Cooldown after failed deal (seconds)
   failed-deal-cooldown-seconds: 30
 
+# Prestige System settings
+prestige:
+  # Enable prestige system
+  enabled: true
+  # Base cost for first prestige (doubles each level)
+  base-cost: 500000
+  # Maximum prestige level
+  max-level: 10
+  # Bonuses per prestige level
+  bonuses:
+    earnings-percent: 10     # +10% per level
+    growth-speed-percent: 5  # +5% per level
+    quality-percent: 8       # +8% per level
+    trade-success-percent: 2 # +2% per level
+
+# Challenge System settings
+challenges:
+  # Enable daily/weekly challenges
+  enabled: true
+  # Number of daily challenges
+  daily-count: 3
+  # Number of weekly challenges
+  weekly-count: 3
+
+# Random Events settings
+events:
+  # Enable random events
+  enabled: true
+  # Event probabilities per hour (0.0 to 1.0)
+  chances:
+    drought: 0.05
+    blight: 0.03
+    golden-hour: 0.08
+    nutrient-rain: 0.06
+    police-raid: 0.02
+    market-boom: 0.04
+
+# Crossbreeding settings
+crossbreed:
+  # Enable crossbreeding lab
+  enabled: true
+  # Base cost for crossbreeding
+  base-cost: 500
+  # Mutation chance (0.0 to 1.0)
+  mutation-chance: 0.05
+  # Bonus mutation chance when using legendary parents
+  legendary-mutation-bonus: 0.10
+
+# Ambient effects settings
+ambient:
+  # Enable ambient particle effects
+  enabled: true
+  # Fireflies at night near mature plants
+  fireflies: true
+  # Weather-based effects
+  weather-effects: true
+  # Pollen particles on healthy plants
+  pollen-effects: true
+
 # Rank progression (optional - uses defaults if not specified)
 # Uncomment and modify to customize ranks
 # ranks:

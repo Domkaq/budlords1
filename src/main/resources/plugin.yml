@@ -38,6 +38,27 @@ commands:
     description: Main BudLords command
     usage: /<command>
     permission: budlords.use
+  stats:
+    description: View your BudLords statistics
+    usage: /<command>
+    permission: budlords.use
+  prestige:
+    description: Open the prestige menu
+    usage: /<command>
+    permission: budlords.use
+  challenges:
+    description: View daily and weekly challenges
+    usage: /<command>
+    permission: budlords.use
+  crossbreed:
+    description: Open the crossbreeding lab
+    usage: /<command>
+    permission: budlords.use
+  leaderboard:
+    description: View server leaderboards
+    usage: /<command> [category]
+    aliases: [lb, top]
+    permission: budlords.use
 
 permissions:
   budlords.use:

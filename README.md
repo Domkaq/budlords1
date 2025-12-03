@@ -21,6 +21,11 @@ A comprehensive weed farming RPG + black market economy system for Minecraft Pap
 - Lamp glow effects based on ★ rating
 - Special legendary bud animations and effects
 - Harvest celebration particles
+- **Ambient Effects:**
+  - Fireflies around mature plants at night
+  - Pollen particles on healthy plants
+  - Weather-based visual effects
+  - Dynamic lighting for grow rooms
 
 ### 🧩 Modern GUI & UX
 - Redesigned **Strain Creator GUI** with visual feedback
@@ -37,6 +42,58 @@ Each strain has:
 - **Yield** - Number of buds produced (1-20)
 - **Packaging Quality** - Affects final sale value
 - **Seed Star Rating** - Quality of seeds created
+
+### 🧬 Crossbreeding Lab (NEW!)
+Create unique hybrid strains by combining existing ones:
+- Combine two parent strains to create hybrids
+- Hybrid traits are calculated from both parents
+- Small chance for rare **mutations** that boost stats
+- Discover new legendary strains!
+- Command: `/crossbreed`
+
+### 🏆 Prestige System (NEW!)
+Reset your progress for permanent bonuses:
+- 10 prestige levels available
+- Each level grants:
+  - +10% Earnings bonus
+  - +5% Growth speed
+  - +8% Quality bonus
+  - +2% Trade success
+- Keep your strains, stats, and achievements
+- Epic celebration effects on prestige
+
+### 📋 Daily & Weekly Challenges (NEW!)
+Stay engaged with rotating challenges:
+- 3 daily challenges (Easy, Medium, Hard)
+- 3 weekly challenges (Hard/Legendary difficulty)
+- Earn bonus money and XP
+- Variety of challenge types:
+  - Harvest plants, Roll joints
+  - Earn money, Get perfect harvests
+  - Complete trades, Crossbreed strains
+- Command: `/challenges`
+
+### 🎲 Random Events (NEW!)
+Exciting events that affect gameplay:
+- **Drought** - Water drains faster from plants
+- **Crop Blight** - Some plants lose quality
+- **Golden Hour** - All plants gain bonus quality
+- **Nutrient Rain** - Free water and nutrient boost
+- **Police Activity** - Trading is riskier
+- **Market Boom** - All products sell for 50% more!
+
+### 📊 Statistics & Leaderboards (NEW!)
+Track your BudLords journey:
+- Comprehensive stat tracking:
+  - Plants grown/harvested
+  - Trading success rate
+  - Joints rolled
+  - Crossbreeds created
+- BudLord Score ranking system
+- Server leaderboards for:
+  - Score, Earnings, Harvests
+  - Prestige level, Daily streak
+- Commands: `/stats`, `/leaderboard`
 
 ### 🧪 Strain Creator GUI (Admin)
 - Command: `/straincreator`
@@ -103,6 +160,8 @@ Success chance depends on:
 - Strain potency and rarity
 - Package weight
 - Trader type (black market bonus)
+- Active random events
+- Prestige bonuses
 - Failed deals result in a cooldown
 
 ### 🏆 Rank Progression
@@ -131,6 +190,11 @@ Ranks based on total earnings:
 | `/pay <player> <amount>` | Pay another player | `budlords.pay` |
 | `/package <amount>` | Package buds (1, 3, 5, or 10g) | `budlords.package` |
 | `/budlords` | View plugin help | `budlords.use` |
+| `/stats` | View your statistics | `budlords.use` |
+| `/prestige` | Open prestige menu | `budlords.use` |
+| `/challenges` | View daily/weekly challenges | `budlords.use` |
+| `/crossbreed` | Open crossbreeding lab | `budlords.use` |
+| `/leaderboard [type]` | View server leaderboards | `budlords.use` |
 
 ### Admin Commands
 | Command | Description | Permission |

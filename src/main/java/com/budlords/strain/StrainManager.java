@@ -240,4 +240,20 @@ public class StrainManager {
         }
         return id;
     }
+
+    /**
+     * Gets the strain ID from a seed item.
+     */
+    public String getStrainIdFromSeed(ItemStack item) {
+        if (!isSeedItem(item)) return null;
+        return getStrainIdFromItem(item);
+    }
+
+    /**
+     * Gets the star rating from a seed item.
+     */
+    public com.budlords.quality.StarRating getSeedRating(ItemStack item) {
+        if (!isSeedItem(item)) return null;
+        return getSeedStarRating(item);
+    }
 }
