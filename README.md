@@ -53,7 +53,11 @@ Each strain has:
 
 ### 🧑‍🌾 NPC Trading System
 - **Market Joe** - Farmer villager NPC (`/spawnmarket`)
+  - Opens a **Shop GUI** to buy farming equipment (pots, watering cans, scissors)
+  - Also accepts packaged products for sale
 - **BlackMarket Joe** - Wandering trader NPC (`/spawnblackmarket`)
+  - Pays premium for rare strains
+  - **Does NOT buy seeds** - Only accepts packaged buds
 - Village vendors (any unemployed villager)
 - Dynamic pricing based on strain value and ★ rating
 

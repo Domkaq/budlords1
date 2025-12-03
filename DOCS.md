@@ -281,10 +281,19 @@ Spawn Market Joe at your location.
 - NPC is invulnerable and stationary
 - Permission: `budlords.admin`
 
+**Market Joe Shop:**
+When you interact with Market Joe without holding a packaged product, a shop GUI opens where you can purchase:
+- **Growing Pots** (★1-5) - Essential for growing plants
+- **Watering Cans** (★1-5) - Water your plants efficiently
+- **Harvest Scissors** (★1-5) - Better harvests and bonus drops
+
+Prices scale with star rating (higher ★ = better quality but more expensive).
+
 #### `/spawnblackmarket`
 Spawn BlackMarket Joe at your location.
 - Creates a wandering trader NPC
 - Pays premium for rare strains
+- **Does NOT buy seeds** - Only accepts packaged buds
 - NPC is invulnerable and stationary
 - Permission: `budlords.admin`
 
