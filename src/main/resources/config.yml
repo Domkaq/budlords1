@@ -1,0 +1,95 @@
+# ===================================
+# BudLords Configuration
+# ===================================
+
+# Autosave interval in seconds (default: 300 = 5 minutes)
+autosave-interval-seconds: 300
+
+# Economy settings
+economy:
+  # Currency symbol
+  currency-symbol: "$"
+  # Starting balance for new players
+  starting-balance: 0.0
+
+# Farming settings
+farming:
+  # How often to check for plant growth (seconds)
+  growth-check-interval-seconds: 60
+  # Time between growth stages (seconds)
+  growth-interval-seconds: 300
+  # Particle effect interval (ticks, 20 = 1 second)
+  particle-interval-ticks: 40
+
+# Packaging multipliers
+# Value = base price × multiplier
+packaging:
+  multipliers:
+    1g: 1.0
+    3g: 1.25
+    5g: 1.5
+    10g: 2.0
+
+# Trading settings
+trading:
+  # Cooldown after failed deal (seconds)
+  failed-deal-cooldown-seconds: 30
+
+# Rank progression (optional - uses defaults if not specified)
+# Uncomment and modify to customize ranks
+# ranks:
+#   rank1:
+#     name: "Novice"
+#     required-earnings: 0
+#     success-chance-bonus: 0.7
+#     unlocked-strains: []
+#   rank2:
+#     name: "Dealer"
+#     required-earnings: 1000
+#     success-chance-bonus: 0.75
+#     unlocked-strains:
+#       - "og_kush"
+#       - "purple_haze"
+#   rank3:
+#     name: "Supplier"
+#     required-earnings: 5000
+#     success-chance-bonus: 0.8
+#     unlocked-strains:
+#       - "og_kush"
+#       - "purple_haze"
+#       - "white_widow"
+#   rank4:
+#     name: "Distributor"
+#     required-earnings: 15000
+#     success-chance-bonus: 0.85
+#     unlocked-strains:
+#       - "og_kush"
+#       - "purple_haze"
+#       - "white_widow"
+#   rank5:
+#     name: "Kingpin"
+#     required-earnings: 50000
+#     success-chance-bonus: 0.9
+#     unlocked-strains:
+#       - "og_kush"
+#       - "purple_haze"
+#       - "white_widow"
+#       - "northern_lights"
+#   rank6:
+#     name: "Cartel Boss"
+#     required-earnings: 150000
+#     success-chance-bonus: 0.95
+#     unlocked-strains:
+#       - "og_kush"
+#       - "purple_haze"
+#       - "white_widow"
+#       - "northern_lights"
+#   rank7:
+#     name: "BudLord"
+#     required-earnings: 500000
+#     success-chance-bonus: 1.0
+#     unlocked-strains:
+#       - "og_kush"
+#       - "purple_haze"
+#       - "white_widow"
+#       - "northern_lights"
