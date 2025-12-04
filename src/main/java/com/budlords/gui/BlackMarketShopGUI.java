@@ -372,19 +372,32 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
         // Parse item ID to determine what to give
         if (itemId.startsWith("seed_") || itemId.startsWith("rare_seed_")) {
             // Parse: seed_strainid_stars or rare_seed_strainid_stars
-            String[] parts = itemId.split("_");
-            if (parts.length >= 3) {
+            // Note: strain IDs can contain underscores, so we need to find the last underscore
+            // which separates the star rating from the strain ID
+            try {
                 String strainId;
                 int starRating;
                 
                 if (itemId.startsWith("rare_seed_")) {
-                    // rare_seed_strainid_stars
-                    strainId = parts[2];
-                    starRating = Integer.parseInt(parts[3]);
+                    // rare_seed_strainid_stars - remove "rare_seed_" prefix
+                    String remainder = itemId.substring(10); // Remove "rare_seed_"
+                    int lastUnderscore = remainder.lastIndexOf('_');
+                    if (lastUnderscore > 0) {
+                        strainId = remainder.substring(0, lastUnderscore);
+                        starRating = Integer.parseInt(remainder.substring(lastUnderscore + 1));
+                    } else {
+                        return;
+                    }
                 } else {
-                    // seed_strainid_stars
-                    strainId = parts[1];
-                    starRating = Integer.parseInt(parts[2]);
+                    // seed_strainid_stars - remove "seed_" prefix
+                    String remainder = itemId.substring(5); // Remove "seed_"
+                    int lastUnderscore = remainder.lastIndexOf('_');
+                    if (lastUnderscore > 0) {
+                        strainId = remainder.substring(0, lastUnderscore);
+                        starRating = Integer.parseInt(remainder.substring(lastUnderscore + 1));
+                    } else {
+                        return;
+                    }
                 }
                 
                 Strain strain = strainManager.getStrain(strainId);
@@ -392,7 +405,13 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                     StarRating rating = StarRating.fromValue(starRating);
                     purchasedItem = strainManager.createSeedItem(strain, 1, rating);
                     itemName = strain.getName() + " Seed " + rating.getDisplay();
+                } else {
+                    player.sendMessage("§cError: Strain not found!");
+                    return;
                 }
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse star rating from item ID: " + itemId);
+                return;
             }
         } else if (itemId.startsWith("fertilizer_")) {
             int star = Integer.parseInt(itemId.substring(11));
