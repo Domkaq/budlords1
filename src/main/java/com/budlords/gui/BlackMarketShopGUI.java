@@ -47,6 +47,12 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
     private static final double FERTILIZER_BASE_PRICE = 50.0;
     private static final double GROW_LAMP_BASE_PRICE = 150.0;
     
+    // Default strains that are NOT crossbred (base game strains)
+    // These are strains that come with the plugin, not created via crossbreeding
+    private static final Set<String> DEFAULT_STRAIN_IDS = Set.of(
+        "og_kush", "purple_haze", "white_widow", "northern_lights"
+    );
+    
     // Shop categories
     public enum ShopCategory {
         MAIN("§5§l☠ BlackMarket Joe"),
@@ -260,11 +266,9 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
      */
     private boolean isCrossbredStrain(Strain strain) {
         String id = strain.getId();
-        // Default strains that are not crossbred
-        Set<String> defaultStrains = Set.of("og_kush", "purple_haze", "white_widow", "northern_lights");
         
         // If it's a default strain, it's not crossbred
-        if (defaultStrains.contains(id)) {
+        if (DEFAULT_STRAIN_IDS.contains(id)) {
             return false;
         }
         

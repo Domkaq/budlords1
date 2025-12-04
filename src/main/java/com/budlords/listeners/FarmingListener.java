@@ -67,10 +67,11 @@ public class FarmingListener implements Listener {
                 return;
             }
             
-            // Fill the can
+            // Fill the can (fills to full)
             ItemStack filledCan = qim.fillWateringCan(itemInHand);
             player.getInventory().setItemInMainHand(filledCan);
-            player.sendMessage("§bFilled watering can! §7(" + maxCapacity + "/" + maxCapacity + " water)");
+            // After filling, water level is maxCapacity
+            player.sendMessage("§bWatering can filled! §7Water: " + maxCapacity + "/" + maxCapacity);
             player.playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL, 0.5f, 1.2f);
         }
     }

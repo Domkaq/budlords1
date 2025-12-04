@@ -264,6 +264,7 @@ public class ChallengeManager implements InventoryHolder {
     /**
      * Gets the rank-based multiplier for scaling challenge targets.
      * Higher rank players get higher challenge targets but also higher rewards.
+     * Uses rank index rather than names to be more maintainable.
      */
     private double getRankScaleMultiplier(Player player) {
         if (plugin.getRankManager() == null) return 1.0;
@@ -271,17 +272,24 @@ public class ChallengeManager implements InventoryHolder {
         Rank rank = plugin.getRankManager().getRank(player);
         if (rank == null) return 1.0;
         
-        // Scale based on rank name (or could use required earnings)
-        String rankName = rank.name();
-        return switch (rankName) {
-            case "Novice" -> 0.5;      // Easier challenges for new players
-            case "Dealer" -> 0.75;
-            case "Supplier" -> 1.0;
-            case "Distributor" -> 1.25;
-            case "Kingpin" -> 1.5;
-            case "Cartel Boss" -> 1.75;
-            case "BudLord" -> 2.0;     // Harder challenges for top players
-            default -> 1.0;
+        // Get rank index from the list of all ranks
+        java.util.List<Rank> allRanks = plugin.getRankManager().getAllRanks();
+        int rankIndex = allRanks.indexOf(rank);
+        
+        if (rankIndex < 0) return 1.0;
+        
+        // Scale based on rank position (0 to N)
+        // Lower ranks (0-1) get easier challenges
+        // Middle ranks (2-3) get normal challenges
+        // Higher ranks (4+) get harder challenges with better rewards
+        return switch (rankIndex) {
+            case 0 -> 0.5;      // First rank - easier challenges
+            case 1 -> 0.75;     // Second rank
+            case 2 -> 1.0;      // Third rank - base difficulty
+            case 3 -> 1.25;     // Fourth rank
+            case 4 -> 1.5;      // Fifth rank
+            case 5 -> 1.75;     // Sixth rank
+            default -> Math.min(2.0, 1.0 + (rankIndex - 2) * 0.25); // Higher ranks scale further
         };
     }
     
@@ -306,8 +314,8 @@ public class ChallengeManager implements InventoryHolder {
             scaledTarget,
             scaledReward,
             scaledXP,
-            baseChallenge.getRequiredStrain(),
-            baseChallenge.getExpiration()
+            baseChallenge.getRewardItem(),
+            baseChallenge.getExpirationTime()
         );
     }
 
