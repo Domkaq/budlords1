@@ -217,12 +217,12 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§7  Prestige Level: §d" + stats.getPrestigeLevel());
         sender.sendMessage("§7  Plants Grown: §e" + stats.getTotalPlantsGrown());
         sender.sendMessage("§7  Plants Harvested: §e" + stats.getTotalPlantsHarvested());
-        sender.sendMessage("§7  Successful Sales: §a" + stats.getSuccessfulSales());
-        sender.sendMessage("§7  Failed Sales: §c" + stats.getFailedSales());
+        sender.sendMessage("§7  Successful Sales: §a" + stats.getTotalSalesSuccess());
+        sender.sendMessage("§7  Failed Sales: §c" + stats.getTotalSalesFailed());
         sender.sendMessage("§7  Highest Single Sale: §6$" + String.format("%,.2f", stats.getHighestSingleSale()));
         sender.sendMessage("§7  Joints Rolled: §e" + stats.getJointsRolled());
         sender.sendMessage("§7  Crossbreeds: §d" + stats.getCrossbreeds());
-        sender.sendMessage("§7  Legendary Strains: §6" + stats.getLegendaryStrains());
+        sender.sendMessage("§7  Legendary Strains: §6" + stats.getLegendaryStrainsDiscovered());
         sender.sendMessage("§7  6-Star Strains: §d§l" + stats.getSixStarStrains());
         sender.sendMessage("§8§m════════════════════════════════════════");
     }
@@ -304,8 +304,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             boolean canSellTo = plugin.getConfig().getBoolean("trading.allowed-mobs." + type.toLowerCase(), false);
             
             // Check special NPC types
-            if (plugin.getNPCManager() != null) {
-                var npcType = plugin.getNPCManager().getNPCType(entity);
+            if (plugin.getNpcManager() != null) {
+                var npcType = plugin.getNpcManager().getNPCType(entity);
                 if (npcType != null) {
                     canSellTo = true;
                     type = npcType.name();

@@ -706,6 +706,26 @@ public class FarmingManager {
         return Collections.unmodifiableCollection(plants.values());
     }
     
+    /**
+     * Gets all plants within a certain radius of a location.
+     * @param location The center location
+     * @param radius The radius in blocks
+     * @return List of plants within the radius
+     */
+    public List<Plant> getNearbyPlants(Location location, int radius) {
+        List<Plant> nearbyPlants = new ArrayList<>();
+        for (Plant plant : plants.values()) {
+            Location plantLoc = plant.getLocation();
+            if (plantLoc.getWorld().equals(location.getWorld())) {
+                double distance = plantLoc.distance(location);
+                if (distance <= radius) {
+                    nearbyPlants.add(plant);
+                }
+            }
+        }
+        return nearbyPlants;
+    }
+    
     // ====== POT MANAGEMENT ======
     
     private void loadPots() {
