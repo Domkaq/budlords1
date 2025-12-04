@@ -127,7 +127,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 Arrays.asList(
                     "§7Quality: " + rating.getDisplay(),
                     "",
-                    "§7Water Efficiency: §a" + String.format("%.0f%%", (star * 15) + 70),
+                    "§7Water Efficiency: §a" + String.format("%.0f%%", (double) ((star * 15) + 70)),
                     "§7Capacity: §e" + (star * 5) + " uses",
                     "",
                     "§7Price: §e" + economyManager.formatMoney(price),
@@ -149,9 +149,9 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 Arrays.asList(
                     "§7Quality: " + rating.getDisplay(),
                     "",
-                    "§7Yield Bonus: §a+" + String.format("%.0f%%", (star - 1) * 10),
-                    "§7Quality Upgrade: §a" + String.format("%.0f%%", star * 4) + " chance",
-                    "§7Rare Drop: §a" + String.format("%.0f%%", star * 2) + " chance",
+                    "§7Yield Bonus: §a+" + String.format("%.0f%%", (double) ((star - 1) * 10)),
+                    "§7Quality Upgrade: §a" + String.format("%.0f%%", (double) (star * 4)) + " chance",
+                    "§7Rare Drop: §a" + String.format("%.0f%%", (double) (star * 2)) + " chance",
                     "",
                     "§7Price: §e" + economyManager.formatMoney(price),
                     "",
