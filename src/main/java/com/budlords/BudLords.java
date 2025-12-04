@@ -55,6 +55,7 @@ public class BudLords extends JavaPlugin {
     private RandomEventManager randomEventManager;
     private CrossbreedManager crossbreedManager;
     private AmbientEffectsManager ambientEffectsManager;
+    private com.budlords.joint.JointEffectsManager jointEffectsManager;
 
     @Override
     public void onEnable() {
@@ -85,6 +86,7 @@ public class BudLords extends JavaPlugin {
             this.randomEventManager = new RandomEventManager(this, farmingManager);
             this.crossbreedManager = new CrossbreedManager(this, strainManager, economyManager, statsManager);
             this.ambientEffectsManager = new AmbientEffectsManager(this, farmingManager, strainManager);
+            this.jointEffectsManager = new com.budlords.joint.JointEffectsManager(this);
             
             // Register commands
             registerCommands();
@@ -101,6 +103,7 @@ public class BudLords extends JavaPlugin {
             getLogger().info("★ Star Quality System enabled!");
             getLogger().info("✦ Drag-and-Drop Packaging enabled!");
             getLogger().info("✦ Joint Rolling Minigame enabled!");
+            getLogger().info("✦ Joint Smoking Effects enabled!");
             getLogger().info("✦ Prestige System enabled!");
             getLogger().info("✦ Daily Challenges enabled!");
             getLogger().info("✦ Random Events enabled!");
@@ -284,5 +287,9 @@ public class BudLords extends JavaPlugin {
     
     public AmbientEffectsManager getAmbientEffectsManager() {
         return ambientEffectsManager;
+    }
+    
+    public com.budlords.joint.JointEffectsManager getJointEffectsManager() {
+        return jointEffectsManager;
     }
 }
