@@ -88,7 +88,7 @@ public class QualityItemManager {
             List<String> lore = new ArrayList<>();
             lore.add("§7Quality: " + rating.getDisplay());
             lore.add("");
-            lore.add("§7Water Efficiency: §a" + String.format("%.0f%%", (rating.getStars() * 15) + 70));
+            lore.add("§7Water Efficiency: §a" + String.format("%.0f%%", (double) ((rating.getStars() * 15) + 70)));
             lore.add("§7Capacity: §e" + (rating.getStars() * 5) + " uses");
             lore.add("");
             lore.add("§7Right-click on water to fill");

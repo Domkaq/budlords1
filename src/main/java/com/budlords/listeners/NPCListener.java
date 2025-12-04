@@ -1,6 +1,7 @@
 package com.budlords.listeners;
 
 import com.budlords.economy.EconomyManager;
+import com.budlords.gui.BlackMarketShopGUI;
 import com.budlords.gui.MarketShopGUI;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
@@ -22,16 +23,19 @@ public class NPCListener implements Listener {
     private final RankManager rankManager;
     private final PackagingManager packagingManager;
     private final MarketShopGUI marketShopGUI;
+    private final BlackMarketShopGUI blackMarketShopGUI;
     private final StrainManager strainManager;
 
     public NPCListener(NPCManager npcManager, EconomyManager economyManager, 
                        RankManager rankManager, PackagingManager packagingManager,
-                       MarketShopGUI marketShopGUI, StrainManager strainManager) {
+                       MarketShopGUI marketShopGUI, BlackMarketShopGUI blackMarketShopGUI,
+                       StrainManager strainManager) {
         this.npcManager = npcManager;
         this.economyManager = economyManager;
         this.rankManager = rankManager;
         this.packagingManager = packagingManager;
         this.marketShopGUI = marketShopGUI;
+        this.blackMarketShopGUI = blackMarketShopGUI;
         this.strainManager = strainManager;
     }
 
@@ -82,8 +86,14 @@ public class NPCListener implements Listener {
                 marketShopGUI.open(player);
                 return;
             }
+            
+            // BlackMarket Joe opens his shop GUI when not holding packaged product
+            if (npcType == NPCManager.NPCType.BLACKMARKET_JOE) {
+                blackMarketShopGUI.open(player);
+                return;
+            }
 
-            // Show trader info for other traders
+            // Show trader info for Village Vendors
             String traderName = switch (npcType) {
                 case MARKET_JOE -> "§a§lMarket Joe";
                 case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
@@ -97,9 +107,7 @@ public class NPCListener implements Listener {
             player.sendMessage("§7Use §f/package <amount>§7 to package buds.");
             player.sendMessage("");
 
-            if (npcType == NPCManager.NPCType.BLACKMARKET_JOE) {
-                player.sendMessage("§5§oBetter prices for rare strains...");
-            } else if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {
+            if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {
                 player.sendMessage("§e§oLower prices, but always willing to buy.");
             }
         }
