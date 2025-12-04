@@ -33,6 +33,7 @@ public class Fertilizer {
             case THREE_STAR -> 0.35;
             case FOUR_STAR -> 0.50;
             case FIVE_STAR -> 0.70;
+            case SIX_STAR -> 1.00;
         };
     }
 
