@@ -113,14 +113,27 @@ public class JointEffectsManager implements Listener {
         // Play smoking animation
         playSmokingAnimation(player, session);
 
-        // Apply effects
+        // Apply base high effects
         applyHighEffects(player, session);
+        
+        // Apply strain-specific special effects!
+        if (strain != null && plugin.getStrainEffectsManager() != null) {
+            plugin.getStrainEffectsManager().applyStrainEffects(player, strain, rating, totalDuration);
+        }
 
         // Send message
         player.sendMessage("");
         player.sendMessage("§a§l✦ " + strainName + " Joint " + rating.getDisplay());
         player.sendMessage("§7You take a deep hit...");
         player.sendMessage("§7Potency: §e" + potency + "% §7| Duration: §e" + (totalDuration / 20) + "s");
+        
+        // Show active strain effects
+        if (strain != null && !strain.getEffects().isEmpty()) {
+            player.sendMessage("§dSpecial Effects Active:");
+            for (com.budlords.effects.StrainEffect effect : strain.getEffects()) {
+                player.sendMessage("  " + effect.getCompactDisplay());
+            }
+        }
         player.sendMessage("");
 
         // Update stats

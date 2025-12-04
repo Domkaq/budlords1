@@ -38,6 +38,7 @@ public class CrossbreedManager implements InventoryHolder {
     private final double baseCrossbreedCost;
     private final double mutationChance;
     private final double legendaryMutationBonus;
+    private final double effectInheritanceChance;
 
     public CrossbreedManager(BudLords plugin, StrainManager strainManager, 
                              EconomyManager economyManager, StatsManager statsManager) {
@@ -51,6 +52,7 @@ public class CrossbreedManager implements InventoryHolder {
         this.baseCrossbreedCost = plugin.getConfig().getDouble("crossbreed.base-cost", 500.0);
         this.mutationChance = plugin.getConfig().getDouble("crossbreed.mutation-chance", 0.05);
         this.legendaryMutationBonus = plugin.getConfig().getDouble("crossbreed.legendary-mutation-bonus", 0.10);
+        this.effectInheritanceChance = plugin.getConfig().getDouble("effects.inheritance-chance", 0.5);
     }
 
     /**
@@ -349,6 +351,10 @@ public class CrossbreedManager implements InventoryHolder {
                 : parent2.getIconMaterial()
         );
         
+        // Inherit effects from parents!
+        List<com.budlords.effects.StrainEffect> inheritedEffects = crossbreedEffects(parent1, parent2, result.hasMutation);
+        newStrain.setEffects(inheritedEffects);
+        
         // Register the new strain
         strainManager.registerStrain(newStrain);
         strainManager.saveStrains();
@@ -387,12 +393,71 @@ public class CrossbreedManager implements InventoryHolder {
         player.sendMessage("§d§l║ §7Potency: §e" + result.potency + "%");
         player.sendMessage("§d§l║ §7Yield: §e" + result.yield + " buds");
         player.sendMessage("§d§l║ §7Seed Quality: " + result.seedRating.getDisplay());
+        if (!inheritedEffects.isEmpty()) {
+            player.sendMessage("§d§l║ §d✦ Inherited " + inheritedEffects.size() + " effect(s)!");
+        }
         if (result.hasMutation) {
             player.sendMessage("§d§l║ §6✦ MUTATION BONUS APPLIED!");
         }
         player.sendMessage("§d§l╚══════════════════════════════════╝");
         player.sendMessage("§eYou received §a3 seeds §eof your new strain!");
         player.sendMessage("");
+    }
+    
+    /**
+     * Crossbreeds effects from two parent strains.
+     * - Each parent has a chance to pass effects to offspring
+     * - Mutations can create new random effects
+     */
+    private List<com.budlords.effects.StrainEffect> crossbreedEffects(Strain parent1, Strain parent2, boolean hasMutation) {
+        List<com.budlords.effects.StrainEffect> result = new ArrayList<>();
+        Set<com.budlords.effects.StrainEffectType> usedTypes = new java.util.HashSet<>();
+        
+        // Each effect from parent 1 has configurable chance to be inherited
+        for (com.budlords.effects.StrainEffect effect : parent1.getEffects()) {
+            if (result.size() >= Strain.MAX_EFFECTS) break;
+            if (ThreadLocalRandom.current().nextDouble() < effectInheritanceChance) {
+                if (!usedTypes.contains(effect.getType())) {
+                    result.add(effect.copy());
+                    usedTypes.add(effect.getType());
+                }
+            }
+        }
+        
+        // Each effect from parent 2 has configurable chance to be inherited
+        for (com.budlords.effects.StrainEffect effect : parent2.getEffects()) {
+            if (result.size() >= Strain.MAX_EFFECTS) break;
+            if (ThreadLocalRandom.current().nextDouble() < effectInheritanceChance) {
+                if (!usedTypes.contains(effect.getType())) {
+                    result.add(effect.copy());
+                    usedTypes.add(effect.getType());
+                }
+            }
+        }
+        
+        // If mutation occurred, possibly add a new random effect
+        if (hasMutation && result.size() < Strain.MAX_EFFECTS) {
+            com.budlords.effects.StrainEffectType[] allTypes = com.budlords.effects.StrainEffectType.values();
+            // Try to find a new effect
+            for (int attempt = 0; attempt < 10; attempt++) {
+                com.budlords.effects.StrainEffectType randomType = allTypes[ThreadLocalRandom.current().nextInt(allTypes.length)];
+                if (!usedTypes.contains(randomType)) {
+                    // Mutated effects get random intensity
+                    int intensity = 2 + ThreadLocalRandom.current().nextInt(3);
+                    result.add(new com.budlords.effects.StrainEffect(randomType, intensity));
+                    break;
+                }
+            }
+        }
+        
+        // Possibly mutate existing effects
+        for (int i = 0; i < result.size(); i++) {
+            if (ThreadLocalRandom.current().nextDouble() < 0.1) { // 10% chance per effect
+                result.set(i, result.get(i).mutate());
+            }
+        }
+        
+        return result;
     }
 
     private void playCrossbreedCelebration(Player player, CrossbreedResult result) {

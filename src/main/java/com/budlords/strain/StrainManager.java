@@ -46,9 +46,13 @@ public class StrainManager {
                 int packagingQuality = strainSection.getInt("packaging-quality", 50);
                 String materialStr = strainSection.getString("icon", "GREEN_DYE");
                 Material iconMaterial = Material.valueOf(materialStr.toUpperCase());
+                
+                // Load effects
+                String effectsData = strainSection.getString("effects", "");
 
                 Strain strain = new Strain(id, name, rarity, potency, yield, packagingQuality);
                 strain.setIconMaterial(iconMaterial);
+                strain.deserializeEffects(effectsData);
                 strains.put(id, strain);
                 
             } catch (Exception e) {
@@ -59,10 +63,27 @@ public class StrainManager {
 
     private void ensureDefaultStrains() {
         if (strains.isEmpty()) {
-            registerStrain(new Strain("og_kush", "OG Kush", Strain.Rarity.COMMON, 40, 3, 50));
-            registerStrain(new Strain("purple_haze", "Purple Haze", Strain.Rarity.UNCOMMON, 60, 4, 65));
-            registerStrain(new Strain("white_widow", "White Widow", Strain.Rarity.RARE, 75, 5, 80));
-            registerStrain(new Strain("northern_lights", "Northern Lights", Strain.Rarity.LEGENDARY, 95, 7, 95));
+            // Create default strains with effects
+            Strain ogKush = new Strain("og_kush", "OG Kush", Strain.Rarity.COMMON, 40, 3, 50);
+            ogKush.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MUNCHIES, 2));
+            registerStrain(ogKush);
+            
+            Strain purpleHaze = new Strain("purple_haze", "Purple Haze", Strain.Rarity.UNCOMMON, 60, 4, 65);
+            purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.RAINBOW_AURA, 3));
+            purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DRUNK_VISION, 2));
+            registerStrain(purpleHaze);
+            
+            Strain whiteWidow = new Strain("white_widow", "White Widow", Strain.Rarity.RARE, 75, 5, 80);
+            whiteWidow.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SPEED_DEMON, 3));
+            whiteWidow.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.THIRD_EYE, 3));
+            registerStrain(whiteWidow);
+            
+            Strain northernLights = new Strain("northern_lights", "Northern Lights", Strain.Rarity.LEGENDARY, 95, 7, 95);
+            northernLights.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.AURORA_BOREALIS, 5));
+            northernLights.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.CELESTIAL_BEING, 4));
+            northernLights.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ENLIGHTENMENT, 4));
+            registerStrain(northernLights);
+            
             saveStrains();
         }
     }
@@ -82,6 +103,7 @@ public class StrainManager {
         config.set(path + ".yield", strain.getYield());
         config.set(path + ".packaging-quality", strain.getPackagingQuality());
         config.set(path + ".icon", strain.getIconMaterial().name());
+        config.set(path + ".effects", strain.serializeEffects());
     }
 
     public void saveStrains() {
@@ -129,6 +151,16 @@ public class StrainManager {
             lore.add("§7Rarity: " + strain.getRarity().getDisplayName());
             lore.add("§7Potency: §e" + strain.getPotency() + "%");
             lore.add("§7Yield: §e" + strain.getYield() + " buds");
+            
+            // Add effects to lore
+            if (!strain.getEffects().isEmpty()) {
+                lore.add("");
+                lore.add("§d§lSpecial Effects:");
+                for (com.budlords.effects.StrainEffect effect : strain.getEffects()) {
+                    lore.add("  " + effect.getLoreDisplay());
+                }
+            }
+            
             lore.add("");
             lore.add("§7Plant in a Growing Pot!");
             lore.add("");
@@ -157,6 +189,16 @@ public class StrainManager {
             lore.add("§7Rarity: " + strain.getRarity().getDisplayName());
             lore.add("§7Potency: §e" + strain.getPotency() + "%");
             lore.add("§7Packaging Quality: §e" + strain.getPackagingQuality() + "%");
+            
+            // Add effects to lore
+            if (!strain.getEffects().isEmpty()) {
+                lore.add("");
+                lore.add("§d§lSpecial Effects:");
+                for (com.budlords.effects.StrainEffect effect : strain.getEffects()) {
+                    lore.add("  " + effect.getLoreDisplay());
+                }
+            }
+            
             lore.add("");
             lore.add("§7Use §f/package §7to package for sale");
             lore.add("");

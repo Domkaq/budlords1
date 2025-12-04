@@ -42,12 +42,36 @@ Each strain has:
 - **Yield** - Number of buds produced (1-20)
 - **Packaging Quality** - Affects final sale value
 - **Seed Star Rating** - Quality of seeds created
+- **Special Effects** - Up to 5 unique visual and gameplay effects!
+
+### ✨ Strain Effects System (NEW!)
+Each strain can have up to 5 unique special effects that activate when consumed:
+
+**60+ Available Effects in 11 Categories:**
+- **🔥 Transformation**: Ghost Rider (flaming head!), Shadow Walker, Angel Wings, Demon Horns
+- **🌈 Visual**: Rainbow Aura, Galaxy Portal, Sparkling Eyes, Frost Aura
+- **💨 Movement**: Speed Demon, Bunny Hop, Moon Gravity, Dolphin Swim, Fire Trail, Rocket Boost
+- **👁 Perception**: Third Eye, Matrix Vision, Thermal Vision, Eagle Sight, Drunk Vision
+- **🎮 Gameplay**: Lucky Charm, Midas Touch, Green Thumb, Iron Lungs, Munchies
+- **⚔ Combat**: Berserker, Tank Mode, Ninja Mode, Vampire (lifesteal!), Thorns
+- **🎉 Fun**: Disco Fever, Confetti, Bubble Aura, Heart Trail, Music Notes
+- **🌿 Nature**: Flower Power, Storm Caller, Aurora Borealis, Wind Walker
+- **🔮 Mystical**: Astral Projection, Time Warp, Dream State, Meditation, Enlightenment
+- **⭐ Legendary**: Phoenix Rebirth, Dragon Breath, Void Walker, Celestial Being, Reality Bender
+
+**Effect Features:**
+- Visual particle effects (fire, sparkles, auras, trails)
+- Gameplay modifiers (speed, strength, regeneration, etc.)
+- Each effect has 1-5 intensity levels
+- Effects are inherited and combined during crossbreeding!
+- Mutations can create new random effects
 
 ### 🧬 Crossbreeding Lab (NEW!)
 Create unique hybrid strains by combining existing ones:
 - Combine two parent strains to create hybrids
 - Hybrid traits are calculated from both parents
-- Small chance for rare **mutations** that boost stats
+- **Effects are inherited from both parents!**
+- Small chance for rare **mutations** that boost stats and add new effects
 - Discover new legendary strains!
 - Command: `/crossbreed`
 
@@ -101,7 +125,10 @@ Track your BudLords journey:
 - Rename strain with chat input → automatically returns to GUI
 - Adjust stats with visual feedback
 - Select seed star rating
-- Save and register new strains
+- **Select up to 5 special effects from 60+ options!**
+- Browse effects by category (Visual, Movement, Combat, etc.)
+- Adjust effect intensity levels
+- Save and register new strains with all effects
 
 ### 💰 Custom Economy System
 - No Vault dependency required
