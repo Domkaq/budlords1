@@ -85,19 +85,25 @@ public class Strain {
     }
 
     public enum Rarity {
-        COMMON("§7Common"),
-        UNCOMMON("§aUncommon"),
-        RARE("§9Rare"),
-        LEGENDARY("§6Legendary");
+        COMMON("§7Common", "§7"),
+        UNCOMMON("§aUncommon", "§a"),
+        RARE("§9Rare", "§9"),
+        LEGENDARY("§6Legendary", "§6");
 
         private final String displayName;
+        private final String colorCode;
 
-        Rarity(String displayName) {
+        Rarity(String displayName, String colorCode) {
             this.displayName = displayName;
+            this.colorCode = colorCode;
         }
 
         public String getDisplayName() {
             return displayName;
+        }
+
+        public String getColorCode() {
+            return colorCode;
         }
 
         public Rarity next() {
