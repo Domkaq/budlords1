@@ -18,7 +18,7 @@ Ez az útmutató elmagyarázza, hogyan működik a BudLords plugin és hogyan tu
 **Két módszer létezik:**
 
 #### Cserépalapú rendszer (Ajánlott)
-1. Szerezz egy **Growing Pot** (Növesztőcserép) ★-ot
+1. Szerezz egy **Growing Pot** (Növesztőcserép) ★-t
 2. Helyezd le a cserepet egy szilárd felületre (jobb klikk)
 3. Tartsd a magokat a kezedben
 4. Jobb klikk a cserépre az ültetéshez
@@ -50,7 +50,7 @@ A növények 4 szakaszon mennek át:
 Amikor a növény **Mature** (érett) állapotba kerül:
 
 **Ollóval (Ajánlott):**
-- Használj **Harvest Scissors** ★-ot
+- Használj **Harvest Scissors** ★-t
 - Jobb klikk az érett növényre
 - Bónusz hozam és minőség!
 
@@ -125,7 +125,7 @@ Minden felszerelésnek 1-5 csillagos minősége van:
 
 ## 🚬 Joint Sodró Minijáték
 
-1. Vegyél **Grinder**-t és **Tobacco**-t Market Joe-tól
+1. Vegyél **Grinder**-t és **tobacco**-t Market Joe-tól
 2. Őröld meg a budokat (jobb klikk grinderrel bud tartása közben)
 3. Jobb klikk az őrölt buddal (sodrópapír és dohány legyen az inventoryban)
 4. Végezd el a 4 szakaszos minijátékot!
