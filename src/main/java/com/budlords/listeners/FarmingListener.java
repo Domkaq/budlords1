@@ -509,7 +509,7 @@ public class FarmingListener implements Listener {
                                     player.getWorld().dropItemNaturally(player.getLocation(), i)
                                 );
                             }
-                            player.sendMessage("§7Returned lamp: " + lamp.getItemMeta().getDisplayName());
+                            player.sendMessage("§7Returned lamp: " + plant.getLampRating().getDisplay());
                         }
                     }
                     
@@ -601,40 +601,8 @@ public class FarmingListener implements Listener {
             );
         }
         
-        // Update stats
-        if (plugin.getStatsManager() != null) {
-            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
-            stats.incrementPlantsHarvested();
-            
-            if (finalRating == StarRating.FIVE_STAR) {
-                stats.incrementFiveStarBuds();
-            }
-            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
-                stats.incrementLegendaryBuds();
-            }
-            if (plant.getQuality() >= 90) {
-                stats.incrementPerfectHarvests();
-            }
-        }
-        
-        // Update challenge progress
-        if (plugin.getChallengeManager() != null) {
-            plugin.getChallengeManager().updateProgress(player, 
-                com.budlords.challenges.Challenge.ChallengeType.HARVEST_PLANTS, 1);
-            
-            if (finalRating == StarRating.FIVE_STAR) {
-                plugin.getChallengeManager().updateProgress(player, 
-                    com.budlords.challenges.Challenge.ChallengeType.FIVE_STAR_BUDS, 1);
-            }
-            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
-                plugin.getChallengeManager().updateProgress(player, 
-                    com.budlords.challenges.Challenge.ChallengeType.LEGENDARY_HARVESTS, 1);
-            }
-            if (plant.getQuality() >= 90) {
-                plugin.getChallengeManager().updateProgress(player, 
-                    com.budlords.challenges.Challenge.ChallengeType.PERFECT_HARVESTS, 1);
-            }
-        }
+        // Update stats and challenges
+        updateHarvestStatsAndChallenges(player, plant, strain, finalRating);
 
         player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");
         player.sendMessage("§7Quality: " + getQualityDisplay(plant.getQuality()));
@@ -663,6 +631,18 @@ public class FarmingListener implements Listener {
             );
         }
         
+        // Update stats and challenges
+        updateHarvestStatsAndChallenges(player, plant, strain, finalRating);
+
+        player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");
+        player.sendMessage("§7Quality: " + getQualityDisplay(plant.getQuality()));
+        player.sendMessage("§7§oTip: Use Harvest Scissors for better yields!");
+    }
+    
+    /**
+     * Updates player stats and challenge progress after a harvest.
+     */
+    private void updateHarvestStatsAndChallenges(Player player, Plant plant, Strain strain, StarRating finalRating) {
         // Update stats
         if (plugin.getStatsManager() != null) {
             com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
@@ -697,10 +677,6 @@ public class FarmingListener implements Listener {
                     com.budlords.challenges.Challenge.ChallengeType.PERFECT_HARVESTS, 1);
             }
         }
-
-        player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");
-        player.sendMessage("§7Quality: " + getQualityDisplay(plant.getQuality()));
-        player.sendMessage("§7§oTip: Use Harvest Scissors for better yields!");
     }
 
     private String getQualityDisplay(int quality) {

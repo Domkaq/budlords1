@@ -363,12 +363,10 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         // Count sold items for stats
         int itemsSold = countItems(session);
         
-        // Update stats
+        // Update stats - count this as a single successful trade/transaction
         if (plugin.getStatsManager() != null) {
             PlayerStats stats = plugin.getStatsManager().getStats(player);
-            for (int i = 0; i < itemsSold; i++) {
-                stats.incrementSuccessfulSales();
-            }
+            stats.incrementSuccessfulSales();
             stats.recordSale(total);
         }
         

@@ -410,7 +410,7 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                     return;
                 }
             } catch (NumberFormatException e) {
-                plugin.getLogger().warning("Failed to parse star rating from item ID: " + itemId);
+                plugin.getLogger().warning("Failed to parse star rating from item ID: " + itemId + " - " + e.getMessage());
                 return;
             }
         } else if (itemId.startsWith("fertilizer_")) {
