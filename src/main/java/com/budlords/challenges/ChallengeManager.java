@@ -2,7 +2,7 @@ package com.budlords.challenges;
 
 import com.budlords.BudLords;
 import com.budlords.economy.EconomyManager;
-import com.budlords.progression.Rank;
+import com.budlords.progression.RankManager.Rank;
 import com.budlords.stats.PlayerStats;
 import com.budlords.stats.StatsManager;
 import org.bukkit.Bukkit;
