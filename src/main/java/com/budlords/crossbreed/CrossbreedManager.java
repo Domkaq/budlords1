@@ -39,6 +39,9 @@ public class CrossbreedManager implements InventoryHolder {
     private final double mutationChance;
     private final double legendaryMutationBonus;
     private final double effectInheritanceChance;
+    private final double sixStarMutationChance;
+    private final double fiveStarParentBonus;
+    private final double effectMutationChance;
 
     public CrossbreedManager(BudLords plugin, StrainManager strainManager, 
                              EconomyManager economyManager, StatsManager statsManager) {
@@ -53,6 +56,9 @@ public class CrossbreedManager implements InventoryHolder {
         this.mutationChance = plugin.getConfig().getDouble("crossbreed.mutation-chance", 0.05);
         this.legendaryMutationBonus = plugin.getConfig().getDouble("crossbreed.legendary-mutation-bonus", 0.10);
         this.effectInheritanceChance = plugin.getConfig().getDouble("effects.inheritance-chance", 0.5);
+        this.sixStarMutationChance = plugin.getConfig().getDouble("crossbreed.six-star-mutation-chance", 0.02);
+        this.fiveStarParentBonus = plugin.getConfig().getDouble("crossbreed.five-star-parent-bonus", 0.10);
+        this.effectMutationChance = plugin.getConfig().getDouble("crossbreed.effect-mutation-chance", 0.15);
     }
 
     /**
@@ -466,9 +472,9 @@ public class CrossbreedManager implements InventoryHolder {
             }
         }
         
-        // Possibly mutate existing effects (15% chance per effect)
+        // Possibly mutate existing effects (configurable chance per effect)
         for (int i = 0; i < result.size(); i++) {
-            if (ThreadLocalRandom.current().nextDouble() < 0.15) {
+            if (ThreadLocalRandom.current().nextDouble() < this.effectMutationChance) {
                 result.set(i, result.get(i).mutate());
             }
         }
@@ -530,9 +536,9 @@ public class CrossbreedManager implements InventoryHolder {
         if (parent1.getRarity() == Strain.Rarity.LEGENDARY || parent2.getRarity() == Strain.Rarity.LEGENDARY) {
             effectiveMutationChance = this.mutationChance + this.legendaryMutationBonus;
         }
-        // Higher chance with 5-star parents
+        // Higher chance with 5-star parents (configurable)
         if (rating1 >= 5 && rating2 >= 5) {
-            effectiveMutationChance += 0.10; // +10% if both parents are 5-star
+            effectiveMutationChance += this.fiveStarParentBonus;
         }
         boolean hasMutation = ThreadLocalRandom.current().nextDouble() < effectiveMutationChance;
         
@@ -541,8 +547,8 @@ public class CrossbreedManager implements InventoryHolder {
             finalPotency = Math.min(100, finalPotency + 15);
             finalYield = Math.min(20, finalYield + 2);
             
-            // LEGENDARY 6-STAR MUTATION! Very rare (2% chance when mutation occurs)
-            boolean isSixStarMutation = ThreadLocalRandom.current().nextDouble() < 0.02;
+            // LEGENDARY 6-STAR MUTATION! Very rare (configurable, default 2%)
+            boolean isSixStarMutation = ThreadLocalRandom.current().nextDouble() < this.sixStarMutationChance;
             if (isSixStarMutation && rating1 >= 4 && rating2 >= 4) {
                 // 6-STAR LEGENDARY QUALITY!
                 finalRating = StarRating.SIX_STAR;

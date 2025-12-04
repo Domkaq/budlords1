@@ -126,6 +126,8 @@ crossbreed:
   max-effects-crossbred: 8
   # Maximum effects for admin-created strains (via /straincreator)
   max-effects-admin: 15
+  # Per-effect mutation chance during crossbreeding (0.0 to 1.0)
+  effect-mutation-chance: 0.15
 
 # Strain Effects Settings (NEW!)
 effects:

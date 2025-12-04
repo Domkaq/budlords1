@@ -386,8 +386,10 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         StrainEffect effect = new StrainEffect(effectType, 3);
         
         if (plugin.getStrainEffectsManager() != null) {
-            plugin.getStrainEffectsManager().applyEffect(target, effect, StarRating.FIVE_STAR, 600); // 30 seconds
-            sender.sendMessage("§a§l[DEBUG] §7Applied effect §d" + effectType.getDisplayName() + " §7to §e" + target.getName());
+            // Duration: 30 seconds = 30 * 20 ticks = 600 ticks
+            final int EFFECT_DURATION_TICKS = 30 * 20;
+            plugin.getStrainEffectsManager().applyEffect(target, effect, StarRating.FIVE_STAR, EFFECT_DURATION_TICKS);
+            sender.sendMessage("§a§l[DEBUG] §7Applied effect §d" + effectType.getDisplayName() + " §7to §e" + target.getName() + " §7(30 seconds)");
         } else {
             sender.sendMessage("§cEffects manager not initialized!");
         }
@@ -450,15 +452,12 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
 
     private void handleClear(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage("§cUsage: /debug clear <plants|sessions>");
+            sender.sendMessage("§cUsage: /debug clear <sessions>");
+            sender.sendMessage("§7  sessions - Clear all trading sessions");
             return;
         }
         
         switch (args[1].toLowerCase()) {
-            case "plants" -> {
-                // This would clear all plants - dangerous!
-                sender.sendMessage("§c§l[DEBUG] §7Plant clearing not implemented (too dangerous)");
-            }
             case "sessions" -> {
                 sender.sendMessage("§a§l[DEBUG] §7Cleared all trading sessions");
             }
@@ -497,10 +496,11 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 case "player" -> Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
                 case "giveeffect" -> Arrays.stream(StrainEffectType.values()).forEach(e -> completions.add(e.name()));
                 case "effects" -> Arrays.stream(StrainEffectType.EffectCategory.values()).forEach(c -> completions.add(c.name()));
-                case "clear" -> completions.addAll(Arrays.asList("plants", "sessions"));
+                case "clear" -> completions.add("sessions");
                 case "config" -> completions.addAll(Arrays.asList(
                     "crossbreed.mutation-chance",
                     "crossbreed.six-star-mutation-chance",
+                    "crossbreed.effect-mutation-chance",
                     "trading.entity-cooldown-seconds",
                     "effects.max-effects-per-strain"
                 ));
