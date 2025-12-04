@@ -10,6 +10,7 @@ import com.budlords.farming.AmbientEffectsManager;
 import com.budlords.farming.FarmingManager;
 import com.budlords.gui.BlackMarketShopGUI;
 import com.budlords.gui.MarketShopGUI;
+import com.budlords.gui.MobSaleGUI;
 import com.budlords.gui.RollingShopGUI;
 import com.budlords.joint.JointRollingManager;
 import com.budlords.listeners.FarmingListener;
@@ -42,6 +43,7 @@ public class BudLords extends JavaPlugin {
     private QualityItemManager qualityItemManager;
     private MarketShopGUI marketShopGUI;
     private BlackMarketShopGUI blackMarketShopGUI;
+    private MobSaleGUI mobSaleGUI;
     private RollingShopGUI rollingShopGUI;
     private JointRollingManager jointRollingManager;
     private DroppedBudTracker droppedBudTracker;
@@ -71,6 +73,7 @@ public class BudLords extends JavaPlugin {
             this.qualityItemManager = new QualityItemManager(this);
             this.marketShopGUI = new MarketShopGUI(this, economyManager, qualityItemManager);
             this.blackMarketShopGUI = new BlackMarketShopGUI(this, economyManager, strainManager);
+            this.mobSaleGUI = new MobSaleGUI(this, economyManager, packagingManager, strainManager);
             this.rollingShopGUI = new RollingShopGUI(this, economyManager);
             this.jointRollingManager = new JointRollingManager(this, strainManager);
             this.droppedBudTracker = new DroppedBudTracker();
@@ -187,7 +190,7 @@ public class BudLords extends JavaPlugin {
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new FarmingListener(this, farmingManager, strainManager), this);
-        getServer().getPluginManager().registerEvents(new NPCListener(npcManager, economyManager, rankManager, packagingManager, marketShopGUI, blackMarketShopGUI, strainManager), this);
+        getServer().getPluginManager().registerEvents(new NPCListener(this, npcManager, economyManager, rankManager, packagingManager, marketShopGUI, blackMarketShopGUI, mobSaleGUI, strainManager), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager), this);
         getServer().getPluginManager().registerEvents(new ItemDropListener(this, strainManager, packagingManager, droppedBudTracker, jointRollingManager), this);
         
@@ -240,6 +243,10 @@ public class BudLords extends JavaPlugin {
     
     public BlackMarketShopGUI getBlackMarketShopGUI() {
         return blackMarketShopGUI;
+    }
+    
+    public MobSaleGUI getMobSaleGUI() {
+        return mobSaleGUI;
     }
     
     public RollingShopGUI getRollingShopGUI() {

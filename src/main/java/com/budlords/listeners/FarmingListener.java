@@ -19,8 +19,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class FarmingListener implements Listener {
 
@@ -48,6 +51,12 @@ public class FarmingListener implements Listener {
         // Check if placing a pot
         if (GrowingPot.isPotItem(item)) {
             handlePotPlacement(event, player, item, clickedBlock);
+            return;
+        }
+        
+        // Check if using a lamp on a plant
+        if (GrowLamp.isLampItem(item)) {
+            handleLampUsage(event, player, item, clickedBlock);
             return;
         }
 
@@ -112,6 +121,36 @@ public class FarmingListener implements Listener {
                 player.getInventory().setItemInMainHand(null);
             } else {
                 item.setAmount(item.getAmount() - 1);
+            }
+        }
+    }
+    
+    private void handleLampUsage(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
+        // Check if there's a plant at the clicked location or above a pot
+        Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        if (plant == null) {
+            // Check block above (for pot-based plants)
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
+        }
+        
+        if (plant == null) {
+            player.sendMessage("§cNo plant found! Use the lamp on a growing plant.");
+            return;
+        }
+        
+        event.setCancelled(true);
+        
+        StarRating lampRating = GrowLamp.getRatingFromItem(item);
+        if (lampRating == null) lampRating = StarRating.ONE_STAR;
+        
+        if (farmingManager.addLamp(player, plant.getLocation(), lampRating)) {
+            // Consume lamp item
+            if (player.getGameMode() != GameMode.CREATIVE) {
+                if (item.getAmount() == 1) {
+                    player.getInventory().setItemInMainHand(null);
+                } else {
+                    item.setAmount(item.getAmount() - 1);
+                }
             }
         }
     }
