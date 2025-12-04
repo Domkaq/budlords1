@@ -18,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -37,6 +38,41 @@ public class FarmingListener implements Listener {
         this.plugin = plugin;
         this.farmingManager = farmingManager;
         this.strainManager = strainManager;
+    }
+    
+    /**
+     * Prevents watering can items from being converted to plain water buckets
+     * when the player picks up water. This event fires BEFORE the bucket becomes
+     * a water bucket.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBucketFill(PlayerBucketFillEvent event) {
+        Player player = event.getPlayer();
+        ItemStack itemInHand = event.getItemStack();
+        
+        // Check if the item being used is a watering can
+        if (plugin.getQualityItemManager().isWateringCanItem(itemInHand)) {
+            // Cancel the default bucket fill behavior
+            event.setCancelled(true);
+            
+            // The custom filling is handled by handleWateringCan in onPlayerInteract
+            // But sometimes the bucket fill event fires first, so we handle it here too
+            QualityItemManager qim = plugin.getQualityItemManager();
+            
+            int currentWater = qim.getWateringCanWater(itemInHand);
+            int maxCapacity = qim.getWateringCanMaxCapacity(itemInHand);
+            
+            if (currentWater >= maxCapacity) {
+                player.sendMessage("§7Your watering can is already full!");
+                return;
+            }
+            
+            // Fill the can
+            ItemStack filledCan = qim.fillWateringCan(itemInHand);
+            player.getInventory().setItemInMainHand(filledCan);
+            player.sendMessage("§bFilled watering can! §7(" + maxCapacity + "/" + maxCapacity + " water)");
+            player.playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL, 0.5f, 1.2f);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)

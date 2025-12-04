@@ -2,6 +2,7 @@ package com.budlords.challenges;
 
 import com.budlords.BudLords;
 import com.budlords.economy.EconomyManager;
+import com.budlords.progression.Rank;
 import com.budlords.stats.PlayerStats;
 import com.budlords.stats.StatsManager;
 import org.bukkit.Bukkit;
@@ -22,6 +23,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Manages daily and weekly challenges for players.
  * Provides engaging goals and rewards for regular play.
+ * Challenges are scaled based on player rank.
  */
 public class ChallengeManager implements InventoryHolder {
 
@@ -258,8 +260,60 @@ public class ChallengeManager implements InventoryHolder {
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.5f, 1.0f);
     }
+    
+    /**
+     * Gets the rank-based multiplier for scaling challenge targets.
+     * Higher rank players get higher challenge targets but also higher rewards.
+     */
+    private double getRankScaleMultiplier(Player player) {
+        if (plugin.getRankManager() == null) return 1.0;
+        
+        Rank rank = plugin.getRankManager().getRank(player);
+        if (rank == null) return 1.0;
+        
+        // Scale based on rank name (or could use required earnings)
+        String rankName = rank.name();
+        return switch (rankName) {
+            case "Novice" -> 0.5;      // Easier challenges for new players
+            case "Dealer" -> 0.75;
+            case "Supplier" -> 1.0;
+            case "Distributor" -> 1.25;
+            case "Kingpin" -> 1.5;
+            case "Cartel Boss" -> 1.75;
+            case "BudLord" -> 2.0;     // Harder challenges for top players
+            default -> 1.0;
+        };
+    }
+    
+    /**
+     * Gets a player-scaled version of a challenge.
+     * Lower rank players get easier versions, higher rank players get harder versions with better rewards.
+     */
+    private Challenge getScaledChallenge(Player player, Challenge baseChallenge) {
+        double scale = getRankScaleMultiplier(player);
+        
+        // Scale target and rewards
+        int scaledTarget = Math.max(1, (int)(baseChallenge.getTargetAmount() * scale));
+        double scaledReward = baseChallenge.getRewardMoney() * scale;
+        int scaledXP = (int)(baseChallenge.getRewardXP() * scale);
+        
+        return new Challenge(
+            baseChallenge.getId(),
+            baseChallenge.getName(),
+            baseChallenge.getDescription(),
+            baseChallenge.getType(),
+            baseChallenge.getDifficulty(),
+            scaledTarget,
+            scaledReward,
+            scaledXP,
+            baseChallenge.getRequiredStrain(),
+            baseChallenge.getExpiration()
+        );
+    }
 
     private ItemStack createChallengeItem(Player player, Challenge challenge) {
+        // Get rank-scaled version of the challenge
+        Challenge scaledChallenge = getScaledChallenge(player, challenge);
         Challenge.PlayerChallengeProgress progress = getProgress(player.getUniqueId(), challenge.getId());
         
         Material material;
@@ -267,6 +321,11 @@ public class ChallengeManager implements InventoryHolder {
         if (progress.isClaimed()) {
             material = Material.LIME_WOOL;
             status = "§a✓ CLAIMED";
+        } else if (progress.getCurrentProgress() >= scaledChallenge.getTargetAmount()) {
+            // Use scaled target for completion check
+            progress.setCompleted(true);
+            material = Material.GOLD_BLOCK;
+            status = "§e★ CLICK TO CLAIM";
         } else if (progress.isCompleted()) {
             material = Material.GOLD_BLOCK;
             status = "§e★ CLICK TO CLAIM";
@@ -275,19 +334,24 @@ public class ChallengeManager implements InventoryHolder {
             status = "§7In Progress";
         }
         
-        int progressPercent = (int) ((double) progress.getCurrentProgress() / challenge.getTargetAmount() * 100);
+        int progressPercent = (int) ((double) progress.getCurrentProgress() / scaledChallenge.getTargetAmount() * 100);
         progressPercent = Math.min(100, progressPercent);
         
-        return createItem(material, challenge.getDisplayName(), Arrays.asList(
+        // Show rank scaling info
+        double scale = getRankScaleMultiplier(player);
+        String rankInfo = scale != 1.0 ? 
+            (scale < 1.0 ? "§a(Scaled easier)" : "§6(Scaled harder)") : "";
+        
+        return createItem(material, scaledChallenge.getDisplayName(), Arrays.asList(
             "",
-            "§7" + challenge.getDescription(),
+            "§7" + scaledChallenge.getDescription(),
             "",
             "§7Progress: " + createProgressBar(progressPercent / 100.0),
-            "§7" + progress.getCurrentProgress() + "/" + challenge.getTargetAmount(),
+            "§7" + progress.getCurrentProgress() + "/" + scaledChallenge.getTargetAmount(),
             "",
-            "§7Difficulty: " + challenge.getDifficulty().getDisplay(),
-            "§7Rewards: §e$" + String.format("%,.0f", challenge.getRewardMoney()) + 
-                " §7+ §a" + challenge.getRewardXP() + " XP",
+            "§7Difficulty: " + scaledChallenge.getDifficulty().getDisplay() + " " + rankInfo,
+            "§7Rewards: §e$" + String.format("%,.0f", scaledChallenge.getRewardMoney()) + 
+                " §7+ §a" + scaledChallenge.getRewardXP() + " XP",
             "",
             status
         ));
@@ -322,6 +386,8 @@ public class ChallengeManager implements InventoryHolder {
         
         if (clickedChallenge == null) return;
         
+        // Get rank-scaled version for rewards
+        Challenge scaledChallenge = getScaledChallenge(player, clickedChallenge);
         Challenge.PlayerChallengeProgress progress = getProgress(player.getUniqueId(), clickedChallenge.getId());
         
         if (progress.isClaimed()) {
@@ -330,15 +396,17 @@ public class ChallengeManager implements InventoryHolder {
             return;
         }
         
-        if (!progress.isCompleted()) {
+        // Check completion with scaled target
+        if (progress.getCurrentProgress() < scaledChallenge.getTargetAmount()) {
             player.sendMessage("§cComplete the challenge first!");
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
             return;
         }
         
-        // Claim reward
+        // Claim reward with scaled rewards
         progress.setClaimed(true);
-        economyManager.addBalance(player, clickedChallenge.getRewardMoney());
+        progress.setCompleted(true);
+        economyManager.addBalance(player, scaledChallenge.getRewardMoney());
         
         // Update stats
         PlayerStats stats = statsManager.getStats(player);
@@ -355,8 +423,8 @@ public class ChallengeManager implements InventoryHolder {
         
         player.sendMessage("");
         player.sendMessage("§a§l✓ Challenge Complete!");
-        player.sendMessage("§7Received: §e$" + String.format("%,.0f", clickedChallenge.getRewardMoney()) + 
-            " §7+ §a" + clickedChallenge.getRewardXP() + " XP");
+        player.sendMessage("§7Received: §e$" + String.format("%,.0f", scaledChallenge.getRewardMoney()) + 
+            " §7+ §a" + scaledChallenge.getRewardXP() + " XP");
         player.sendMessage("");
         
         // Refresh GUI
