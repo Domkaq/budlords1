@@ -65,7 +65,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
             inv.setItem(i + 8, borderDark);
         }
 
-        // Header info
+        // Header info (centered at top)
         ItemStack header = createItem(Material.OAK_SIGN, 
             "§a§l✿ Create Your Strain ✿",
             Arrays.asList(
@@ -76,7 +76,9 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
             ));
         inv.setItem(4, header);
 
-        // Name display/edit - Modern style
+        // ===== ROW 1 (slots 10-16): Name and Rarity =====
+        
+        // Name display/edit - Left side
         ItemStack nameItem = createItem(Material.NAME_TAG, 
             "§e§l✎ Name: §f" + builder.name,
             Arrays.asList(
@@ -84,24 +86,44 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 "§7Current: §f" + builder.name,
                 "",
                 "§a▶ Click to rename",
-                "§7You'll type the new name in chat",
-                "§7and return here automatically!"
+                "§7Type in chat and return"
             ));
-        inv.setItem(13, nameItem);
+        inv.setItem(11, nameItem);
+        
+        // Separator
+        inv.setItem(13, borderDark);
 
-        // Rarity selector with visual indicator
+        // Rarity selector - Right side
         ItemStack rarityItem = createItem(getRarityMaterial(builder.rarity),
             "§e§l◆ Rarity: " + builder.rarity.getDisplayName(),
             Arrays.asList(
                 "",
                 getRarityDescription(builder.rarity),
                 "",
-                "§a▶ Click to cycle rarity",
-                "§7" + getRarityOrder(builder.rarity)
+                "§a▶ Click to cycle rarity"
             ));
-        inv.setItem(20, rarityItem);
+        inv.setItem(15, rarityItem);
 
-        // Seed star rating selector
+        // ===== ROW 2 (slots 19-25): Potency and Seed Quality =====
+        
+        // Potency controls - Left centered
+        inv.setItem(19, createDecreaseButton("Potency"));
+        inv.setItem(20, createItem(Material.BLAZE_POWDER, 
+            "§6§l⚗ Potency: §e" + builder.potency + "%",
+            Arrays.asList(
+                "",
+                "§7THC strength of the strain",
+                "§7Affects sale value",
+                "",
+                createProgressBar(builder.potency),
+                "§7Range: 1-100"
+            )));
+        inv.setItem(21, createIncreaseButton("Potency"));
+        
+        // Separator
+        inv.setItem(22, borderDark);
+        
+        // Seed star rating - Right centered
         ItemStack starItem = createItem(Material.NETHER_STAR,
             "§e§l★ Seed Quality: " + builder.seedStarRating.getDisplay(),
             Arrays.asList(
@@ -109,27 +131,15 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 "§7Affects growth and final quality",
                 "§7Better seeds = Better buds!",
                 "",
-                "§a▶ Click to cycle star rating"
+                "§a▶ Click to cycle rating"
             ));
         inv.setItem(24, starItem);
 
-        // Potency controls - Enhanced
-        inv.setItem(21, createDecreaseButton("Potency"));
-        inv.setItem(22, createItem(Material.BLAZE_POWDER, 
-            "§6§l⚗ Potency: §e" + builder.potency + "%",
-            Arrays.asList(
-                "",
-                "§7THC strength of the strain",
-                "§7Affects sale value and effects",
-                "",
-                createProgressBar(builder.potency),
-                "§7Range: 1-100"
-            )));
-        inv.setItem(23, createIncreaseButton("Potency"));
-
-        // Yield controls - Enhanced
-        inv.setItem(29, createDecreaseButton("Yield"));
-        inv.setItem(30, createItem(Material.WHEAT_SEEDS, 
+        // ===== ROW 3 (slots 28-34): Yield and Icon =====
+        
+        // Yield controls - Left centered
+        inv.setItem(28, createDecreaseButton("Yield"));
+        inv.setItem(29, createItem(Material.WHEAT_SEEDS, 
             "§6§l🌿 Yield: §e" + builder.yield + " buds",
             Arrays.asList(
                 "",
@@ -139,12 +149,27 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 createYieldDisplay(builder.yield),
                 "§7Range: 1-20"
             )));
-        inv.setItem(31, createIncreaseButton("Yield"));
+        inv.setItem(30, createIncreaseButton("Yield"));
+        
+        // Separator
+        inv.setItem(31, borderDark);
+        
+        // Icon display - Right side
+        inv.setItem(33, createItem(Material.PAINTING, "§e§l🎨 Set Icon", 
+            Arrays.asList(
+                "",
+                "§7Drag an item here to set",
+                "§7Click with item on cursor"
+            )));
+        inv.setItem(34, createItem(builder.iconMaterial, "§a✓ Current: §f" + formatMaterialName(builder.iconMaterial), 
+            Arrays.asList("", "§7This is your strain's icon")));
 
-        // Quality controls - Enhanced
+        // ===== ROW 4 (slots 37-43): Quality and Preview =====
+        
+        // Quality controls - Left centered
         inv.setItem(37, createDecreaseButton("Quality"));
         inv.setItem(38, createItem(Material.DIAMOND, 
-            "§6§l💎 Packaging Quality: §e" + builder.packagingQuality + "%",
+            "§6§l💎 Quality: §e" + builder.packagingQuality + "%",
             Arrays.asList(
                 "",
                 "§7Quality of packaged product",
@@ -154,39 +179,36 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 "§7Range: 1-100"
             )));
         inv.setItem(39, createIncreaseButton("Quality"));
-
-        // Icon selector area
-        inv.setItem(25, createItem(Material.PAINTING, "§e§l🎨 Custom Icon", 
-            Arrays.asList(
-                "",
-                "§7Drag an item here to set icon",
-                "§7Current: §f" + builder.iconMaterial.name()
-            )));
         
-        // Current icon display
-        inv.setItem(34, createItem(builder.iconMaterial, "§a✓ Current Icon", 
-            Arrays.asList("§7" + builder.iconMaterial.name(), "", "§7Drop item here to change")));
+        // Separator
+        inv.setItem(40, borderDark);
 
-        // Preview area
+        // Preview area - Right side
         ItemStack preview = createItem(builder.iconMaterial,
             builder.rarity.getDisplayName() + " " + builder.name,
             Arrays.asList(
-                "§8━━━━━━━━━━━━━━━━━━━━",
+                "§8━━━━━━━━━━━━━━━━━",
                 "§7Potency: §e" + builder.potency + "%",
                 "§7Yield: §e" + builder.yield + " buds",
                 "§7Quality: §e" + builder.packagingQuality + "%",
                 "§7Seed: " + builder.seedStarRating.getDisplay(),
-                "§8━━━━━━━━━━━━━━━━━━━━",
+                "§8━━━━━━━━━━━━━━━━━",
                 "",
-                "§7This is a preview of your strain!"
+                "§a✓ Preview of your strain"
             ));
-        inv.setItem(43, preview);
+        inv.setItem(42, preview);
 
-        // Save button - Modern with animation hint
+        // ===== BOTTOM ROW: Cancel and Save =====
+        
+        // Cancel button - Left
+        inv.setItem(46, createItem(Material.BARRIER, "§c§l✗ CANCEL", 
+            Arrays.asList("", "§7Close without saving", "§cProgress will be lost!")));
+        
+        // Save button - Center-right
         ItemStack saveBtn = createItem(Material.EMERALD_BLOCK, "§a§l✓ SAVE & CREATE",
             Arrays.asList(
                 "",
-                "§7━━━━ Strain Summary ━━━━",
+                "§7━━ Strain Summary ━━",
                 "§7Name: §f" + builder.name,
                 "§7Rarity: " + builder.rarity.getDisplayName(),
                 "§7Potency: §e" + builder.potency + "%",
@@ -194,14 +216,29 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 "§7Quality: §e" + builder.packagingQuality + "%",
                 "§7Seed: " + builder.seedStarRating.getDisplay(),
                 "",
-                "§a▶ Click to create strain!",
+                "§a▶ Click to create!",
                 "§7You'll receive 5 seeds"
             ));
-        inv.setItem(49, saveBtn);
-
-        // Cancel button
-        inv.setItem(45, createItem(Material.BARRIER, "§c§l✗ CANCEL", 
-            Arrays.asList("", "§7Close without saving", "§7Progress will be lost!")));
+        inv.setItem(52, saveBtn);
+    }
+    
+    private String formatMaterialName(Material mat) {
+        String name = mat.name().toLowerCase().replace('_', ' ');
+        // Capitalize first letter of each word
+        StringBuilder sb = new StringBuilder();
+        boolean capitalizeNext = true;
+        for (char c : name.toCharArray()) {
+            if (c == ' ') {
+                sb.append(c);
+                capitalizeNext = true;
+            } else if (capitalizeNext) {
+                sb.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
     
     private String createProgressBar(int value) {
@@ -301,8 +338,8 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
             return;
         }
         
-        // Allow placing items in icon area (slot 34 or 25)
-        if ((slot == 34 || slot == 25) && event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+        // Allow placing items in icon area (slot 33 or 34)
+        if ((slot == 33 || slot == 34) && event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
             builder.iconMaterial = event.getCursor().getType();
             event.setCancelled(true);
             updateInventory(event.getInventory(), builder);
@@ -314,7 +351,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         event.setCancelled(true);
 
         switch (slot) {
-            case 13 -> { // Name
+            case 11 -> { // Name (moved from 13)
                 player.closeInventory();
                 player.sendMessage("");
                 player.sendMessage("§a§l✎ §eType the new strain name in chat:");
@@ -325,53 +362,53 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 // Register chat listener
                 plugin.getServer().getPluginManager().registerEvents(new ChatListener(plugin, player, builder, this), plugin);
             }
-            case 20 -> { // Rarity
+            case 15 -> { // Rarity (moved from 20)
                 builder.rarity = builder.rarity.next();
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.3f, 1.0f + (builder.rarity.ordinal() * 0.2f));
             }
-            case 24 -> { // Seed star rating
+            case 24 -> { // Seed star rating (same)
                 int currentStars = builder.seedStarRating.getStars();
                 builder.seedStarRating = StarRating.fromValue((currentStars % 5) + 1);
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.4f, 0.8f + (builder.seedStarRating.getStars() * 0.15f));
             }
-            case 21 -> { // Potency -
+            case 19 -> { // Potency - (moved from 21)
                 builder.potency = Math.max(1, builder.potency - amount);
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 0.8f);
             }
-            case 23 -> { // Potency +
+            case 21 -> { // Potency + (moved from 23)
                 builder.potency = Math.min(100, builder.potency + amount);
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 1.2f);
             }
-            case 29 -> { // Yield -
+            case 28 -> { // Yield - (moved from 29)
                 builder.yield = Math.max(1, builder.yield - (shift ? 2 : 1));
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 0.8f);
             }
-            case 31 -> { // Yield +
+            case 30 -> { // Yield + (moved from 31)
                 builder.yield = Math.min(20, builder.yield + (shift ? 2 : 1));
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 1.2f);
             }
-            case 37 -> { // Quality -
+            case 37 -> { // Quality - (same)
                 builder.packagingQuality = Math.max(1, builder.packagingQuality - amount);
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 0.8f);
             }
-            case 39 -> { // Quality +
+            case 39 -> { // Quality + (same)
                 builder.packagingQuality = Math.min(100, builder.packagingQuality + amount);
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 1.2f);
             }
-            case 45 -> { // Cancel
+            case 46 -> { // Cancel (moved from 45)
                 player.closeInventory();
                 player.sendMessage("§c✗ Strain creation cancelled.");
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 0.5f);
             }
-            case 49 -> { // Save
+            case 52 -> { // Save (moved from 49)
                 saveStrain(player, builder);
             }
         }

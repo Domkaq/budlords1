@@ -29,6 +29,7 @@ public class PlayerStats {
     private int jointsRolled;
     private int perfectRolls;
     private int legendaryJointsRolled;
+    private int jointsSmoked;
     
     // Time stats
     private long totalPlaytimeMinutes;
@@ -171,6 +172,14 @@ public class PlayerStats {
 
     public void incrementLegendaryJoints() {
         this.legendaryJointsRolled++;
+    }
+    
+    public int getJointsSmoked() {
+        return jointsSmoked;
+    }
+    
+    public void incrementJointsSmoked() {
+        this.jointsSmoked++;
     }
 
     // ===== TIME STATS =====

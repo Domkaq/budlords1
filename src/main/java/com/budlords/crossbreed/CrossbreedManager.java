@@ -70,7 +70,7 @@ public class CrossbreedManager implements InventoryHolder {
     private void updateCrossbreedGUI(Inventory inv, CrossbreedSession session) {
         inv.clear();
         
-        // Border
+        // Border - Use more visible colors
         ItemStack borderPink = createItem(Material.PINK_STAINED_GLASS_PANE, " ", null);
         ItemStack borderMagenta = createItem(Material.MAGENTA_STAINED_GLASS_PANE, " ", null);
         for (int i = 0; i < 9; i++) {
@@ -90,43 +90,52 @@ public class CrossbreedManager implements InventoryHolder {
                 "§7Combine two strains to create",
                 "§7a new hybrid with mixed traits!",
                 "",
-                "§7Drop seeds in the slots to begin."
+                "§e▶ Click parent slots with seeds",
+                "§e▶ Or drag seeds from inventory"
             )));
         
-        // Parent strain 1 slot
+        // Parent strain 1 slot - Use more visible material
         if (session.strain1 != null) {
             Strain strain = strainManager.getStrain(session.strain1);
             if (strain != null) {
                 inv.setItem(20, createStrainItem(strain, session.strain1Rating, "§a§lParent 1"));
             }
         } else {
-            inv.setItem(20, createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 
-                "§7§lParent 1",
+            inv.setItem(20, createItem(Material.LIME_STAINED_GLASS_PANE, 
+                "§a§l✦ Parent 1 ✦",
                 Arrays.asList(
                     "",
-                    "§7Drop seeds here!",
+                    "§a▶ DROP SEEDS HERE!",
+                    "",
                     "§7This strain's traits will be",
-                    "§7inherited by the hybrid."
+                    "§7inherited by the hybrid.",
+                    "",
+                    "§7Click with seed in hand",
+                    "§7or drag from your inventory"
                 )));
         }
         
         // Plus symbol
         inv.setItem(21, createItem(Material.END_ROD, "§e§l+", null));
         
-        // Parent strain 2 slot
+        // Parent strain 2 slot - Use more visible material
         if (session.strain2 != null) {
             Strain strain = strainManager.getStrain(session.strain2);
             if (strain != null) {
                 inv.setItem(22, createStrainItem(strain, session.strain2Rating, "§b§lParent 2"));
             }
         } else {
-            inv.setItem(22, createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 
-                "§7§lParent 2",
+            inv.setItem(22, createItem(Material.CYAN_STAINED_GLASS_PANE, 
+                "§b§l✦ Parent 2 ✦",
                 Arrays.asList(
                     "",
-                    "§7Drop seeds here!",
+                    "§b▶ DROP SEEDS HERE!",
+                    "",
                     "§7This strain's traits will be",
-                    "§7inherited by the hybrid."
+                    "§7inherited by the hybrid.",
+                    "",
+                    "§7Click with seed in hand",
+                    "§7or drag from your inventory"
                 )));
         }
         
