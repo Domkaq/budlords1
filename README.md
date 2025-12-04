@@ -2,6 +2,8 @@
 
 A comprehensive weed farming RPG + black market economy system for Minecraft Paper/Spigot 1.20.4.
 
+> 🇭🇺 **Magyar nyelvű útmutató:** [GAMELOOP.md](GAMELOOP.md)
+
 ## Features
 
 ### 🌱 Pot-Based Growing System (NEW!)
