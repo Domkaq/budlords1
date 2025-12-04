@@ -64,25 +64,107 @@ public class StrainManager {
     private void ensureDefaultStrains() {
         if (strains.isEmpty()) {
             // Create default strains with effects
+            
+            // === COMMON STRAINS ===
             Strain ogKush = new Strain("og_kush", "OG Kush", Strain.Rarity.COMMON, 40, 3, 50);
             ogKush.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MUNCHIES, 2));
             registerStrain(ogKush);
             
+            Strain sourDiesel = new Strain("sour_diesel", "Sour Diesel", Strain.Rarity.COMMON, 35, 4, 45);
+            sourDiesel.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SPEED_DEMON, 2));
+            registerStrain(sourDiesel);
+            
+            Strain blueDream = new Strain("blue_dream", "Blue Dream", Strain.Rarity.COMMON, 45, 3, 55);
+            blueDream.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DREAM_STATE, 2));
+            registerStrain(blueDream);
+            
+            Strain greenCrack = new Strain("green_crack", "Green Crack", Strain.Rarity.COMMON, 50, 3, 50);
+            greenCrack.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BUNNY_HOP, 2));
+            registerStrain(greenCrack);
+            
+            // === UNCOMMON STRAINS ===
             Strain purpleHaze = new Strain("purple_haze", "Purple Haze", Strain.Rarity.UNCOMMON, 60, 4, 65);
             purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.RAINBOW_AURA, 3));
             purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DRUNK_VISION, 2));
             registerStrain(purpleHaze);
             
+            Strain girlScoutCookies = new Strain("girl_scout_cookies", "Girl Scout Cookies", Strain.Rarity.UNCOMMON, 55, 4, 60);
+            girlScoutCookies.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MUNCHIES, 3));
+            girlScoutCookies.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.LUCKY_CHARM, 2));
+            registerStrain(girlScoutCookies);
+            
+            Strain gorillGlue = new Strain("gorilla_glue", "Gorilla Glue", Strain.Rarity.UNCOMMON, 65, 3, 70);
+            gorillGlue.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TANK_MODE, 2));
+            gorillGlue.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SLOW_MO, 2));
+            registerStrain(gorillGlue);
+            
+            Strain jackHerer = new Strain("jack_herer", "Jack Herer", Strain.Rarity.UNCOMMON, 60, 4, 65);
+            jackHerer.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.EAGLE_SIGHT, 3));
+            jackHerer.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GREEN_THUMB, 2));
+            registerStrain(jackHerer);
+            
+            Strain granddaddyPurple = new Strain("granddaddy_purple", "Granddaddy Purple", Strain.Rarity.UNCOMMON, 58, 4, 68);
+            granddaddyPurple.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MEDITATION, 3));
+            granddaddyPurple.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BUBBLE_AURA, 2));
+            registerStrain(granddaddyPurple);
+            
+            // === RARE STRAINS ===
             Strain whiteWidow = new Strain("white_widow", "White Widow", Strain.Rarity.RARE, 75, 5, 80);
             whiteWidow.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SPEED_DEMON, 3));
             whiteWidow.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.THIRD_EYE, 3));
             registerStrain(whiteWidow);
             
+            Strain wedding_cake = new Strain("wedding_cake", "Wedding Cake", Strain.Rarity.RARE, 72, 5, 78);
+            wedding_cake.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.CONFETTI, 3));
+            wedding_cake.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.HEART_TRAIL, 3));
+            wedding_cake.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DISCO_FEVER, 2));
+            registerStrain(wedding_cake);
+            
+            Strain amnesia = new Strain("amnesia", "Amnesia Haze", Strain.Rarity.RARE, 78, 4, 82);
+            amnesia.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DRUNK_VISION, 4));
+            amnesia.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MATRIX_VISION, 3));
+            registerStrain(amnesia);
+            
+            Strain skywalkerOG = new Strain("skywalker_og", "Skywalker OG", Strain.Rarity.RARE, 76, 5, 80);
+            skywalkerOG.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MOON_GRAVITY, 4));
+            skywalkerOG.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ASTRAL_PROJECTION, 3));
+            registerStrain(skywalkerOG);
+            
+            Strain trainwreck = new Strain("trainwreck", "Trainwreck", Strain.Rarity.RARE, 80, 4, 75);
+            trainwreck.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ROCKET_BOOST, 4));
+            trainwreck.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BERSERKER, 3));
+            registerStrain(trainwreck);
+            
+            // === LEGENDARY STRAINS ===
             Strain northernLights = new Strain("northern_lights", "Northern Lights", Strain.Rarity.LEGENDARY, 95, 7, 95);
             northernLights.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.AURORA_BOREALIS, 5));
             northernLights.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.CELESTIAL_BEING, 4));
             northernLights.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ENLIGHTENMENT, 4));
             registerStrain(northernLights);
+            
+            Strain pineappleExpress = new Strain("pineapple_express", "Pineapple Express", Strain.Rarity.LEGENDARY, 90, 6, 92);
+            pineappleExpress.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.FIRE_TRAIL, 5));
+            pineappleExpress.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SPEED_DEMON, 4));
+            pineappleExpress.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MIDAS_TOUCH, 4));
+            registerStrain(pineappleExpress);
+            
+            Strain godsFavorite = new Strain("gods_favorite", "God's Favorite", Strain.Rarity.LEGENDARY, 98, 8, 98);
+            godsFavorite.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.PHOENIX_REBIRTH, 5));
+            godsFavorite.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ANGEL_WINGS, 5));
+            godsFavorite.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ENLIGHTENMENT, 5));
+            registerStrain(godsFavorite);
+            
+            Strain voidWalker = new Strain("void_walker_strain", "Void Walker", Strain.Rarity.LEGENDARY, 92, 6, 94);
+            voidWalker.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VOID_WALKER, 5));
+            voidWalker.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SHADOW_WALKER, 4));
+            voidWalker.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.REALITY_BENDER, 4));
+            registerStrain(voidWalker);
+            
+            Strain dragonBreath = new Strain("dragon_breath_strain", "Dragon's Breath", Strain.Rarity.LEGENDARY, 96, 7, 96);
+            dragonBreath.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DRAGON_BREATH, 5));
+            dragonBreath.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.FIRE_TRAIL, 5));
+            dragonBreath.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GHOST_RIDER, 4));
+            registerStrain(dragonBreath);
             
             saveStrains();
         }

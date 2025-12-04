@@ -40,14 +40,24 @@ public class EffectSelectorGUI implements InventoryHolder, Listener {
     
     @SuppressWarnings("deprecation")
     public void open(Player player) {
+        // Check if there's already an active builder for this player
         StrainCreatorGUI.StrainBuilder builder = strainCreatorGUI.getActiveBuilders().get(player.getUniqueId());
         if (builder == null) {
-            player.sendMessage("§cNo active strain builder session!");
+            player.sendMessage("§cNo active strain builder session! Please open the Strain Creator first with /straincreator");
+            return;
+        }
+        
+        // Ensure the builder is not awaiting name input (which would mess up the flow)
+        if (builder.awaitingName) {
+            player.sendMessage("§cPlease finish naming your strain first!");
             return;
         }
         
         EffectSession session = activeSessions.computeIfAbsent(player.getUniqueId(), 
             k -> new EffectSession(builder));
+        
+        // Update the builder reference in case it was recreated
+        session.builder = builder;
         
         Inventory inv = Bukkit.createInventory(this, 54, "§5§l✦ Effect Selector ✦ §7Page " + (session.page + 1));
         updateInventory(inv, session);
@@ -409,7 +419,7 @@ public class EffectSelectorGUI implements InventoryHolder, Listener {
      * Session data for effect selection.
      */
     private static class EffectSession {
-        final StrainCreatorGUI.StrainBuilder builder;
+        StrainCreatorGUI.StrainBuilder builder;
         StrainEffectType.EffectCategory selectedCategory = StrainEffectType.EffectCategory.VISUAL;
         int page = 0;
         

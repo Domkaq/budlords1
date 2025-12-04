@@ -50,7 +50,11 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
     // Default strains that are NOT crossbred (base game strains)
     // These are strains that come with the plugin, not created via crossbreeding
     private static final Set<String> DEFAULT_STRAIN_IDS = Set.of(
-        "og_kush", "purple_haze", "white_widow", "northern_lights"
+        "og_kush", "purple_haze", "white_widow", "northern_lights",
+        "sour_diesel", "blue_dream", "green_crack",
+        "girl_scout_cookies", "gorilla_glue", "jack_herer", "granddaddy_purple",
+        "wedding_cake", "amnesia", "skywalker_og", "trainwreck",
+        "pineapple_express", "gods_favorite", "void_walker_strain", "dragon_breath_strain"
     );
     
     // Shop categories
@@ -215,8 +219,8 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             .filter(s -> !isCrossbredStrain(s))
             .toList();
         
-        // Display seeds in rows (slots 10-16, 19-25, 28-34)
-        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
+        // Display seeds in rows (slots 10-16, 19-25, 28-34, 37-43) - expanded to show more
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43};
         int slotIndex = 0;
         
         for (Strain strain : normalStrains) {
@@ -374,8 +378,8 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             .filter(s -> !isCrossbredStrain(s))
             .toList();
         
-        // Display rare seeds (slots 11-15, 20-24)
-        int[] slots = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24};
+        // Display rare seeds (more slots now)
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
         int slotIndex = 0;
         
         for (Strain strain : rareStrains) {

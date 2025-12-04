@@ -2,7 +2,7 @@ name: BudLords
 version: '${project.version}'
 main: com.budlords.BudLords
 api-version: '1.20'
-description: A weed farming RPG + black market economy system for Minecraft - v2.0.0 Major Update
+description: A weed farming RPG + black market economy system for Minecraft - v2.0.1 Bug Fix & Content Update
 author: BudLords Team
 
 commands:
@@ -31,9 +31,9 @@ commands:
     usage: /<command>
     permission: budlords.admin
   package:
-    description: Package weed buds
+    description: Package weed buds (Operator only)
     usage: /<command> <amount>
-    permission: budlords.package
+    permission: budlords.admin
   budlords:
     description: Main BudLords command
     usage: /<command>

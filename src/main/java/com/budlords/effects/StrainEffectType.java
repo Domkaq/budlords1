@@ -184,7 +184,120 @@ public enum StrainEffectType {
         "Star particles and divine aura", EffectCategory.LEGENDARY),
     
     REALITY_BENDER("Reality Bender", "§d🌀", "Bend reality itself!", Material.ENDER_PEARL,
-        "Warping visual effects", EffectCategory.LEGENDARY);
+        "Warping visual effects", EffectCategory.LEGENDARY),
+    
+    // === NEW v2.0.1 EFFECTS ===
+    
+    // MORE VISUAL EFFECTS
+    NEON_GLOW("Neon Glow", "§e💡", "You glow with neon light!", Material.GLOWSTONE,
+        "Bright colorful glowing aura", EffectCategory.VISUAL),
+    
+    CRYSTAL_SHIMMER("Crystal Shimmer", "§b💎", "Sparkling crystal particles!", Material.AMETHYST_SHARD,
+        "Shimmering crystal particles", EffectCategory.VISUAL),
+    
+    SMOKE_SCREEN("Smoke Screen", "§8💨", "Mysterious smoke follows you!", Material.CAMPFIRE,
+        "Dense smoke particle trail", EffectCategory.VISUAL),
+    
+    ELECTRIC_SURGE("Electric Surge", "§e⚡", "Electricity crackles around you!", Material.LIGHTNING_ROD,
+        "Electric spark particles", EffectCategory.DRAMATIC),
+    
+    // MORE MOVEMENT EFFECTS
+    FEATHER_FALL("Feather Fall", "§f🪶", "Light as a feather!", Material.FEATHER,
+        "Slow falling and reduced fall damage", EffectCategory.MOVEMENT),
+    
+    BLINK_STEP("Blink Step", "§5✦", "Teleport short distances!", Material.CHORUS_FRUIT,
+        "Random short-range teleportation hints", EffectCategory.MOVEMENT),
+    
+    WATER_WALK("Water Walk", "§b🌊", "Walk on water!", Material.LILY_PAD,
+        "Ability to walk on water", EffectCategory.MOVEMENT),
+    
+    // MORE PERCEPTION EFFECTS
+    PREDATOR_SENSE("Predator Sense", "§c👁", "Sense all nearby entities!", Material.SPIDER_EYE,
+        "Entities glow through walls", EffectCategory.PERCEPTION),
+    
+    SONIC_HEARING("Sonic Hearing", "§a👂", "Hear everything around you!", Material.BELL,
+        "Enhanced hearing range", EffectCategory.PERCEPTION),
+    
+    X_RAY_VISION("X-Ray Vision", "§b✕", "See through walls!", Material.SPYGLASS,
+        "Outline of ores and entities", EffectCategory.PERCEPTION),
+    
+    // MORE GAMEPLAY EFFECTS
+    DOUBLE_HARVEST("Double Harvest", "§a🌿", "Double plant drops!", Material.GOLDEN_HOE,
+        "Chance for double plant harvests", EffectCategory.GAMEPLAY),
+    
+    MONEY_MAGNET("Money Magnet", "§6💵", "Attract bonus coins!", Material.GOLD_NUGGET,
+        "Bonus coins from sales", EffectCategory.GAMEPLAY),
+    
+    SEED_FINDER("Seed Finder", "§2🔍", "Find better seeds!", Material.COMPASS,
+        "Chance to find bonus seeds when harvesting", EffectCategory.GAMEPLAY),
+    
+    XP_BOOST("XP Boost", "§a✨", "Gain extra experience!", Material.EXPERIENCE_BOTTLE,
+        "Bonus XP from all activities", EffectCategory.GAMEPLAY),
+    
+    // MORE COMBAT EFFECTS
+    POISON_TOUCH("Poison Touch", "§2☠", "Your attacks poison enemies!", Material.SPIDER_EYE,
+        "Attacks apply poison effect", EffectCategory.COMBAT),
+    
+    FIRE_PUNCH("Fire Punch", "§c🔥", "Your fists burn with fire!", Material.BLAZE_POWDER,
+        "Melee attacks set targets on fire", EffectCategory.COMBAT),
+    
+    ICE_ARMOR("Ice Armor", "§b❄", "Frozen protection!", Material.BLUE_ICE,
+        "Ice particles and cold damage resistance", EffectCategory.COMBAT),
+    
+    RAGE_MODE("Rage Mode", "§4💢", "Unleash your inner rage!", Material.REDSTONE,
+        "Damage increases when low health", EffectCategory.COMBAT),
+    
+    // MORE FUN EFFECTS
+    RAINBOW_TRAIL("Rainbow Trail", "§d🌈", "Leave a rainbow behind!", Material.PRISMARINE_SHARD,
+        "Colorful rainbow particle trail", EffectCategory.FUN),
+    
+    FIREWORK_EXPLOSION("Firework Explosion", "§e🎆", "Periodic firework effects!", Material.FIREWORK_ROCKET,
+        "Random firework particle bursts", EffectCategory.FUN),
+    
+    SLIME_BOUNCE("Slime Bounce", "§a🟢", "Bounce like slime!", Material.SLIME_BALL,
+        "Bouncy movement and slime particles", EffectCategory.FUN),
+    
+    SNOWMAN("Snowman", "§f☃", "Leave snow wherever you go!", Material.SNOWBALL,
+        "Snow trail and snowfall around you", EffectCategory.FUN),
+    
+    // MORE NATURE EFFECTS
+    PLANT_GROWTH("Plant Growth", "§2🌱", "Plants grow faster near you!", Material.WHEAT_SEEDS,
+        "Accelerate nearby plant growth", EffectCategory.NATURE),
+    
+    ANIMAL_FRIEND("Animal Friend", "§a🐾", "Animals are friendly to you!", Material.WHEAT,
+        "Animals don't flee and may follow", EffectCategory.NATURE),
+    
+    RAIN_DANCER("Rain Dancer", "§9🌧", "Make it rain around you!", Material.WATER_BUCKET,
+        "Rain particles follow you", EffectCategory.NATURE),
+    
+    EARTHQUAKE("Earthquake", "§6🌍", "The ground shakes!", Material.BROWN_CONCRETE,
+        "Ground shaking visual effect", EffectCategory.NATURE),
+    
+    // MORE MYSTICAL EFFECTS
+    SOUL_SIGHT("Soul Sight", "§5👻", "See the spirits around you!", Material.SOUL_LANTERN,
+        "Ghost particles and spirit visuals", EffectCategory.MYSTICAL),
+    
+    FORTUNE_TELLER("Fortune Teller", "§d🔮", "Glimpse the future!", Material.LECTERN,
+        "Random fortune hints and luck boost", EffectCategory.MYSTICAL),
+    
+    ELEMENTAL_CHAOS("Elemental Chaos", "§e⚡", "All elements swirl around you!", Material.NETHER_STAR,
+        "Random elemental particle effects", EffectCategory.MYSTICAL),
+    
+    DIMENSIONAL_RIFT("Dimensional Rift", "§0🌀", "A rift follows you!", Material.END_PORTAL_FRAME,
+        "Portal-like visual distortions", EffectCategory.MYSTICAL),
+    
+    // MORE LEGENDARY EFFECTS
+    TIME_FREEZE("Time Freeze", "§b⏸", "Freeze time around you!", Material.CLOCK,
+        "Time-stopping visual effects", EffectCategory.LEGENDARY),
+    
+    INFINITY_POWER("Infinity Power", "§6∞", "Unlimited cosmic energy!", Material.NETHER_STAR,
+        "Infinite power aura and particles", EffectCategory.LEGENDARY),
+    
+    GODMODE_AURA("Godmode Aura", "§f✦", "Divine protection surrounds you!", Material.TOTEM_OF_UNDYING,
+        "Golden divine aura and invincibility hints", EffectCategory.LEGENDARY),
+    
+    UNIVERSE_CONTROL("Universe Control", "§d🌌", "Control the very fabric of reality!", Material.END_CRYSTAL,
+        "Cosmic particles and reality distortion", EffectCategory.LEGENDARY);
     
     private final String displayName;
     private final String symbol;
@@ -308,6 +421,41 @@ public enum StrainEffectType {
             case VOID_WALKER -> Particle.PORTAL;
             case CELESTIAL_BEING -> Particle.END_ROD;
             case REALITY_BENDER -> Particle.REVERSE_PORTAL;
+            // NEW v2.0.1 EFFECTS
+            case NEON_GLOW -> Particle.END_ROD;
+            case CRYSTAL_SHIMMER -> Particle.END_ROD;
+            case SMOKE_SCREEN -> Particle.SMOKE_LARGE;
+            case ELECTRIC_SURGE -> Particle.FIREWORKS_SPARK;
+            case FEATHER_FALL -> Particle.END_ROD;
+            case BLINK_STEP -> Particle.PORTAL;
+            case WATER_WALK -> Particle.DRIP_WATER;
+            case PREDATOR_SENSE -> Particle.VILLAGER_ANGRY;
+            case SONIC_HEARING -> Particle.NOTE;
+            case X_RAY_VISION -> Particle.ENCHANTMENT_TABLE;
+            case DOUBLE_HARVEST -> Particle.COMPOSTER;
+            case MONEY_MAGNET -> Particle.FALLING_HONEY;
+            case SEED_FINDER -> Particle.COMPOSTER;
+            case XP_BOOST -> Particle.ENCHANTMENT_TABLE;
+            case POISON_TOUCH -> Particle.SPELL_MOB;
+            case FIRE_PUNCH -> Particle.FLAME;
+            case ICE_ARMOR -> Particle.SNOWFLAKE;
+            case RAGE_MODE -> Particle.DAMAGE_INDICATOR;
+            case RAINBOW_TRAIL -> Particle.SPELL_MOB;
+            case FIREWORK_EXPLOSION -> Particle.FIREWORKS_SPARK;
+            case SLIME_BOUNCE -> Particle.VILLAGER_HAPPY;
+            case SNOWMAN -> Particle.SNOWFLAKE;
+            case PLANT_GROWTH -> Particle.COMPOSTER;
+            case ANIMAL_FRIEND -> Particle.HEART;
+            case RAIN_DANCER -> Particle.DRIP_WATER;
+            case EARTHQUAKE -> Particle.BLOCK_CRACK;
+            case SOUL_SIGHT -> Particle.SOUL;
+            case FORTUNE_TELLER -> Particle.ENCHANTMENT_TABLE;
+            case ELEMENTAL_CHAOS -> Particle.SPELL_MOB;
+            case DIMENSIONAL_RIFT -> Particle.PORTAL;
+            case TIME_FREEZE -> Particle.END_ROD;
+            case INFINITY_POWER -> Particle.END_ROD;
+            case GODMODE_AURA -> Particle.TOTEM;
+            case UNIVERSE_CONTROL -> Particle.REVERSE_PORTAL;
         };
     }
     
