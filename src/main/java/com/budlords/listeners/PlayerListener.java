@@ -25,6 +25,19 @@ public class PlayerListener implements Listener {
         // Initialize player data
         plugin.getEconomyManager().initializePlayer(player);
         
+        // Initialize stats (ensures player has stats entry)
+        if (plugin.getStatsManager() != null) {
+            plugin.getStatsManager().getStats(player);
+        }
+        
+        // Sync achievements with stats on login
+        if (plugin.getAchievementManager() != null) {
+            // Delay slightly to ensure all systems are initialized
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                plugin.getAchievementManager().syncWithStats(player);
+            }, 20L);
+        }
+        
         // Send welcome message if first time
         if (!dataManager.getPlayersConfig().contains("players." + player.getUniqueId())) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
@@ -43,6 +56,21 @@ public class PlayerListener implements Listener {
         // Save player data asynchronously
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             plugin.getEconomyManager().saveBalances();
+            
+            // Save stats
+            if (plugin.getStatsManager() != null) {
+                plugin.getStatsManager().saveStats();
+            }
+            
+            // Save skills
+            if (plugin.getSkillManager() != null) {
+                plugin.getSkillManager().saveSkills();
+            }
+            
+            // Save achievements
+            if (plugin.getAchievementManager() != null) {
+                plugin.getAchievementManager().saveAchievements();
+            }
         });
     }
 }

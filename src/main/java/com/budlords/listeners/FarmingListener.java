@@ -844,6 +844,31 @@ public class FarmingListener implements Listener {
             }
         }
         
+        // Award skill XP for harvesting (Farming tree)
+        if (plugin.getSkillManager() != null) {
+            com.budlords.skills.SkillManager skillManager = plugin.getSkillManager();
+            java.util.UUID uuid = player.getUniqueId();
+            
+            // Award Farming XP - base 5 XP per harvest, bonus for quality
+            int farmingXP = 5;
+            if (finalRating == StarRating.FIVE_STAR) {
+                farmingXP += 10; // Bonus for 5-star harvest
+            }
+            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
+                farmingXP += 15; // Bonus for legendary strain
+            }
+            if (plant.getQuality() >= 90) {
+                farmingXP += 5; // Bonus for perfect harvest
+            }
+            skillManager.addTreeXP(uuid, com.budlords.skills.Skill.SkillTree.FARMING, farmingXP);
+            
+            // Award Quality XP based on bud quality
+            int qualityXP = (int) (plant.getQuality() / 20); // 0-5 XP based on quality
+            if (qualityXP > 0) {
+                skillManager.addTreeXP(uuid, com.budlords.skills.Skill.SkillTree.QUALITY, qualityXP);
+            }
+        }
+        
         // Sync achievements with stats
         if (plugin.getAchievementManager() != null) {
             plugin.getAchievementManager().syncWithStats(player);

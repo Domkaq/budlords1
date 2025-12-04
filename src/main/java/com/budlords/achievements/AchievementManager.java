@@ -269,6 +269,9 @@ public class AchievementManager implements InventoryHolder {
         setProgress(player, Achievement.BUSINESSMAN, (int) stats.getTotalEarnings());
         setProgress(player, Achievement.MILLIONAIRE, (int) stats.getTotalEarnings());
         
+        // Rank-based achievements - check if player has reached the rank
+        checkRankAchievements(player);
+        
         // Trading achievements
         setProgress(player, Achievement.TRADER, stats.getSuccessfulTrades());
         setProgress(player, Achievement.DEALER, stats.getSuccessfulTrades());
@@ -299,6 +302,31 @@ public class AchievementManager implements InventoryHolder {
         
         // Disease achievements
         setProgress(player, Achievement.DISEASE_DOCTOR, stats.getDiseasesCured());
+    }
+    
+    /**
+     * Checks and unlocks rank-based achievements (Kingpin, BudLord).
+     */
+    private void checkRankAchievements(Player player) {
+        if (plugin.getRankManager() == null || plugin.getEconomyManager() == null) return;
+        
+        double totalEarnings = plugin.getEconomyManager().getTotalEarnings(player);
+        com.budlords.progression.RankManager.Rank currentRank = plugin.getRankManager().getRank(player);
+        
+        if (currentRank == null) return;
+        
+        String rankName = currentRank.name().toLowerCase();
+        
+        // Check for Kingpin rank (requires $50,000 total earnings)
+        if (totalEarnings >= 50000 || rankName.contains("kingpin") || 
+            rankName.contains("cartel") || rankName.contains("budlord")) {
+            setProgress(player, Achievement.KINGPIN, 1);
+        }
+        
+        // Check for BudLord rank (requires $500,000 total earnings)
+        if (totalEarnings >= 500000 || rankName.contains("budlord")) {
+            setProgress(player, Achievement.BUDLORD, 1);
+        }
     }
 
     /**

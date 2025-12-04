@@ -242,6 +242,24 @@ public class StrainEffectsManager implements Listener {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration / 3, 0, false, false, true));
             }
             
+            // WATER WALK EFFECT
+            case WATER_WALK -> {
+                // Start water walking task
+                scheduleWaterWalkEffect(player, duration);
+            }
+            
+            // PLANT GROWTH EFFECT
+            case PLANT_GROWTH -> {
+                // Boost plant growth nearby (handled via listener)
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE, duration, amplifier, false, false, true));
+                schedulePlantGrowthBoost(player, duration);
+            }
+            
+            // FEATHER FALL
+            case FEATHER_FALL -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+            }
+            
             // Other visual effects don't need potion effects, just particles
             default -> {
                 // Visual-only effects are handled by the particle task
@@ -323,6 +341,92 @@ public class StrainEffectsManager implements Listener {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 20, 0, false, false, true));
                 
                 elapsed += 40;
+            }
+        }.runTaskTimer(plugin, 0L, 40L);
+    }
+    
+    /**
+     * Schedules the water walk effect - allows player to walk on water.
+     */
+    private void scheduleWaterWalkEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                Location below = player.getLocation().clone().subtract(0, 0.1, 0);
+                
+                // Check if player is standing on water
+                if (below.getBlock().getType() == Material.WATER || 
+                    below.getBlock().getType() == Material.WATER_CAULDRON) {
+                    
+                    // Place temporary ice/barrier to walk on
+                    Location underFeet = player.getLocation().clone();
+                    underFeet.setY(Math.floor(underFeet.getY()) - 1);
+                    
+                    // Visual effect - frost particles on water
+                    player.getWorld().spawnParticle(Particle.SNOWFLAKE, 
+                        underFeet.clone().add(0.5, 1.1, 0.5), 5, 0.3, 0.05, 0.3, 0);
+                    
+                    // Apply levitation to keep them above water  
+                    if (player.getLocation().getBlock().getType() == Material.WATER) {
+                        player.setVelocity(player.getVelocity().setY(0.05));
+                    }
+                }
+                
+                elapsed += 5; // Check every 5 ticks
+            }
+        }.runTaskTimer(plugin, 0L, 5L);
+    }
+    
+    /**
+     * Schedules plant growth boost for nearby plants.
+     */
+    private void schedulePlantGrowthBoost(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                Location center = player.getLocation();
+                int radius = 5;
+                
+                // Boost nearby crops
+                for (int x = -radius; x <= radius; x++) {
+                    for (int y = -2; y <= 2; y++) {
+                        for (int z = -radius; z <= radius; z++) {
+                            Location blockLoc = center.clone().add(x, y, z);
+                            org.bukkit.block.Block block = blockLoc.getBlock();
+                            
+                            // Check if it's a crop
+                            if (block.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
+                                if (ageable.getAge() < ageable.getMaximumAge()) {
+                                    // 10% chance to grow one stage every 2 seconds
+                                    if (ThreadLocalRandom.current().nextDouble() < 0.10) {
+                                        ageable.setAge(Math.min(ageable.getMaximumAge(), ageable.getAge() + 1));
+                                        block.setBlockData(ageable);
+                                        
+                                        // Particles
+                                        player.getWorld().spawnParticle(Particle.COMPOSTER, 
+                                            blockLoc.clone().add(0.5, 0.5, 0.5), 5, 0.2, 0.2, 0.2, 0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                elapsed += 40; // Check every 2 seconds
             }
         }.runTaskTimer(plugin, 0L, 40L);
     }

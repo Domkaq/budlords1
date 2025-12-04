@@ -221,8 +221,24 @@ public class PrestigeManager implements InventoryHolder {
         // Increment prestige
         stats.incrementPrestige();
         
+        // Award skill points for prestige (3 points per prestige level)
+        int skillPointsAwarded = 3;
+        if (plugin.getSkillManager() != null) {
+            plugin.getSkillManager().addSkillPoints(player.getUniqueId(), skillPointsAwarded);
+        }
+        
         // Close inventory
         player.closeInventory();
+        
+        // Sync achievements with stats
+        if (plugin.getAchievementManager() != null) {
+            plugin.getAchievementManager().syncWithStats(player);
+        }
+        
+        // Save stats
+        if (plugin.getStatsManager() != null) {
+            plugin.getStatsManager().saveStats();
+        }
         
         // Epic celebration effects!
         playPrestigeCelebration(player, newPrestigeLevel);
@@ -240,6 +256,8 @@ public class PrestigeManager implements InventoryHolder {
         player.sendMessage("§a  • Growth Speed: §f+" + String.format("%.0f%%", getGrowthSpeedMultiplier(newPrestigeLevel) * 100 - 100));
         player.sendMessage("§a  • Quality: §f+" + String.format("%.0f%%", getQualityMultiplier(newPrestigeLevel) * 100 - 100));
         player.sendMessage("§a  • Trade Success: §f+" + String.format("%.0f%%", getSuccessBonus(newPrestigeLevel) * 100));
+        player.sendMessage("");
+        player.sendMessage("§a  • Skill Points: §f+" + skillPointsAwarded + " §7(Use /skills to unlock skills!)");
         player.sendMessage("");
         player.sendMessage("§5§l═════════════════════════════════════");
         player.sendMessage("");
