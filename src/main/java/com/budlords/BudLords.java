@@ -1,21 +1,28 @@
 package com.budlords;
 
+import com.budlords.challenges.ChallengeManager;
 import com.budlords.commands.*;
+import com.budlords.crossbreed.CrossbreedManager;
 import com.budlords.data.DataManager;
 import com.budlords.economy.EconomyManager;
+import com.budlords.events.RandomEventManager;
+import com.budlords.farming.AmbientEffectsManager;
 import com.budlords.farming.FarmingManager;
 import com.budlords.gui.MarketShopGUI;
 import com.budlords.gui.RollingShopGUI;
 import com.budlords.joint.JointRollingManager;
 import com.budlords.listeners.FarmingListener;
+import com.budlords.listeners.GUIListener;
 import com.budlords.listeners.ItemDropListener;
 import com.budlords.listeners.NPCListener;
 import com.budlords.listeners.PlayerListener;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.DroppedBudTracker;
 import com.budlords.packaging.PackagingManager;
+import com.budlords.prestige.PrestigeManager;
 import com.budlords.progression.RankManager;
 import com.budlords.quality.QualityItemManager;
+import com.budlords.stats.StatsManager;
 import com.budlords.strain.StrainManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -36,6 +43,14 @@ public class BudLords extends JavaPlugin {
     private RollingShopGUI rollingShopGUI;
     private JointRollingManager jointRollingManager;
     private DroppedBudTracker droppedBudTracker;
+    
+    // New features
+    private StatsManager statsManager;
+    private PrestigeManager prestigeManager;
+    private ChallengeManager challengeManager;
+    private RandomEventManager randomEventManager;
+    private CrossbreedManager crossbreedManager;
+    private AmbientEffectsManager ambientEffectsManager;
 
     @Override
     public void onEnable() {
@@ -57,6 +72,14 @@ public class BudLords extends JavaPlugin {
             this.jointRollingManager = new JointRollingManager(this, strainManager);
             this.droppedBudTracker = new DroppedBudTracker();
             
+            // Initialize new feature managers
+            this.statsManager = new StatsManager(this);
+            this.prestigeManager = new PrestigeManager(this, economyManager, statsManager);
+            this.challengeManager = new ChallengeManager(this, economyManager, statsManager);
+            this.randomEventManager = new RandomEventManager(this, farmingManager);
+            this.crossbreedManager = new CrossbreedManager(this, strainManager, economyManager, statsManager);
+            this.ambientEffectsManager = new AmbientEffectsManager(this, farmingManager, strainManager);
+            
             // Register commands
             registerCommands();
             
@@ -72,6 +95,11 @@ public class BudLords extends JavaPlugin {
             getLogger().info("★ Star Quality System enabled!");
             getLogger().info("✦ Drag-and-Drop Packaging enabled!");
             getLogger().info("✦ Joint Rolling Minigame enabled!");
+            getLogger().info("✦ Prestige System enabled!");
+            getLogger().info("✦ Daily Challenges enabled!");
+            getLogger().info("✦ Random Events enabled!");
+            getLogger().info("✦ Crossbreeding Lab enabled!");
+            getLogger().info("✦ Enhanced Ambient Effects enabled!");
             
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to enable BudLords!", e);
@@ -86,8 +114,20 @@ public class BudLords extends JavaPlugin {
                 dataManager.saveAll();
                 getLogger().info("All data saved successfully.");
             }
+            if (statsManager != null) {
+                statsManager.saveStats();
+            }
             if (farmingManager != null) {
                 farmingManager.shutdown();
+            }
+            if (challengeManager != null) {
+                challengeManager.shutdown();
+            }
+            if (randomEventManager != null) {
+                randomEventManager.shutdown();
+            }
+            if (ambientEffectsManager != null) {
+                ambientEffectsManager.shutdown();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -104,6 +144,13 @@ public class BudLords extends JavaPlugin {
         SpawnBlackMarketCommand spawnBlackMarketCommand = new SpawnBlackMarketCommand(npcManager);
         PackageCommand packageCommand = new PackageCommand(packagingManager);
         BudLordsCommand budLordsCommand = new BudLordsCommand(this);
+        
+        // New feature commands
+        StatsCommand statsCommand = new StatsCommand(statsManager);
+        PrestigeCommand prestigeCommand = new PrestigeCommand(prestigeManager);
+        ChallengesCommand challengesCommand = new ChallengesCommand(challengeManager);
+        CrossbreedCommand crossbreedCommand = new CrossbreedCommand(crossbreedManager);
+        LeaderboardCommand leaderboardCommand = new LeaderboardCommand(statsManager);
 
         Objects.requireNonNull(getCommand("bal")).setExecutor(balanceCommand);
         Objects.requireNonNull(getCommand("bal")).setTabCompleter(balanceCommand);
@@ -121,6 +168,18 @@ public class BudLords extends JavaPlugin {
         Objects.requireNonNull(getCommand("package")).setTabCompleter(packageCommand);
         Objects.requireNonNull(getCommand("budlords")).setExecutor(budLordsCommand);
         Objects.requireNonNull(getCommand("budlords")).setTabCompleter(budLordsCommand);
+        
+        // Register new commands
+        Objects.requireNonNull(getCommand("stats")).setExecutor(statsCommand);
+        Objects.requireNonNull(getCommand("stats")).setTabCompleter(statsCommand);
+        Objects.requireNonNull(getCommand("prestige")).setExecutor(prestigeCommand);
+        Objects.requireNonNull(getCommand("prestige")).setTabCompleter(prestigeCommand);
+        Objects.requireNonNull(getCommand("challenges")).setExecutor(challengesCommand);
+        Objects.requireNonNull(getCommand("challenges")).setTabCompleter(challengesCommand);
+        Objects.requireNonNull(getCommand("crossbreed")).setExecutor(crossbreedCommand);
+        Objects.requireNonNull(getCommand("crossbreed")).setTabCompleter(crossbreedCommand);
+        Objects.requireNonNull(getCommand("leaderboard")).setExecutor(leaderboardCommand);
+        Objects.requireNonNull(getCommand("leaderboard")).setTabCompleter(leaderboardCommand);
     }
 
     private void registerListeners() {
@@ -128,6 +187,9 @@ public class BudLords extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new NPCListener(npcManager, economyManager, rankManager, packagingManager, marketShopGUI, strainManager), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager), this);
         getServer().getPluginManager().registerEvents(new ItemDropListener(this, strainManager, packagingManager, droppedBudTracker, jointRollingManager), this);
+        
+        // Register GUI listener for new features
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
     }
 
     private void startAutosaveTask() {
@@ -183,5 +245,30 @@ public class BudLords extends JavaPlugin {
     
     public DroppedBudTracker getDroppedBudTracker() {
         return droppedBudTracker;
+    }
+    
+    // New feature getters
+    public StatsManager getStatsManager() {
+        return statsManager;
+    }
+    
+    public PrestigeManager getPrestigeManager() {
+        return prestigeManager;
+    }
+    
+    public ChallengeManager getChallengeManager() {
+        return challengeManager;
+    }
+    
+    public RandomEventManager getRandomEventManager() {
+        return randomEventManager;
+    }
+    
+    public CrossbreedManager getCrossbreedManager() {
+        return crossbreedManager;
+    }
+    
+    public AmbientEffectsManager getAmbientEffectsManager() {
+        return ambientEffectsManager;
     }
 }
