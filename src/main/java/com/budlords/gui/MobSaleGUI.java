@@ -510,8 +510,45 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         // Apply cooldown to this buyer entity (prevents selling to same entity repeatedly)
         applyEntityCooldown(session.buyerId);
         
-        // Play smoking/high animation for the buyer entity
-        playBuyerSmokingAnimation(session.buyerId, player);
+        // Get strain info from sold items to apply effects to buyer
+        Strain soldStrain = null;
+        StarRating soldRating = null;
+        
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            
+            // Try to get strain from packaged product
+            if (packagingManager.isPackagedProduct(item)) {
+                String strainId = packagingManager.getStrainIdFromPackage(item);
+                if (strainId != null) {
+                    soldStrain = strainManager.getStrain(strainId);
+                    // Get rating from lore if available
+                    if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
+                        for (String line : item.getItemMeta().getLore()) {
+                            if (line.contains("★")) {
+                                int stars = (int) line.chars().filter(ch -> ch == '★').count();
+                                soldRating = StarRating.fromValue(Math.min(5, Math.max(1, stars)));
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            // Try to get strain from joint
+            if (JointItems.isJoint(item)) {
+                String strainId = JointItems.getJointStrainId(item);
+                if (strainId != null) {
+                    soldStrain = strainManager.getStrain(strainId);
+                    soldRating = JointItems.getJointRating(item);
+                    break;
+                }
+            }
+        }
+        
+        // Apply strain effects to buyer entity (villager gets high from the product!)
+        applyEffectsToBuyer(session.buyerId, soldStrain, soldRating);
         
         // Clear sold items
         for (int i = 0; i < session.itemsToSell.length; i++) {
@@ -531,6 +568,26 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         player.sendMessage("§7Sold §e" + itemsSold + " §7item(s) for §a" + economyManager.formatMoney(total));
         player.sendMessage("§7New balance: §e" + economyManager.formatMoney(economyManager.getBalance(player)));
         player.sendMessage("");
+    }
+    
+    /**
+     * Applies strain effects to the buyer entity after purchase.
+     * The villager/buyer "gets high" from the product they bought!
+     */
+    private void applyEffectsToBuyer(UUID buyerId, Strain strain, StarRating rating) {
+        org.bukkit.entity.Entity buyer = Bukkit.getEntity(buyerId);
+        if (buyer == null || !(buyer instanceof org.bukkit.entity.LivingEntity living)) return;
+        
+        // Effect duration - 10-20 seconds (200-400 ticks)
+        int duration = 200 + (rating != null ? rating.getStars() * 40 : 0);
+        
+        // Apply effects via StrainEffectsManager
+        if (plugin.getStrainEffectsManager() != null && strain != null) {
+            plugin.getStrainEffectsManager().applyStrainEffectsToEntity(living, strain, rating, duration);
+        } else {
+            // Fallback - apply generic "high" effects with smoking animation
+            playBuyerSmokingAnimation(buyerId, null);
+        }
     }
     
     /**

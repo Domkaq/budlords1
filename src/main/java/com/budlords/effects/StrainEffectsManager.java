@@ -79,6 +79,212 @@ public class StrainEffectsManager implements Listener {
     }
     
     /**
+     * Applies strain effects to any LivingEntity (used for villagers who buy products).
+     * Shows visual particles and applies appropriate potion effects.
+     */
+    public void applyStrainEffectsToEntity(LivingEntity entity, Strain strain, StarRating quality, int duration) {
+        if (entity == null || strain == null) return;
+        
+        List<StrainEffect> effects = strain.getEffects();
+        if (effects == null || effects.isEmpty()) {
+            // If no specific effects, apply a random "high" effect
+            applyGenericHighToEntity(entity, quality, duration);
+            return;
+        }
+        
+        // Apply effects to entity
+        for (StrainEffect effect : effects) {
+            // 80% chance to apply each effect to entity
+            if (ThreadLocalRandom.current().nextDouble() > 0.80) {
+                continue;
+            }
+            
+            applyEffectToEntity(entity, effect, quality, duration);
+        }
+        
+        // Start particle task for entity
+        startEntityParticleTask(entity, effects, duration);
+    }
+    
+    /**
+     * Applies a generic "high" effect to an entity with no specific strain effects.
+     */
+    private void applyGenericHighToEntity(LivingEntity entity, StarRating quality, int duration) {
+        int qualityBonus = quality != null ? quality.getStars() : 1;
+        
+        // Apply basic confusion/happy effects
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 0, false, false, true));
+        if (qualityBonus >= 3) {
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration / 2, 0, false, false, true));
+        }
+        
+        // Start visual particles
+        startGenericHighParticles(entity, duration);
+    }
+    
+    /**
+     * Applies a single effect to a LivingEntity.
+     */
+    public void applyEffectToEntity(LivingEntity entity, StrainEffect effect, StarRating quality, int baseDuration) {
+        StrainEffectType type = effect.getType();
+        int intensity = effect.getIntensity();
+        int qualityBonus = quality != null ? quality.getStars() : 1;
+        int duration = (int) (baseDuration * effect.getDurationMultiplier() * (0.8 + qualityBonus * 0.1));
+        int amplifier = effect.getPotionAmplifier();
+        
+        // Apply relevant potion effects to entity based on effect type
+        switch (type) {
+            case SPEED_DEMON, WIND_WALKER -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier, false, false, true));
+            }
+            case SLOW_MO, DRUNK_VISION -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, amplifier, false, false, true));
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, duration / 2, 0, false, false, true));
+            }
+            case MOON_GRAVITY, FEATHER_FALL -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+            }
+            case BUNNY_HOP, SLIME_BOUNCE -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, amplifier + 1, false, false, true));
+            }
+            case THIRD_EYE, MATRIX_VISION, EAGLE_SIGHT, NEON_GLOW -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration, 0, false, false, true));
+            }
+            case BERSERKER, RAGE_MODE -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, duration, amplifier, false, false, true));
+            }
+            case TANK_MODE, ICE_ARMOR, GODMODE_AURA -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, amplifier, false, false, true));
+            }
+            case NINJA_MODE, SMOKE_SCREEN -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, duration / 2, 0, false, false, true));
+            }
+            case PHOENIX_REBIRTH, FIRE_PUNCH, DRAGON_BREATH -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
+            }
+            case MEDITATION, ENLIGHTENMENT, CELESTIAL_BEING -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, duration, amplifier, false, false, true));
+            }
+            case FROST_AURA, SNOWMAN -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration / 2, 0, false, false, true));
+            }
+            case ASTRAL_PROJECTION, VOID_WALKER, DREAM_STATE -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration / 3, 0, false, false, true));
+            }
+            case INFINITY_POWER, UNIVERSE_CONTROL -> {
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration, 0, false, false, true));
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration / 2, amplifier, false, false, true));
+            }
+            default -> {
+                // Default "high" effect - slow movement, glowing
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration / 2, 0, false, false, true));
+            }
+        }
+    }
+    
+    /**
+     * Starts a particle task for an entity showing strain effects.
+     */
+    private void startEntityParticleTask(LivingEntity entity, List<StrainEffect> effects, int duration) {
+        UUID entityId = entity.getUniqueId();
+        
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                Entity ent = Bukkit.getEntity(entityId);
+                if (ent == null || !ent.isValid() || elapsed >= duration) {
+                    cancel();
+                    return;
+                }
+                
+                Location loc = ent.getLocation();
+                World world = loc.getWorld();
+                if (world == null) {
+                    cancel();
+                    return;
+                }
+                
+                // Spawn particles for effects
+                for (StrainEffect effect : effects) {
+                    StrainEffectType type = effect.getType();
+                    Particle particle = type.getDefaultParticle();
+                    
+                    // Spawn around entity head
+                    world.spawnParticle(particle, loc.clone().add(0, 1.8, 0), 
+                        3, 0.3, 0.2, 0.3, 0.01);
+                }
+                
+                // Add smoke puffs (they're smoking!)
+                if (ThreadLocalRandom.current().nextDouble() < 0.3) {
+                    world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 2.0, 0), 
+                        2, 0.1, 0.1, 0.1, 0.01);
+                }
+                
+                // Happy effects
+                if (ThreadLocalRandom.current().nextDouble() < 0.15) {
+                    world.spawnParticle(Particle.HEART, loc.clone().add(
+                        ThreadLocalRandom.current().nextDouble(-0.3, 0.3), 
+                        2.2, 
+                        ThreadLocalRandom.current().nextDouble(-0.3, 0.3)
+                    ), 1, 0, 0, 0, 0);
+                }
+                
+                elapsed += 10;
+            }
+        }.runTaskTimer(plugin, 0L, 10L);
+    }
+    
+    /**
+     * Starts generic "high" particles for entities without specific effects.
+     */
+    private void startGenericHighParticles(LivingEntity entity, int duration) {
+        UUID entityId = entity.getUniqueId();
+        
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                Entity ent = Bukkit.getEntity(entityId);
+                if (ent == null || !ent.isValid() || elapsed >= duration) {
+                    cancel();
+                    return;
+                }
+                
+                Location loc = ent.getLocation();
+                World world = loc.getWorld();
+                if (world == null) {
+                    cancel();
+                    return;
+                }
+                
+                // Smoke from head
+                world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 1.9, 0), 
+                    3, 0.15, 0.1, 0.15, 0.01);
+                
+                // Happy/confused effects
+                if (ThreadLocalRandom.current().nextDouble() < 0.2) {
+                    world.spawnParticle(Particle.VILLAGER_HAPPY, loc.clone().add(0, 2.0, 0), 
+                        2, 0.3, 0.2, 0.3, 0.02);
+                }
+                
+                if (ThreadLocalRandom.current().nextDouble() < 0.1) {
+                    world.spawnParticle(Particle.HEART, loc.clone().add(
+                        ThreadLocalRandom.current().nextDouble(-0.3, 0.3), 
+                        2.2, 
+                        ThreadLocalRandom.current().nextDouble(-0.3, 0.3)
+                    ), 1, 0, 0, 0, 0);
+                }
+                
+                elapsed += 15;
+            }
+        }.runTaskTimer(plugin, 0L, 15L);
+    }
+    
+    /**
      * Applies a single effect to a player.
      */
     public void applyEffect(Player player, StrainEffect effect, StarRating quality, int baseDuration) {
@@ -260,9 +466,203 @@ public class StrainEffectsManager implements Listener {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
             }
             
-            // Other visual effects don't need potion effects, just particles
-            default -> {
+            // ROCKET BOOST
+            case ROCKET_BOOST -> {
+                scheduleRocketBoostEffect(player, duration);
+            }
+            
+            // BLINK STEP
+            case BLINK_STEP -> {
+                scheduleBlinkStepEffect(player, duration);
+            }
+            
+            // PREDATOR SENSE - entities glow through walls
+            case PREDATOR_SENSE -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0, false, false, true));
+                makeNearbyEntitiesGlow(player, duration);
+            }
+            
+            // SONIC HEARING - can detect mobs nearby
+            case SONIC_HEARING -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE, duration, 0, false, false, true));
+            }
+            
+            // X-RAY VISION
+            case X_RAY_VISION -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0, false, false, true));
+                makeNearbyEntitiesGlow(player, duration);
+            }
+            
+            // DOUBLE HARVEST - luck bonus for better drops
+            case DOUBLE_HARVEST -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, duration, amplifier + 2, false, false, true));
+            }
+            
+            // MONEY MAGNET - luck for better trade deals
+            case MONEY_MAGNET -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, duration, amplifier + 1, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE, duration, amplifier, false, false, true));
+            }
+            
+            // SEED FINDER - luck for finding seeds
+            case SEED_FINDER -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, duration, amplifier, false, false, true));
+            }
+            
+            // XP BOOST - bonus XP
+            case XP_BOOST -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, duration, amplifier, false, false, true));
+            }
+            
+            // POISON TOUCH - attacks apply poison
+            case POISON_TOUCH -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, duration, 0, false, false, true));
+            }
+            
+            // FIRE PUNCH - attacks set enemies on fire
+            case FIRE_PUNCH -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, duration, amplifier, false, false, true));
+            }
+            
+            // ICE ARMOR - cold damage resistance
+            case ICE_ARMOR -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, amplifier, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
+            }
+            
+            // RAGE MODE - damage increases when low health
+            case RAGE_MODE -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, duration, amplifier, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, 0, false, false, true));
+            }
+            
+            // SLIME BOUNCE
+            case SLIME_BOUNCE -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, amplifier + 2, false, false, true));
+            }
+            
+            // SNOWMAN - leave snow trail
+            case SNOWMAN -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
+            }
+            
+            // ANIMAL FRIEND - animals don't flee
+            case ANIMAL_FRIEND -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE, duration, 0, false, false, true));
+            }
+            
+            // RAIN DANCER - rain particles
+            case RAIN_DANCER -> {
+                // Visual only - handled by particle task
+            }
+            
+            // EARTHQUAKE - ground shaking visual
+            case EARTHQUAKE -> {
+                scheduleEarthquakeEffect(player, duration);
+            }
+            
+            // SOUL SIGHT - see spirits
+            case SOUL_SIGHT -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration / 2, 0, false, false, true));
+            }
+            
+            // FORTUNE TELLER - glimpse the future
+            case FORTUNE_TELLER -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, duration, amplifier + 1, false, false, true));
+            }
+            
+            // ELEMENTAL CHAOS - all elements
+            case ELEMENTAL_CHAOS -> {
+                scheduleElementalChaosEffect(player, duration);
+            }
+            
+            // DIMENSIONAL RIFT - portal visuals
+            case DIMENSIONAL_RIFT -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+            }
+            
+            // TIME FREEZE - time-stopping visuals
+            case TIME_FREEZE -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration / 4, 1, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, amplifier + 1, false, false, true));
+            }
+            
+            // INFINITY POWER - unlimited energy
+            case INFINITY_POWER -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, duration, amplifier + 2, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier + 1, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, duration, amplifier, false, false, true));
+            }
+            
+            // GODMODE AURA - divine protection
+            case GODMODE_AURA -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, amplifier + 2, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, duration, amplifier + 1, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, duration, amplifier + 4, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
+            }
+            
+            // UNIVERSE CONTROL - reality distortion
+            case UNIVERSE_CONTROL -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration, 0, false, false, true));
+                scheduleUniverseControlEffect(player, duration);
+            }
+            
+            // SPIRIT ANIMAL - animal shapes appear
+            case SPIRIT_ANIMAL -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier, false, false, true));
+            }
+            
+            // WIND WALKER - one with the wind
+            case WIND_WALKER -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier + 1, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+            }
+            
+            // STORM CALLER - control weather
+            case STORM_CALLER -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, amplifier, false, false, true));
+                scheduleStormCallerEffect(player, duration);
+            }
+            
+            // NEON GLOW - bright glowing aura
+            case NEON_GLOW -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration, 0, false, false, true));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0, false, false, true));
+            }
+            
+            // CRYSTAL SHIMMER - shimmering particles
+            case CRYSTAL_SHIMMER -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration / 2, 0, false, false, true));
+            }
+            
+            // SMOKE SCREEN - dense smoke
+            case SMOKE_SCREEN -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, duration / 3, 0, false, false, true));
+            }
+            
+            // ELECTRIC SURGE - electric sparks
+            case ELECTRIC_SURGE -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier, false, false, true));
+                scheduleElectricSurgeEffect(player, duration);
+            }
+            
+            // Visual-only effects without potion effects
+            case GHOST_RIDER, RAINBOW_AURA, SHADOW_WALKER, ANGEL_WINGS, DEMON_HORNS,
+                 SPARKLING_EYES, FIRE_TRAIL, LIGHTNING_STRIKE, GALAXY_PORTAL,
+                 DISCO_FEVER, CHIPMUNK_VOICE, BASS_DROP, CONFETTI, BUBBLE_AURA,
+                 HEART_TRAIL, MUSIC_NOTES, PIXEL_GLITCH, FLOWER_POWER, EARTH_BOUND,
+                 AURORA_BOREALIS, RAINBOW_TRAIL, FIREWORK_EXPLOSION -> {
                 // Visual-only effects are handled by the particle task
+            }
+            
+            default -> {
+                // Any remaining effects - apply basic luck as fallback
+                player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, duration / 2, 0, false, false, true));
             }
         }
         
@@ -437,6 +837,226 @@ public class StrainEffectsManager implements Listener {
                 elapsed += 60; // Check every 3 seconds (increased from 2)
             }
         }.runTaskTimer(plugin, 0L, 60L); // Increased interval
+    }
+    
+    /**
+     * Schedules rocket boost effect - occasional upward boost.
+     */
+    private void scheduleRocketBoostEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                // 15% chance for rocket boost every 2 seconds
+                if (ThreadLocalRandom.current().nextDouble() < 0.15) {
+                    player.setVelocity(player.getVelocity().add(new Vector(0, 0.8, 0)));
+                    player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 0.2, 0), 20, 0.2, 0.1, 0.2, 0.05);
+                    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.5f, 1.5f);
+                }
+                
+                elapsed += 40;
+            }
+        }.runTaskTimer(plugin, 0L, 40L);
+    }
+    
+    /**
+     * Schedules blink step effect - short-range teleportation hints.
+     */
+    private void scheduleBlinkStepEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                // 10% chance for short teleport every 3 seconds
+                if (ThreadLocalRandom.current().nextDouble() < 0.10) {
+                    Location loc = player.getLocation();
+                    double angle = ThreadLocalRandom.current().nextDouble() * Math.PI * 2;
+                    double dist = 2 + ThreadLocalRandom.current().nextDouble() * 3;
+                    double newX = loc.getX() + Math.cos(angle) * dist;
+                    double newZ = loc.getZ() + Math.sin(angle) * dist;
+                    Location newLoc = new Location(loc.getWorld(), newX, loc.getY(), newZ, loc.getYaw(), loc.getPitch());
+                    
+                    // Find safe landing
+                    if (newLoc.getBlock().isPassable()) {
+                        player.getWorld().spawnParticle(Particle.PORTAL, loc, 30, 0.3, 0.5, 0.3, 0.5);
+                        player.teleport(newLoc);
+                        player.getWorld().spawnParticle(Particle.PORTAL, newLoc, 30, 0.3, 0.5, 0.3, 0.5);
+                        player.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 0.4f, 1.8f);
+                    }
+                }
+                
+                elapsed += 60;
+            }
+        }.runTaskTimer(plugin, 0L, 60L);
+    }
+    
+    /**
+     * Schedules earthquake effect - ground shaking visual.
+     */
+    private void scheduleEarthquakeEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                // Shake effect via camera shake simulation
+                Location loc = player.getLocation();
+                player.getWorld().spawnParticle(Particle.BLOCK_CRACK, loc.clone().add(0, 0.1, 0), 
+                    15, 1, 0.1, 1, 0, Material.BROWN_CONCRETE.createBlockData());
+                
+                if (ThreadLocalRandom.current().nextDouble() < 0.3) {
+                    player.playSound(loc, Sound.BLOCK_GRAVEL_BREAK, 0.6f, 0.5f);
+                }
+                
+                elapsed += 20;
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
+    }
+    
+    /**
+     * Schedules elemental chaos effect - random elemental particles.
+     */
+    private void scheduleElementalChaosEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                Location loc = player.getLocation().add(0, 1, 0);
+                int element = ThreadLocalRandom.current().nextInt(4);
+                
+                switch (element) {
+                    case 0 -> player.getWorld().spawnParticle(Particle.FLAME, loc, 10, 0.5, 0.5, 0.5, 0.02);
+                    case 1 -> player.getWorld().spawnParticle(Particle.DRIP_WATER, loc, 10, 0.5, 0.5, 0.5, 0.02);
+                    case 2 -> player.getWorld().spawnParticle(Particle.CLOUD, loc, 10, 0.5, 0.5, 0.5, 0.02);
+                    case 3 -> player.getWorld().spawnParticle(Particle.COMPOSTER, loc, 10, 0.5, 0.5, 0.5, 0.02);
+                }
+                
+                elapsed += 30;
+            }
+        }.runTaskTimer(plugin, 0L, 30L);
+    }
+    
+    /**
+     * Schedules universe control effect - cosmic distortion.
+     */
+    private void scheduleUniverseControlEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                Location loc = player.getLocation();
+                
+                // Cosmic particles in spiral
+                double angle = (elapsed / 10.0) % (Math.PI * 2);
+                for (int i = 0; i < 3; i++) {
+                    double a = angle + (i * Math.PI * 2 / 3);
+                    double r = 1.5;
+                    double x = Math.cos(a) * r;
+                    double z = Math.sin(a) * r;
+                    player.getWorld().spawnParticle(Particle.END_ROD, loc.clone().add(x, 1.5 + Math.sin(a) * 0.5, z), 1, 0, 0, 0, 0);
+                }
+                
+                // Random reality distortion
+                if (ThreadLocalRandom.current().nextDouble() < 0.05) {
+                    player.getWorld().spawnParticle(Particle.REVERSE_PORTAL, loc.add(0, 1, 0), 50, 1, 1, 1, 0.5);
+                    player.playSound(loc, Sound.BLOCK_END_PORTAL_FRAME_FILL, 0.3f, 0.5f);
+                }
+                
+                elapsed += 10;
+            }
+        }.runTaskTimer(plugin, 0L, 10L);
+    }
+    
+    /**
+     * Schedules storm caller effect - lightning and storm particles.
+     */
+    private void scheduleStormCallerEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                Location loc = player.getLocation();
+                
+                // Storm cloud above player
+                player.getWorld().spawnParticle(Particle.CLOUD, loc.clone().add(0, 3, 0), 5, 1, 0.2, 1, 0.01);
+                
+                // Random lightning strike near player
+                if (ThreadLocalRandom.current().nextDouble() < 0.05) {
+                    Location strikeLoc = loc.clone().add(
+                        ThreadLocalRandom.current().nextDouble(-3, 3), 0,
+                        ThreadLocalRandom.current().nextDouble(-3, 3));
+                    player.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, strikeLoc.add(0, 5, 0), 50, 0.1, 2, 0.1, 0.5);
+                    player.getWorld().playSound(strikeLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.5f, 1.5f);
+                }
+                
+                elapsed += 20;
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
+    }
+    
+    /**
+     * Schedules electric surge effect - electric sparks periodically.
+     */
+    private void scheduleElectricSurgeEffect(Player player, int totalDuration) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            
+            @Override
+            public void run() {
+                if (!player.isOnline() || elapsed >= totalDuration) {
+                    cancel();
+                    return;
+                }
+                
+                Location loc = player.getLocation().add(0, 1, 0);
+                
+                // Random electric sparks
+                if (ThreadLocalRandom.current().nextDouble() < 0.4) {
+                    player.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 8, 0.4, 0.5, 0.4, 0.05);
+                    
+                    if (ThreadLocalRandom.current().nextDouble() < 0.3) {
+                        player.getWorld().playSound(loc, Sound.BLOCK_AMETHYST_BLOCK_HIT, 0.3f, 2.0f);
+                    }
+                }
+                
+                elapsed += 15;
+            }
+        }.runTaskTimer(plugin, 0L, 15L);
     }
     
     private void playActivationSound(Player player, StrainEffectType type) {
