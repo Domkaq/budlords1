@@ -12,6 +12,7 @@ import com.budlords.gui.MarketShopGUI;
 import com.budlords.gui.RollingShopGUI;
 import com.budlords.joint.JointRollingManager;
 import com.budlords.listeners.FarmingListener;
+import com.budlords.listeners.GUIListener;
 import com.budlords.listeners.ItemDropListener;
 import com.budlords.listeners.NPCListener;
 import com.budlords.listeners.PlayerListener;
@@ -186,6 +187,9 @@ public class BudLords extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new NPCListener(npcManager, economyManager, rankManager, packagingManager, marketShopGUI, strainManager), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager), this);
         getServer().getPluginManager().registerEvents(new ItemDropListener(this, strainManager, packagingManager, droppedBudTracker, jointRollingManager), this);
+        
+        // Register GUI listener for new features
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
     }
 
     private void startAutosaveTask() {

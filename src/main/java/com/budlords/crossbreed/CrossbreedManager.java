@@ -34,10 +34,10 @@ public class CrossbreedManager implements InventoryHolder {
     // Active crossbreeding sessions
     private final Map<UUID, CrossbreedSession> activeSessions;
     
-    // Crossbreeding costs
-    private static final double BASE_CROSSBREED_COST = 500.0;
-    private static final double RARE_MULTIPLIER = 2.0;
-    private static final double LEGENDARY_MULTIPLIER = 5.0;
+    // Crossbreeding configuration (read from config)
+    private final double baseCrossbreedCost;
+    private final double mutationChance;
+    private final double legendaryMutationBonus;
 
     public CrossbreedManager(BudLords plugin, StrainManager strainManager, 
                              EconomyManager economyManager, StatsManager statsManager) {
@@ -46,6 +46,11 @@ public class CrossbreedManager implements InventoryHolder {
         this.economyManager = economyManager;
         this.statsManager = statsManager;
         this.activeSessions = new HashMap<>();
+        
+        // Load configuration values
+        this.baseCrossbreedCost = plugin.getConfig().getDouble("crossbreed.base-cost", 500.0);
+        this.mutationChance = plugin.getConfig().getDouble("crossbreed.mutation-chance", 0.05);
+        this.legendaryMutationBonus = plugin.getConfig().getDouble("crossbreed.legendary-mutation-bonus", 0.10);
     }
 
     /**
@@ -430,12 +435,12 @@ public class CrossbreedManager implements InventoryHolder {
         int avgRating = (rating1 + rating2 + 1) / 2; // Slight bonus
         StarRating finalRating = StarRating.fromValue(avgRating);
         
-        // Check for mutation (5% chance, higher with legendary parents)
-        double mutationChance = 0.05;
+        // Check for mutation using config values
+        double effectiveMutationChance = this.mutationChance;
         if (parent1.getRarity() == Strain.Rarity.LEGENDARY || parent2.getRarity() == Strain.Rarity.LEGENDARY) {
-            mutationChance = 0.15;
+            effectiveMutationChance = this.mutationChance + this.legendaryMutationBonus;
         }
-        boolean hasMutation = ThreadLocalRandom.current().nextDouble() < mutationChance;
+        boolean hasMutation = ThreadLocalRandom.current().nextDouble() < effectiveMutationChance;
         
         if (hasMutation) {
             // Mutation bonus!
@@ -480,7 +485,7 @@ public class CrossbreedManager implements InventoryHolder {
     }
 
     private double calculateCost(CrossbreedSession session) {
-        double cost = BASE_CROSSBREED_COST;
+        double cost = baseCrossbreedCost;
         
         if (session.strain1 != null) {
             Strain s1 = strainManager.getStrain(session.strain1);
@@ -503,8 +508,8 @@ public class CrossbreedManager implements InventoryHolder {
         return switch (rarity) {
             case COMMON -> 1.0;
             case UNCOMMON -> 1.5;
-            case RARE -> RARE_MULTIPLIER;
-            case LEGENDARY -> LEGENDARY_MULTIPLIER;
+            case RARE -> 2.0;
+            case LEGENDARY -> 5.0;
         };
     }
 

@@ -27,20 +27,26 @@ public class PrestigeManager implements InventoryHolder {
     private final EconomyManager economyManager;
     private final StatsManager statsManager;
 
-    // Prestige requirements
-    private static final double BASE_PRESTIGE_COST = 500000.0;
-    private static final int MAX_PRESTIGE = 10;
-
-    // Prestige bonuses per level
-    private static final double EARNINGS_BONUS_PER_LEVEL = 0.10;      // +10% earnings per prestige
-    private static final double GROWTH_SPEED_BONUS_PER_LEVEL = 0.05; // +5% faster growth per prestige
-    private static final double QUALITY_BONUS_PER_LEVEL = 0.08;      // +8% quality bonus per prestige
-    private static final double SUCCESS_BONUS_PER_LEVEL = 0.02;      // +2% trade success per prestige
+    // Prestige configuration (read from config)
+    private final double basePrestigeCost;
+    private final int maxPrestige;
+    private final double earningsBonusPerLevel;
+    private final double growthSpeedBonusPerLevel;
+    private final double qualityBonusPerLevel;
+    private final double successBonusPerLevel;
 
     public PrestigeManager(BudLords plugin, EconomyManager economyManager, StatsManager statsManager) {
         this.plugin = plugin;
         this.economyManager = economyManager;
         this.statsManager = statsManager;
+        
+        // Load configuration values
+        this.basePrestigeCost = plugin.getConfig().getDouble("prestige.base-cost", 500000.0);
+        this.maxPrestige = plugin.getConfig().getInt("prestige.max-level", 10);
+        this.earningsBonusPerLevel = plugin.getConfig().getDouble("prestige.bonuses.earnings-percent", 10) / 100.0;
+        this.growthSpeedBonusPerLevel = plugin.getConfig().getDouble("prestige.bonuses.growth-speed-percent", 5) / 100.0;
+        this.qualityBonusPerLevel = plugin.getConfig().getDouble("prestige.bonuses.quality-percent", 8) / 100.0;
+        this.successBonusPerLevel = plugin.getConfig().getDouble("prestige.bonuses.trade-success-percent", 2) / 100.0;
     }
 
     /**
@@ -54,7 +60,7 @@ public class PrestigeManager implements InventoryHolder {
         int currentPrestige = stats.getPrestigeLevel();
         double currentBalance = economyManager.getBalance(player);
         double prestigeCost = getPrestigeCost(currentPrestige);
-        boolean canPrestige = currentBalance >= prestigeCost && currentPrestige < MAX_PRESTIGE;
+        boolean canPrestige = currentBalance >= prestigeCost && currentPrestige < maxPrestige;
         
         // Border
         ItemStack borderPurple = createItem(Material.PURPLE_STAINED_GLASS_PANE, " ", null);
@@ -92,7 +98,7 @@ public class PrestigeManager implements InventoryHolder {
             )));
         
         // Next prestige preview
-        if (currentPrestige < MAX_PRESTIGE) {
+        if (currentPrestige < maxPrestige) {
             inv.setItem(22, createItem(Material.EXPERIENCE_BOTTLE, 
                 "§a§l⬆ Next Prestige Preview",
                 Arrays.asList(
@@ -148,7 +154,7 @@ public class PrestigeManager implements InventoryHolder {
             )
             : Arrays.asList(
                 "",
-                currentPrestige >= MAX_PRESTIGE 
+                currentPrestige >= maxPrestige 
                     ? "§7You've reached max prestige!"
                     : "§7You need more money to prestige.",
                 ""
@@ -171,7 +177,7 @@ public class PrestigeManager implements InventoryHolder {
                 "§a• +8% Quality Bonus",
                 "§a• +2% Trade Success",
                 "",
-                "§7Max Prestige Level: §6" + MAX_PRESTIGE
+                "§7Max Prestige Level: §6" + maxPrestige
             )));
         
         player.openInventory(inv);
@@ -189,7 +195,7 @@ public class PrestigeManager implements InventoryHolder {
         double currentBalance = economyManager.getBalance(player);
         double prestigeCost = getPrestigeCost(currentPrestige);
         
-        if (currentPrestige >= MAX_PRESTIGE) {
+        if (currentPrestige >= maxPrestige) {
             player.sendMessage("§cYou've already reached the maximum prestige level!");
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
             return true;
@@ -270,23 +276,23 @@ public class PrestigeManager implements InventoryHolder {
 
     public double getPrestigeCost(int currentPrestige) {
         // Exponential cost increase
-        return BASE_PRESTIGE_COST * Math.pow(2, currentPrestige);
+        return basePrestigeCost * Math.pow(2, currentPrestige);
     }
 
     public double getEarningsMultiplier(int prestigeLevel) {
-        return 1.0 + (prestigeLevel * EARNINGS_BONUS_PER_LEVEL);
+        return 1.0 + (prestigeLevel * earningsBonusPerLevel);
     }
 
     public double getGrowthSpeedMultiplier(int prestigeLevel) {
-        return 1.0 + (prestigeLevel * GROWTH_SPEED_BONUS_PER_LEVEL);
+        return 1.0 + (prestigeLevel * growthSpeedBonusPerLevel);
     }
 
     public double getQualityMultiplier(int prestigeLevel) {
-        return 1.0 + (prestigeLevel * QUALITY_BONUS_PER_LEVEL);
+        return 1.0 + (prestigeLevel * qualityBonusPerLevel);
     }
 
     public double getSuccessBonus(int prestigeLevel) {
-        return prestigeLevel * SUCCESS_BONUS_PER_LEVEL;
+        return prestigeLevel * successBonusPerLevel;
     }
 
     public String getPrestigeDisplay(int level) {
