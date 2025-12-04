@@ -1,9 +1,12 @@
 package com.budlords;
 
+import com.budlords.achievements.AchievementManager;
 import com.budlords.challenges.ChallengeManager;
+import com.budlords.collections.CollectionManager;
 import com.budlords.commands.*;
 import com.budlords.crossbreed.CrossbreedManager;
 import com.budlords.data.DataManager;
+import com.budlords.diseases.DiseaseManager;
 import com.budlords.economy.EconomyManager;
 import com.budlords.events.RandomEventManager;
 import com.budlords.farming.AmbientEffectsManager;
@@ -24,8 +27,11 @@ import com.budlords.packaging.PackagingManager;
 import com.budlords.prestige.PrestigeManager;
 import com.budlords.progression.RankManager;
 import com.budlords.quality.QualityItemManager;
+import com.budlords.seasons.SeasonManager;
+import com.budlords.skills.SkillManager;
 import com.budlords.stats.StatsManager;
 import com.budlords.strain.StrainManager;
+import com.budlords.weather.WeatherManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
@@ -57,6 +63,14 @@ public class BudLords extends JavaPlugin {
     private AmbientEffectsManager ambientEffectsManager;
     private com.budlords.joint.JointEffectsManager jointEffectsManager;
     private com.budlords.effects.StrainEffectsManager strainEffectsManager;
+    
+    // v2.0.0 New Feature Managers
+    private SeasonManager seasonManager;
+    private WeatherManager weatherManager;
+    private DiseaseManager diseaseManager;
+    private AchievementManager achievementManager;
+    private SkillManager skillManager;
+    private CollectionManager collectionManager;
 
     @Override
     public void onEnable() {
@@ -90,6 +104,14 @@ public class BudLords extends JavaPlugin {
             this.jointEffectsManager = new com.budlords.joint.JointEffectsManager(this);
             this.strainEffectsManager = new com.budlords.effects.StrainEffectsManager(this);
             
+            // v2.0.0 New Feature Managers
+            this.seasonManager = new SeasonManager(this);
+            this.weatherManager = new WeatherManager(this, farmingManager);
+            this.diseaseManager = new DiseaseManager(this, farmingManager);
+            this.achievementManager = new AchievementManager(this, economyManager, statsManager);
+            this.skillManager = new SkillManager(this);
+            this.collectionManager = new CollectionManager(this, strainManager);
+            
             // Register commands
             registerCommands();
             
@@ -112,6 +134,16 @@ public class BudLords extends JavaPlugin {
             getLogger().info("✦ Crossbreeding Lab enabled!");
             getLogger().info("✦ Enhanced Ambient Effects enabled!");
             getLogger().info("✦ Strain Special Effects System enabled with 60+ unique effects!");
+            getLogger().info("");
+            getLogger().info("§6§l=== BudLords v2.0.0 MAJOR UPDATE ===");
+            getLogger().info("✦ Season System enabled with 4 seasons!");
+            getLogger().info("✦ Weather System enabled!");
+            getLogger().info("✦ Disease System enabled with 12+ diseases!");
+            getLogger().info("✦ Achievement System enabled with 40+ achievements!");
+            getLogger().info("✦ Skill Tree System enabled with 35+ skills!");
+            getLogger().info("✦ Collection Book System enabled!");
+            getLogger().info("✦ 25+ New Seed Types added!");
+            getLogger().info("§6§l=====================================");
             
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to enable BudLords!", e);
@@ -141,6 +173,25 @@ public class BudLords extends JavaPlugin {
             if (ambientEffectsManager != null) {
                 ambientEffectsManager.shutdown();
             }
+            // v2.0.0 shutdown
+            if (seasonManager != null) {
+                seasonManager.shutdown();
+            }
+            if (weatherManager != null) {
+                weatherManager.shutdown();
+            }
+            if (diseaseManager != null) {
+                diseaseManager.shutdown();
+            }
+            if (achievementManager != null) {
+                achievementManager.saveAchievements();
+            }
+            if (skillManager != null) {
+                skillManager.saveSkills();
+            }
+            if (collectionManager != null) {
+                collectionManager.saveCollections();
+            }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "Error during shutdown", e);
@@ -163,6 +214,12 @@ public class BudLords extends JavaPlugin {
         ChallengesCommand challengesCommand = new ChallengesCommand(challengeManager);
         CrossbreedCommand crossbreedCommand = new CrossbreedCommand(crossbreedManager);
         LeaderboardCommand leaderboardCommand = new LeaderboardCommand(statsManager);
+        
+        // v2.0.0 New Commands
+        SeasonCommand seasonCommand = new SeasonCommand(this);
+        AchievementsCommand achievementsCommand = new AchievementsCommand(this);
+        SkillsCommand skillsCommand = new SkillsCommand(this);
+        CollectionCommand collectionCommand = new CollectionCommand(this);
 
         Objects.requireNonNull(getCommand("bal")).setExecutor(balanceCommand);
         Objects.requireNonNull(getCommand("bal")).setTabCompleter(balanceCommand);
@@ -192,6 +249,16 @@ public class BudLords extends JavaPlugin {
         Objects.requireNonNull(getCommand("crossbreed")).setTabCompleter(crossbreedCommand);
         Objects.requireNonNull(getCommand("leaderboard")).setExecutor(leaderboardCommand);
         Objects.requireNonNull(getCommand("leaderboard")).setTabCompleter(leaderboardCommand);
+        
+        // Register v2.0.0 commands
+        Objects.requireNonNull(getCommand("season")).setExecutor(seasonCommand);
+        Objects.requireNonNull(getCommand("season")).setTabCompleter(seasonCommand);
+        Objects.requireNonNull(getCommand("achievements")).setExecutor(achievementsCommand);
+        Objects.requireNonNull(getCommand("achievements")).setTabCompleter(achievementsCommand);
+        Objects.requireNonNull(getCommand("skills")).setExecutor(skillsCommand);
+        Objects.requireNonNull(getCommand("skills")).setTabCompleter(skillsCommand);
+        Objects.requireNonNull(getCommand("collection")).setExecutor(collectionCommand);
+        Objects.requireNonNull(getCommand("collection")).setTabCompleter(collectionCommand);
     }
 
     private void registerListeners() {
@@ -298,5 +365,30 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.effects.StrainEffectsManager getStrainEffectsManager() {
         return strainEffectsManager;
+    }
+    
+    // v2.0.0 New Feature Getters
+    public SeasonManager getSeasonManager() {
+        return seasonManager;
+    }
+    
+    public WeatherManager getWeatherManager() {
+        return weatherManager;
+    }
+    
+    public DiseaseManager getDiseaseManager() {
+        return diseaseManager;
+    }
+    
+    public AchievementManager getAchievementManager() {
+        return achievementManager;
+    }
+    
+    public SkillManager getSkillManager() {
+        return skillManager;
+    }
+    
+    public CollectionManager getCollectionManager() {
+        return collectionManager;
     }
 }

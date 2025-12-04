@@ -1,8 +1,80 @@
 # BudLords - Minecraft Weed Economy Plugin
 
+## 🎉 VERSION 2.0.0 - MAJOR UPDATE! 🎉
+
 A comprehensive weed farming RPG + black market economy system for Minecraft Paper/Spigot 1.20.4.
 
-## Features
+---
+
+## 🆕 v2.0.0 NEW FEATURES
+
+### 🌸 Season System
+- **4 Dynamic Seasons**: Spring, Summer, Autumn, Winter
+- Each season affects:
+  - Growth speed (up to ±15%)
+  - Quality bonuses (up to ±15%)
+  - Potency bonuses (up to ±15%)
+- Seasonal ambient particles and effects
+- Certain seed types get bonuses in preferred seasons
+- Command: `/season` - View current season info
+
+### ☁️ Weather System
+- Real-time weather affects your plants!
+- **Clear/Sunny**: Normal/bonus growth
+- **Rain**: Plants get watered automatically (+10% growth)
+- **Thunderstorm**: High growth (+20%) and quality boost
+- **Night**: Slight growth penalty but quality bonus
+- Visual weather particles near plants
+
+### 🦠 Disease System (12+ Diseases!)
+- Plants can contract diseases based on conditions
+- **Disease Categories**:
+  - 🍄 Fungal (Root Rot, Powdery Mildew, Botrytis)
+  - 🦠 Bacterial (Leaf Blight)
+  - 🐛 Pest (Spider Mites, Aphids, Thrips)
+  - 🌡️ Environmental (Heat Stress, Nutrient Burn, Light Burn)
+  - ✨ Mystical (Zombie Fungus, Crystal Virus - rare!)
+- Diseases spread to nearby plants
+- Use cures to treat infections (Fungicide, Pesticide, etc.)
+- Some mystical diseases increase mutation chance!
+
+### 🏆 Achievement System (40+ Achievements!)
+- **9 Categories**: Farming, Strains, Economy, Trading, Rolling, Challenges, Prestige, Special, Legendary
+- Unlock achievements for money and XP rewards
+- Rare achievements broadcast to server
+- Celebration particles on unlock
+- Command: `/achievements [category]`
+
+### 🌳 Skill Tree System (35+ Skills!)
+- **5 Skill Trees**:
+  - 🌿 **Farming**: Harvest speed, growth, water efficiency
+  - ⭐ **Quality**: Quality bonus, star rating, fertilizer power
+  - 💰 **Trading**: Trade success, prices, cooldowns
+  - 🧬 **Genetics**: Crossbreed quality, mutations, traits
+  - ✨ **Effects**: Effect duration and strength
+- 3 tiers per tree with powerful unlocks
+- Earn skill points through prestige and gameplay
+- Command: `/skills [tree]`
+
+### 📖 Collection Book
+- Discover and collect all strains!
+- Track harvests per strain
+- Collection milestones give bonus rewards
+- View strain stats and effects
+- Progress tracking and completion percentage
+- Command: `/collection [page]`
+
+### 🌱 25+ New Seed Types!
+- **Climate-Adapted**: Arctic, Tropical, Desert, Rainforest, Mountain
+- **Special Growth**: Quick Bloom, Slow Burn, Mega Yield, Potency Plus
+- **Exotic**: Lunar, Solar, Mystic, Hybrid, Ancient
+- **Premium**: Crystalline, Golden, Phantom, Rainbow, Volcanic
+- **Legendary**: Celestial, Dragon Scale, Phoenix, Void Walker, Time Warp
+- Each type has unique bonuses and seasonal preferences!
+
+---
+
+## Original Features
 
 ### 🌱 Pot-Based Growing System (NEW!)
 - Plant seeds in **Growing Pots** instead of farmland
@@ -222,6 +294,10 @@ Ranks based on total earnings:
 | `/challenges` | View daily/weekly challenges | `budlords.use` |
 | `/crossbreed` | Open crossbreeding lab | `budlords.use` |
 | `/leaderboard [type]` | View server leaderboards | `budlords.use` |
+| `/season` | View current season info | `budlords.use` |
+| `/achievements [category]` | View your achievements | `budlords.use` |
+| `/skills [tree]` | Open skill tree GUI | `budlords.use` |
+| `/collection [page]` | Open strain collection book | `budlords.use` |
 
 ### Admin Commands
 | Command | Description | Permission |
@@ -231,6 +307,7 @@ Ranks based on total earnings:
 | `/spawnmarket` | Spawn Market Joe NPC | `budlords.admin` |
 | `/spawnblackmarket` | Spawn BlackMarket Joe NPC | `budlords.admin` |
 | `/budlords reload` | Reload configuration | `budlords.admin` |
+| `/season set <season>` | Force change the season | `budlords.admin` |
 
 ## Permissions
 
@@ -260,7 +337,7 @@ Requirements:
 mvn clean package
 ```
 
-The compiled JAR will be in `target/BudLords-1.0.0.jar`
+The compiled JAR will be in `target/BudLords-2.0.0.jar`
 
 ## Default Strains
 

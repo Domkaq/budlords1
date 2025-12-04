@@ -1,13 +1,23 @@
 # BudLords - Complete Documentation
 
+## 🎉 VERSION 2.0.0 - MAJOR UPDATE 🎉
+
 ## Table of Contents
 1. [Installation Guide](#installation-guide)
 2. [Feature Usage Guide](#feature-usage-guide)
 3. [Star Quality System](#star-quality-system)
 4. [Pot-Based Growing](#pot-based-growing)
-5. [Admin Commands Reference](#admin-commands-reference)
-6. [Configuration Guide](#configuration-guide)
-7. [Troubleshooting](#troubleshooting)
+5. [v2.0.0 New Features](#v200-new-features)
+   - [Season System](#season-system)
+   - [Weather System](#weather-system)
+   - [Disease System](#disease-system)
+   - [Achievement System](#achievement-system)
+   - [Skill Tree System](#skill-tree-system)
+   - [Collection Book](#collection-book)
+   - [New Seed Types](#new-seed-types)
+6. [Admin Commands Reference](#admin-commands-reference)
+7. [Configuration Guide](#configuration-guide)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -20,18 +30,19 @@
 ### Step-by-Step Installation
 
 1. **Download the Plugin**
-   - Download `BudLords-1.0.0.jar` from the releases
+   - Download `BudLords-2.0.0.jar` from the releases
 
 2. **Install the Plugin**
    ```
    1. Stop your Minecraft server
-   2. Copy BudLords-1.0.0.jar to your server's plugins/ folder
+   2. Copy BudLords-2.0.0.jar to your server's plugins/ folder
    3. Start your server
    ```
 
 3. **Verify Installation**
    - Check console for: `[BudLords] BudLords has been enabled successfully!`
    - Check console for: `[BudLords] ★ Star Quality System enabled!`
+   - Check console for v2.0.0 features being enabled
    - Run `/budlords` in-game to see the help menu
 
 4. **Configure (Optional)**
@@ -451,9 +462,176 @@ mvn clean package
 ### Output
 The compiled JAR will be at:
 ```
-target/BudLords-1.0.0.jar
+target/BudLords-2.0.0.jar
 ```
 
 ---
 
-*BudLords v1.0.0 - A weed farming economy plugin for Minecraft with ★ Star Quality System*
+## v2.0.0 New Features
+
+### Season System
+
+BudLords now features a dynamic 4-season system that affects all aspects of plant growth!
+
+#### Seasons
+| Season | Growth | Quality | Potency | Special |
+|--------|--------|---------|---------|---------|
+| 🌸 Spring | +10% | Normal | Normal | Best for Rainforest/Rainbow seeds |
+| ☀️ Summer | +15% | Normal | +15% | Best for Tropical/Solar/Golden seeds |
+| 🍂 Autumn | -5% | +15% | +10% | Best for Mountain/Phantom seeds |
+| ❄️ Winter | -15% | -10% | +15% | Best for Arctic/Lunar seeds |
+
+#### Commands
+- `/season` - View current season and time remaining
+- `/season info` - View all season bonuses
+- `/season set <season>` - (Admin) Force change season
+
+---
+
+### Weather System
+
+Real-time weather affects your plants automatically!
+
+| Weather | Growth | Quality | Water |
+|---------|--------|---------|-------|
+| ☀️ Clear | Normal | Normal | - |
+| 🌤️ Sunny | +15% | +10% | - |
+| ☁️ Cloudy | -5% | Normal | - |
+| 🌧️ Rain | +10% | +5% | Auto-water +5%/min |
+| ⛈️ Thunderstorm | +20% | +15% | Auto-water +8%/min |
+| 🌙 Night | -10% | +5% | - |
+
+**Tip:** Plants exposed to the sky benefit from rain automatically!
+
+---
+
+### Disease System
+
+Plants can now contract diseases that affect their growth and quality!
+
+#### Disease Categories
+1. **🍄 Fungal** - Root Rot, Powdery Mildew, Botrytis, Fusarium
+2. **🦠 Bacterial** - Leaf Blight
+3. **🐛 Pest** - Spider Mites, Aphids, Thrips
+4. **🌡️ Environmental** - Heat Stress, Nutrient Burn, Light Burn
+5. **✨ Mystical** - Zombie Fungus, Crystal Virus (rare!)
+
+#### Prevention & Treatment
+- Keep water/nutrient levels balanced (not too high or low)
+- Use appropriate cures:
+  - **Fungicide** - For fungal diseases
+  - **Antibacterial Spray** - For bacterial infections
+  - **Pesticide** - For pest infestations
+  - **Nutrient Flush** - For environmental issues
+  - **Golden Elixir** - For mystical diseases
+
+#### Fun Fact
+The rare **Zombie Fungus** actually increases mutation chance!
+
+---
+
+### Achievement System
+
+40+ achievements across 9 categories provide goals and rewards!
+
+#### Categories
+| Category | Examples |
+|----------|----------|
+| 🌿 Farming | First Harvest, Master Gardener, Star Collector |
+| 🧬 Strains | Crossbreeder, Geneticist, Strain Master |
+| 💰 Economy | Entrepreneur, Millionaire, BudLord |
+| 🤝 Trading | Trader, Black Market Master, Lucky Streak |
+| 🚬 Rolling | First Roll, Master Roller, Perfect Roll |
+| 📋 Challenges | Challenger, Daily Devotee, Challenge Master |
+| ✨ Prestige | First Prestige, Max Prestige |
+| ⭐ Special | Night Owl, Storm Farmer, Disease Doctor |
+| 👑 Legendary | Completionist, Ultimate BudLord |
+
+#### Commands
+- `/achievements` - Open achievements GUI (default: Farming)
+- `/achievements <category>` - View specific category
+
+---
+
+### Skill Tree System
+
+35+ skills across 5 skill trees provide permanent passive bonuses!
+
+#### Skill Trees
+| Tree | Focus | Example Skills |
+|------|-------|----------------|
+| 🌿 Farming | Growth & Harvest | Quick Hands, Master Farmer, Disease Immunity |
+| ⭐ Quality | Product Quality | Quality Focus, Star Master, Premium Quality |
+| 💰 Trading | Sales & Prices | Smooth Talker, Master Dealer, Black Market VIP |
+| 🧬 Genetics | Crossbreeding | Mutation Affinity, Evolution Master, Master Geneticist |
+| ✨ Effects | Strain Effects | Effect Duration, Effect Master, Powerful Effects |
+
+#### How to Unlock
+1. Earn skill points through prestige and gameplay
+2. Spend XP in specific trees to unlock higher tiers
+3. Choose your playstyle!
+
+#### Commands
+- `/skills` - Open skill tree GUI (default: Farming)
+- `/skills <tree>` - View specific tree
+
+---
+
+### Collection Book
+
+Discover and collect all strains in your personal Collection Book!
+
+#### Features
+- Track every strain you've harvested
+- See harvest counts per strain
+- View strain stats and special effects
+- Earn rewards for collection milestones
+
+#### Milestones
+| Strains | Reward |
+|---------|--------|
+| 5 | $500 |
+| 10 | $1,500 |
+| 25 | $5,000 |
+| 50 | $15,000 |
+| 100 | $50,000 |
+
+#### Commands
+- `/collection` - Open collection book
+- `/collection <page>` - Go to specific page
+
+---
+
+### New Seed Types
+
+25+ new seed types with unique bonuses!
+
+#### Climate Seeds
+| Seed | Yield | Potency | Growth | Best Season |
+|------|-------|---------|--------|-------------|
+| Arctic ❄️ | ×1.0 | ×0.9 | ×1.2 | Winter |
+| Tropical 🌴 | ×1.1 | ×1.1 | ×1.0 | Summer |
+| Desert 🏜️ | ×0.9 | ×0.85 | ×1.1 | Summer |
+| Rainforest 🌧️ | ×1.3 | ×1.0 | ×1.0 | Spring |
+| Mountain ⛰️ | ×1.0 | ×1.15 | ×0.95 | Autumn |
+
+#### Special Seeds
+| Seed | Effect |
+|------|--------|
+| Quick Bloom ⚡ | 50% faster growth, lower yield |
+| Slow Burn 🔥 | Slower growth, high quality |
+| Mega Yield 💰 | Extra buds per harvest |
+| Potency Plus 💪 | Enhanced THC production |
+
+#### Legendary Seeds
+| Seed | Special Properties |
+|------|-------------------|
+| Celestial ⭐ | Cosmic genetics, high all stats |
+| Dragon Scale 🐉 | Mythical, extreme effects |
+| Phoenix 🔥 | Self-healing properties |
+| Void Walker 🕳️ | Dimension-crossing genetics |
+| Time Warp ⏰ | Unpredictable growth |
+
+---
+
+*BudLords v2.0.0 - A weed farming economy plugin for Minecraft with ★ Star Quality System*
