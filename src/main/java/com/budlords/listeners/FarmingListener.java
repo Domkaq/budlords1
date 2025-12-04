@@ -1,6 +1,7 @@
 package com.budlords.listeners;
 
 import com.budlords.BudLords;
+import com.budlords.diseases.PlantDisease;
 import com.budlords.farming.FarmingManager;
 import com.budlords.farming.Plant;
 import com.budlords.quality.*;
@@ -90,10 +91,101 @@ public class FarmingListener implements Listener {
             handleScissorsHarvest(event, player, item, clickedBlock);
             return;
         }
+        
+        // Check if using a cure item on a plant
+        if (isCureItem(item)) {
+            handleCureUsage(event, player, item, clickedBlock);
+            return;
+        }
 
         // Check if harvesting a plant (without scissors)
         if (clickedBlock.getType() == Material.WHEAT) {
             handlePlantInteraction(event, player, clickedBlock);
+        }
+    }
+    
+    /**
+     * Checks if an item is a cure item.
+     */
+    private boolean isCureItem(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return false;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return false;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) return false;
+        
+        for (String line : lore) {
+            if (line.equals("§8Type: cure")) return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Gets the cure type from a cure item.
+     */
+    private PlantDisease.Cure getCureFromItem(ItemStack item) {
+        if (!isCureItem(item)) return null;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return null;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) return null;
+        
+        for (String line : lore) {
+            if (line.startsWith("§8Cure: ")) {
+                String cureName = line.substring(8);
+                try {
+                    return PlantDisease.Cure.valueOf(cureName);
+                } catch (IllegalArgumentException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Handles using a cure item on a plant.
+     */
+    private void handleCureUsage(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
+        // Find plant at or near clicked location
+        Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        if (plant == null) {
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
+        }
+        if (plant == null) {
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.DOWN).getLocation());
+        }
+        
+        if (plant == null) {
+            player.sendMessage("§cNo plant found nearby! Click on or near an infected plant.");
+            return;
+        }
+        
+        PlantDisease.Cure cure = getCureFromItem(item);
+        if (cure == null) {
+            player.sendMessage("§cInvalid cure item!");
+            return;
+        }
+        
+        event.setCancelled(true);
+        
+        // Try to cure the plant using the disease manager
+        if (plugin.getDiseaseManager() != null) {
+            boolean success = plugin.getDiseaseManager().curePlant(player, plant.getLocation(), cure);
+            if (success) {
+                // Consume the cure item
+                if (player.getGameMode() != GameMode.CREATIVE) {
+                    if (item.getAmount() == 1) {
+                        player.getInventory().setItemInMainHand(null);
+                    } else {
+                        item.setAmount(item.getAmount() - 1);
+                    }
+                }
+            }
+        } else {
+            player.sendMessage("§cDisease system is not available!");
         }
     }
     
@@ -137,15 +229,39 @@ public class FarmingListener implements Listener {
     }
     
     private void handleLampUsage(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
-        // Check if there's a plant at the clicked location or above a pot
+        // Check if there's a plant at the clicked location or nearby
         Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        
         if (plant == null) {
             // Check block above (for pot-based plants)
             plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
         }
         
         if (plant == null) {
-            player.sendMessage("§cNo plant found! Use the lamp on a growing plant.");
+            // Check blocks below (player may have clicked above the plant)
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.DOWN).getLocation());
+        }
+        
+        if (plant == null) {
+            // Check 2 blocks below (in case player clicked way above)
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getLocation());
+        }
+        
+        // Also check adjacent blocks horizontally
+        if (plant == null) {
+            BlockFace[] horizontalFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+            for (BlockFace face : horizontalFaces) {
+                plant = farmingManager.getPlantAt(clickedBlock.getRelative(face).getLocation());
+                if (plant != null) break;
+                // Also check one block up in that direction
+                plant = farmingManager.getPlantAt(clickedBlock.getRelative(face).getRelative(BlockFace.UP).getLocation());
+                if (plant != null) break;
+            }
+        }
+        
+        if (plant == null) {
+            player.sendMessage("§cNo plant found nearby! Place the lamp closer to a growing plant.");
+            player.sendMessage("§7Tip: Click directly on the plant or a block adjacent to it.");
             return;
         }
         
@@ -663,6 +779,12 @@ public class FarmingListener implements Listener {
             }
         }
         
+        // Update collection book
+        if (plugin.getCollectionManager() != null) {
+            plugin.getCollectionManager().addToCollection(player, strain.getId());
+            plugin.getCollectionManager().saveCollections();
+        }
+        
         // Update challenge progress
         if (plugin.getChallengeManager() != null) {
             plugin.getChallengeManager().updateProgress(player, 
@@ -680,6 +802,11 @@ public class FarmingListener implements Listener {
                 plugin.getChallengeManager().updateProgress(player, 
                     com.budlords.challenges.Challenge.ChallengeType.PERFECT_HARVESTS, 1);
             }
+        }
+        
+        // Sync achievements with stats
+        if (plugin.getAchievementManager() != null) {
+            plugin.getAchievementManager().syncWithStats(player);
         }
     }
 

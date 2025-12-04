@@ -203,8 +203,10 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
         strainList.sort((a, b) -> a.getRarity().ordinal() - b.getRarity().ordinal());
         
         // Filter out rare/legendary for this page (they go in rare collection)
+        // Also filter out crossbred strains (those with underscore indicating hybrid names)
         List<Strain> normalStrains = strainList.stream()
             .filter(s -> s.getRarity() == Strain.Rarity.COMMON || s.getRarity() == Strain.Rarity.UNCOMMON)
+            .filter(s -> !isCrossbredStrain(s))
             .toList();
         
         // Display seeds in rows (slots 10-16, 19-25, 28-34)
@@ -217,26 +219,75 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             StarRating rating = getRecommendedRating(strain);
             double price = calculateSeedPrice(strain, rating);
             
+            // Build lore with effects info
+            List<String> lore = new ArrayList<>();
+            lore.add("§7Strain: §f" + strain.getName());
+            lore.add("§7Rarity: " + strain.getRarity().getDisplayName());
+            lore.add("§7Quality: " + rating.getDisplay());
+            lore.add("");
+            lore.add("§7Potency: §e" + strain.getPotency() + "%");
+            lore.add("§7Yield: §e" + strain.getYield() + " buds");
+            
+            // Add effects to lore if present
+            if (!strain.getEffects().isEmpty()) {
+                lore.add("");
+                lore.add("§d§lSpecial Effects:");
+                for (var effect : strain.getEffects()) {
+                    lore.add("  " + effect.getLoreDisplay());
+                }
+            }
+            
+            lore.add("");
+            lore.add("§7Price: §e" + economyManager.formatMoney(price));
+            lore.add("");
+            lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
+            
             inv.setItem(slots[slotIndex], createShopItem(
                 Material.WHEAT_SEEDS,
                 strain.getRarity().getColorCode() + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
-                Arrays.asList(
-                    "§7Strain: §f" + strain.getName(),
-                    "§7Rarity: " + strain.getRarity().getDisplayName(),
-                    "§7Quality: " + rating.getDisplay(),
-                    "",
-                    "§7Potency: §e" + strain.getPotency() + "%",
-                    "§7Yield: §e" + strain.getYield() + " buds",
-                    "",
-                    "§7Price: §e" + economyManager.formatMoney(price),
-                    "",
-                    canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money"
-                ),
+                lore,
                 "seed_" + strain.getId() + "_" + rating.getStars()
             ));
             slotIndex++;
         }
+    }
+    
+    /**
+     * Checks if a strain was created via crossbreeding.
+     * Crossbred strains have IDs that are not in the default strain list
+     * or contain hybrid naming patterns.
+     */
+    private boolean isCrossbredStrain(Strain strain) {
+        String id = strain.getId();
+        // Default strains that are not crossbred
+        Set<String> defaultStrains = Set.of("og_kush", "purple_haze", "white_widow", "northern_lights");
+        
+        // If it's a default strain, it's not crossbred
+        if (defaultStrains.contains(id)) {
+            return false;
+        }
+        
+        // Check if the name contains typical crossbreed indicators
+        String name = strain.getName().toLowerCase();
+        if (name.contains("hybrid") || name.contains(" x ")) {
+            return true;
+        }
+        
+        // If the ID doesn't match any default strain and wasn't created via admin,
+        // it's likely a crossbred strain
+        // Check if ID contains numbers (auto-generated for duplicates)
+        if (id.matches(".*_\\d+$")) {
+            return true;
+        }
+        
+        // If it has combined effect inheritance pattern, likely crossbred
+        // Most crossbreeds will have more than 3 effects from inheritance
+        if (strain.getEffectCount() > 3) {
+            return true;
+        }
+        
+        return false;
     }
     
     private void setupSpecialPage(Inventory inv, Player player) {
@@ -312,10 +363,11 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
     }
     
     private void setupRarePage(Inventory inv, Player player) {
-        // Find rare and legendary strains
+        // Find rare and legendary strains, excluding crossbred strains
         Collection<Strain> allStrains = strainManager.getAllStrains();
         List<Strain> rareStrains = allStrains.stream()
             .filter(s -> s.getRarity() == Strain.Rarity.RARE || s.getRarity() == Strain.Rarity.LEGENDARY)
+            .filter(s -> !isCrossbredStrain(s))
             .toList();
         
         // Display rare seeds (slots 11-15, 20-24)
@@ -331,24 +383,36 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             }
             double price = calculateSeedPrice(strain, rating) * 1.5; // Premium markup
             
+            // Build lore with effects info
+            List<String> lore = new ArrayList<>();
+            lore.add("§6§l✦ RARE COLLECTION ✦");
+            lore.add("");
+            lore.add("§7Strain: §f" + strain.getName());
+            lore.add("§7Rarity: " + strain.getRarity().getDisplayName());
+            lore.add("§7Quality: " + rating.getDisplay());
+            lore.add("");
+            lore.add("§7Potency: §e" + strain.getPotency() + "%");
+            lore.add("§7Yield: §e" + strain.getYield() + " buds");
+            
+            // Add effects to lore if present
+            if (!strain.getEffects().isEmpty()) {
+                lore.add("");
+                lore.add("§d§lSpecial Effects:");
+                for (var effect : strain.getEffects()) {
+                    lore.add("  " + effect.getLoreDisplay());
+                }
+            }
+            
+            lore.add("");
+            lore.add("§7Price: §e" + economyManager.formatMoney(price));
+            lore.add("");
+            lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
+            
             inv.setItem(slots[slotIndex], createShopItem(
                 Material.WHEAT_SEEDS,
                 "§6✦ " + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
-                Arrays.asList(
-                    "§6§l✦ RARE COLLECTION ✦",
-                    "",
-                    "§7Strain: §f" + strain.getName(),
-                    "§7Rarity: " + strain.getRarity().getDisplayName(),
-                    "§7Quality: " + rating.getDisplay(),
-                    "",
-                    "§7Potency: §e" + strain.getPotency() + "%",
-                    "§7Yield: §e" + strain.getYield() + " buds",
-                    "",
-                    "§7Price: §e" + economyManager.formatMoney(price),
-                    "",
-                    canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money"
-                ),
+                lore,
                 "rare_seed_" + strain.getId() + "_" + rating.getStars()
             ));
             slotIndex++;

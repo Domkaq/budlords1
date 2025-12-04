@@ -5,6 +5,7 @@ import com.budlords.economy.EconomyManager;
 import com.budlords.gui.BlackMarketShopGUI;
 import com.budlords.gui.MarketShopGUI;
 import com.budlords.gui.MobSaleGUI;
+import com.budlords.joint.JointItems;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
@@ -71,8 +72,8 @@ public class NPCListener implements Listener {
             }
         }
 
-        // Check if holding a packaged product - open the sale GUI
-        if (packagingManager.isPackagedProduct(item)) {
+        // Check if holding a packaged product or joint - open the sale GUI
+        if (packagingManager.isPackagedProduct(item) || JointItems.isJoint(item)) {
             // Open the Schedule 1 style sale GUI
             mobSaleGUI.open(player, entity, npcType);
             return;
@@ -100,7 +101,7 @@ public class NPCListener implements Listener {
 
         player.sendMessage("");
         player.sendMessage(traderName);
-        player.sendMessage("§7Hold a packaged product to sell!");
+        player.sendMessage("§7Hold a packaged product or joint to sell!");
         player.sendMessage("§7Use §f/package <amount>§7 to package buds.");
         player.sendMessage("");
 
