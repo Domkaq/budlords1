@@ -101,6 +101,23 @@ crossbreed:
   # Bonus mutation chance when using legendary parents
   legendary-mutation-bonus: 0.10
 
+# Strain Effects Settings (NEW!)
+effects:
+  # Enable strain special effects system
+  enabled: true
+  # Maximum effects per strain
+  max-effects-per-strain: 5
+  # Effect inheritance chance during crossbreeding (0.0 to 1.0)
+  inheritance-chance: 0.5
+  # Mutation can create new random effect
+  mutation-adds-effect: true
+  # Particle effect intensity multiplier
+  particle-intensity: 1.0
+  # Effect duration multiplier
+  duration-multiplier: 1.0
+  # Legendary effect chance for random selection (lower = rarer)
+  legendary-effect-weight: 1
+
 # Ambient effects settings
 ambient:
   # Enable ambient particle effects

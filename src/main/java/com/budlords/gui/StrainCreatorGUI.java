@@ -1,6 +1,7 @@
 package com.budlords.gui;
 
 import com.budlords.BudLords;
+import com.budlords.effects.StrainEffect;
 import com.budlords.quality.StarRating;
 import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
@@ -24,12 +25,16 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
     private final BudLords plugin;
     private final StrainManager strainManager;
     private final Map<UUID, StrainBuilder> activeBuilders;
+    private EffectSelectorGUI effectSelectorGUI;
 
     public StrainCreatorGUI(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
         this.strainManager = strainManager;
         this.activeBuilders = new HashMap<>();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        
+        // Initialize effect selector
+        this.effectSelectorGUI = new EffectSelectorGUI(plugin, this);
     }
 
     @SuppressWarnings("deprecation")
@@ -164,7 +169,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         inv.setItem(34, createItem(builder.iconMaterial, "§a✓ Current: §f" + formatMaterialName(builder.iconMaterial), 
             Arrays.asList("", "§7This is your strain's icon")));
 
-        // ===== ROW 4 (slots 37-43): Quality and Preview =====
+        // ===== ROW 4 (slots 37-43): Quality and Effects =====
         
         // Quality controls - Left centered
         inv.setItem(37, createDecreaseButton("Quality"));
@@ -180,23 +185,44 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
             )));
         inv.setItem(39, createIncreaseButton("Quality"));
         
-        // Separator
-        inv.setItem(40, borderDark);
+        // EFFECTS BUTTON - Center
+        List<String> effectsLore = new ArrayList<>();
+        effectsLore.add("");
+        effectsLore.add("§7Add special visual and gameplay");
+        effectsLore.add("§7effects to your strain!");
+        effectsLore.add("");
+        effectsLore.add("§7Selected: §e" + builder.effects.size() + "/" + Strain.MAX_EFFECTS);
+        if (!builder.effects.isEmpty()) {
+            effectsLore.add("");
+            for (StrainEffect effect : builder.effects) {
+                effectsLore.add("  " + effect.getCompactDisplay());
+            }
+        }
+        effectsLore.add("");
+        effectsLore.add("§a▶ Click to select effects!");
+        
+        inv.setItem(41, createItem(Material.BEACON, 
+            "§d§l✦ Special Effects §7(" + builder.effects.size() + ")",
+            effectsLore));
 
         // Preview area - Right side
+        List<String> previewLore = new ArrayList<>();
+        previewLore.add("§8━━━━━━━━━━━━━━━━━");
+        previewLore.add("§7Potency: §e" + builder.potency + "%");
+        previewLore.add("§7Yield: §e" + builder.yield + " buds");
+        previewLore.add("§7Quality: §e" + builder.packagingQuality + "%");
+        previewLore.add("§7Seed: " + builder.seedStarRating.getDisplay());
+        if (!builder.effects.isEmpty()) {
+            previewLore.add("§7Effects: §d" + builder.effects.size());
+        }
+        previewLore.add("§8━━━━━━━━━━━━━━━━━");
+        previewLore.add("");
+        previewLore.add("§a✓ Preview of your strain");
+        
         ItemStack preview = createItem(builder.iconMaterial,
             builder.rarity.getDisplayName() + " " + builder.name,
-            Arrays.asList(
-                "§8━━━━━━━━━━━━━━━━━",
-                "§7Potency: §e" + builder.potency + "%",
-                "§7Yield: §e" + builder.yield + " buds",
-                "§7Quality: §e" + builder.packagingQuality + "%",
-                "§7Seed: " + builder.seedStarRating.getDisplay(),
-                "§8━━━━━━━━━━━━━━━━━",
-                "",
-                "§a✓ Preview of your strain"
-            ));
-        inv.setItem(42, preview);
+            previewLore);
+        inv.setItem(43, preview);
 
         // ===== BOTTOM ROW: Cancel and Save =====
         
@@ -205,20 +231,23 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
             Arrays.asList("", "§7Close without saving", "§cProgress will be lost!")));
         
         // Save button - Center-right
-        ItemStack saveBtn = createItem(Material.EMERALD_BLOCK, "§a§l✓ SAVE & CREATE",
-            Arrays.asList(
-                "",
-                "§7━━ Strain Summary ━━",
-                "§7Name: §f" + builder.name,
-                "§7Rarity: " + builder.rarity.getDisplayName(),
-                "§7Potency: §e" + builder.potency + "%",
-                "§7Yield: §e" + builder.yield + " buds",
-                "§7Quality: §e" + builder.packagingQuality + "%",
-                "§7Seed: " + builder.seedStarRating.getDisplay(),
-                "",
-                "§a▶ Click to create!",
-                "§7You'll receive 5 seeds"
-            ));
+        List<String> saveLore = new ArrayList<>();
+        saveLore.add("");
+        saveLore.add("§7━━ Strain Summary ━━");
+        saveLore.add("§7Name: §f" + builder.name);
+        saveLore.add("§7Rarity: " + builder.rarity.getDisplayName());
+        saveLore.add("§7Potency: §e" + builder.potency + "%");
+        saveLore.add("§7Yield: §e" + builder.yield + " buds");
+        saveLore.add("§7Quality: §e" + builder.packagingQuality + "%");
+        saveLore.add("§7Seed: " + builder.seedStarRating.getDisplay());
+        if (!builder.effects.isEmpty()) {
+            saveLore.add("§7Effects: §d" + builder.effects.size());
+        }
+        saveLore.add("");
+        saveLore.add("§a▶ Click to create!");
+        saveLore.add("§7You'll receive 5 seeds");
+        
+        ItemStack saveBtn = createItem(Material.EMERALD_BLOCK, "§a§l✓ SAVE & CREATE", saveLore);
         inv.setItem(52, saveBtn);
     }
     
@@ -403,6 +432,10 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 1.2f);
             }
+            case 41 -> { // Effects selector
+                player.closeInventory();
+                effectSelectorGUI.open(player);
+            }
             case 46 -> { // Cancel (moved from 45)
                 player.closeInventory();
                 player.sendMessage("§c✗ Strain creation cancelled.");
@@ -427,6 +460,9 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         );
         strain.setIconMaterial(builder.iconMaterial);
         
+        // Add effects from builder
+        strain.setEffects(builder.effects);
+        
         strainManager.registerStrain(strain);
         strainManager.saveStrains();
         
@@ -446,6 +482,15 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         player.sendMessage("§7ID: §8" + strain.getId());
         player.sendMessage("§7Rarity: " + strain.getRarity().getDisplayName());
         player.sendMessage("§7Seeds: " + builder.seedStarRating.getDisplay());
+        
+        // Show effects if any
+        if (!builder.effects.isEmpty()) {
+            player.sendMessage("§7Effects: §d" + builder.effects.size());
+            for (StrainEffect effect : builder.effects) {
+                player.sendMessage("  " + effect.getCompactDisplay());
+            }
+        }
+        
         player.sendMessage("");
         player.sendMessage("§eYou received §a5 seeds §eto get started!");
         player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -488,6 +533,33 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         Material iconMaterial = Material.GREEN_DYE;
         StarRating seedStarRating = StarRating.ONE_STAR;
         boolean awaitingName = false;
+        List<com.budlords.effects.StrainEffect> effects = new ArrayList<>();
+        
+        public StrainBuilder() {
+            // Default constructor
+        }
+        
+        public boolean addEffect(com.budlords.effects.StrainEffectType type, int intensity) {
+            if (effects.size() >= Strain.MAX_EFFECTS) {
+                return false;
+            }
+            // Check for duplicates
+            for (com.budlords.effects.StrainEffect existing : effects) {
+                if (existing.getType() == type) {
+                    return false;
+                }
+            }
+            effects.add(new com.budlords.effects.StrainEffect(type, intensity));
+            return true;
+        }
+        
+        public boolean removeEffect(com.budlords.effects.StrainEffectType type) {
+            return effects.removeIf(e -> e.getType() == type);
+        }
+        
+        public boolean hasEffect(com.budlords.effects.StrainEffectType type) {
+            return effects.stream().anyMatch(e -> e.getType() == type);
+        }
     }
 
     public Map<UUID, StrainBuilder> getActiveBuilders() {

@@ -56,6 +56,7 @@ public class BudLords extends JavaPlugin {
     private CrossbreedManager crossbreedManager;
     private AmbientEffectsManager ambientEffectsManager;
     private com.budlords.joint.JointEffectsManager jointEffectsManager;
+    private com.budlords.effects.StrainEffectsManager strainEffectsManager;
 
     @Override
     public void onEnable() {
@@ -87,6 +88,7 @@ public class BudLords extends JavaPlugin {
             this.crossbreedManager = new CrossbreedManager(this, strainManager, economyManager, statsManager);
             this.ambientEffectsManager = new AmbientEffectsManager(this, farmingManager, strainManager);
             this.jointEffectsManager = new com.budlords.joint.JointEffectsManager(this);
+            this.strainEffectsManager = new com.budlords.effects.StrainEffectsManager(this);
             
             // Register commands
             registerCommands();
@@ -109,6 +111,7 @@ public class BudLords extends JavaPlugin {
             getLogger().info("✦ Random Events enabled!");
             getLogger().info("✦ Crossbreeding Lab enabled!");
             getLogger().info("✦ Enhanced Ambient Effects enabled!");
+            getLogger().info("✦ Strain Special Effects System enabled with 60+ unique effects!");
             
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to enable BudLords!", e);
@@ -291,5 +294,9 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.joint.JointEffectsManager getJointEffectsManager() {
         return jointEffectsManager;
+    }
+    
+    public com.budlords.effects.StrainEffectsManager getStrainEffectsManager() {
+        return strainEffectsManager;
     }
 }
