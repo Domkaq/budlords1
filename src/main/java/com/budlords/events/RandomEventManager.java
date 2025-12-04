@@ -153,7 +153,7 @@ public class RandomEventManager {
                 // Spawn dry particles
                 Location loc = plant.getLocation();
                 if (loc.getWorld() != null && loc.getWorld().isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) {
-                    loc.getWorld().spawnParticle(Particle.SMOKE, loc.clone().add(0.5, 0.3, 0.5), 
+                    loc.getWorld().spawnParticle(Particle.SMOKE_NORMAL, loc.clone().add(0.5, 0.3, 0.5), 
                         3, 0.2, 0.1, 0.2, 0.01);
                 }
             }
@@ -169,7 +169,7 @@ public class RandomEventManager {
                 // Spawn sick particles
                 Location loc = plant.getLocation();
                 if (loc.getWorld() != null) {
-                    loc.getWorld().spawnParticle(Particle.ITEM_SLIME, loc.clone().add(0.5, 0.5, 0.5), 
+                    loc.getWorld().spawnParticle(Particle.SLIME, loc.clone().add(0.5, 0.5, 0.5), 
                         5, 0.2, 0.2, 0.2, 0.02);
                 }
             }
@@ -199,7 +199,7 @@ public class RandomEventManager {
             // Spawn rain particles
             Location loc = plant.getLocation();
             if (loc.getWorld() != null && loc.getWorld().isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) {
-                loc.getWorld().spawnParticle(Particle.DRIPPING_WATER, loc.clone().add(0.5, 1.0, 0.5), 
+                loc.getWorld().spawnParticle(Particle.DRIP_WATER, loc.clone().add(0.5, 1.0, 0.5), 
                     10, 0.3, 0.5, 0.3, 0);
                 loc.getWorld().spawnParticle(Particle.COMPOSTER, loc.clone().add(0.5, 0.5, 0.5), 
                     5, 0.2, 0.2, 0.2, 0.02);

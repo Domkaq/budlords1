@@ -613,7 +613,7 @@ public class JointRollingManager implements InventoryHolder {
         
         // Success effects
         player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.0f);
-        player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1, 0), 
+        player.spawnParticle(Particle.TOTEM, player.getLocation().add(0, 1, 0), 
             30, 0.5, 0.5, 0.5, 0.1);
         
         player.sendMessage("");

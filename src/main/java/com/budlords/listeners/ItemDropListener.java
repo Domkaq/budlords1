@@ -154,7 +154,7 @@ public class ItemDropListener implements Listener {
                 Item newItem = packLoc.getWorld().dropItemNaturally(packLoc, packagedItem);
                 
                 // Visual effects
-                packLoc.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, 
+                packLoc.getWorld().spawnParticle(Particle.TOTEM, 
                     packLoc.add(0, 0.5, 0), 
                     20, 0.3, 0.3, 0.3, 0.1);
                 packLoc.getWorld().playSound(packLoc, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.5f);
