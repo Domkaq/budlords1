@@ -414,15 +414,25 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                 return;
             }
         } else if (itemId.startsWith("fertilizer_")) {
-            int star = Integer.parseInt(itemId.substring(11));
-            StarRating rating = StarRating.fromValue(star);
-            purchasedItem = plugin.getQualityItemManager().createFertilizer(rating, 1);
-            itemName = "Premium Fertilizer " + rating.getDisplay();
+            try {
+                int star = Integer.parseInt(itemId.substring(11));
+                StarRating rating = StarRating.fromValue(star);
+                purchasedItem = plugin.getQualityItemManager().createFertilizer(rating, 1);
+                itemName = "Premium Fertilizer " + rating.getDisplay();
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse fertilizer rating from item ID: " + itemId + " - " + e.getMessage());
+                return;
+            }
         } else if (itemId.startsWith("grow_lamp_")) {
-            int star = Integer.parseInt(itemId.substring(10));
-            StarRating rating = StarRating.fromValue(star);
-            purchasedItem = plugin.getQualityItemManager().createLamp(rating, 1);
-            itemName = "Elite Grow Lamp " + rating.getDisplay();
+            try {
+                int star = Integer.parseInt(itemId.substring(10));
+                StarRating rating = StarRating.fromValue(star);
+                purchasedItem = plugin.getQualityItemManager().createLamp(rating, 1);
+                itemName = "Elite Grow Lamp " + rating.getDisplay();
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse grow lamp rating from item ID: " + itemId + " - " + e.getMessage());
+                return;
+            }
         }
 
         if (purchasedItem == null) return;

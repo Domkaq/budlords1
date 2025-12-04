@@ -301,20 +301,35 @@ public class MarketShopGUI implements InventoryHolder, Listener {
         String itemName = "";
 
         if (itemId.startsWith("pot_")) {
-            int star = Integer.parseInt(itemId.substring(4));
-            StarRating rating = StarRating.fromValue(star);
-            purchasedItem = qualityItemManager.createPot(rating, 1);
-            itemName = "Growing Pot " + rating.getDisplay();
+            try {
+                int star = Integer.parseInt(itemId.substring(4));
+                StarRating rating = StarRating.fromValue(star);
+                purchasedItem = qualityItemManager.createPot(rating, 1);
+                itemName = "Growing Pot " + rating.getDisplay();
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse pot rating from item ID: " + itemId);
+                return;
+            }
         } else if (itemId.startsWith("watering_can_")) {
-            int star = Integer.parseInt(itemId.substring(13));
-            StarRating rating = StarRating.fromValue(star);
-            purchasedItem = qualityItemManager.createWateringCan(rating, 1);
-            itemName = "Watering Can " + rating.getDisplay();
+            try {
+                int star = Integer.parseInt(itemId.substring(13));
+                StarRating rating = StarRating.fromValue(star);
+                purchasedItem = qualityItemManager.createWateringCan(rating, 1);
+                itemName = "Watering Can " + rating.getDisplay();
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse watering can rating from item ID: " + itemId);
+                return;
+            }
         } else if (itemId.startsWith("scissors_")) {
-            int star = Integer.parseInt(itemId.substring(9));
-            StarRating rating = StarRating.fromValue(star);
-            purchasedItem = qualityItemManager.createScissors(rating, 1);
-            itemName = "Harvest Scissors " + rating.getDisplay();
+            try {
+                int star = Integer.parseInt(itemId.substring(9));
+                StarRating rating = StarRating.fromValue(star);
+                purchasedItem = qualityItemManager.createScissors(rating, 1);
+                itemName = "Harvest Scissors " + rating.getDisplay();
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse scissors rating from item ID: " + itemId);
+                return;
+            }
         }
 
         if (purchasedItem == null) return;
