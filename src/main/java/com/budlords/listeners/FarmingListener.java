@@ -8,6 +8,7 @@ import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -104,6 +105,13 @@ public class FarmingListener implements Listener {
             return;
         }
         
+        // Check if there's already a pot or plant at the adjacent locations
+        // This prevents issues with pots being placed next to each other
+        Block below = targetBlock.getRelative(BlockFace.DOWN);
+        if (below.getType() == Material.FLOWER_POT && farmingManager.hasPotAt(below.getLocation())) {
+            // Allow placing next to existing pot
+        }
+        
         event.setCancelled(true);
         
         StarRating potRating = GrowingPot.getRatingFromItem(item);
@@ -111,6 +119,9 @@ public class FarmingListener implements Listener {
         
         // Place the pot block
         targetBlock.setType(Material.FLOWER_POT);
+        
+        // Register the pot in the tracking system with its star rating
+        farmingManager.placePot(targetBlock.getLocation(), potRating, player.getUniqueId());
         
         player.sendMessage("§aPlaced " + potRating.getDisplay() + " §aGrowing Pot!");
         player.sendMessage("§7Right-click with seeds to plant.");
@@ -172,9 +183,15 @@ public class FarmingListener implements Listener {
                 return;
             }
             
-            // For pot-based planting, try to get pot rating from stored data
-            // Default to basic pot if not found
-            potRating = StarRating.ONE_STAR; // Could be enhanced with pot NBT data
+            // Get pot rating from the tracking system
+            potRating = farmingManager.getPotRatingAt(clickedBlock.getLocation());
+            if (potRating == null) {
+                // If pot is not tracked (legacy pot), try to detect from world
+                // or default to one star
+                potRating = StarRating.ONE_STAR;
+                // Register this pot as 1-star since it wasn't tracked
+                farmingManager.placePot(clickedBlock.getLocation(), potRating, player.getUniqueId());
+            }
         } else if (clickedBlock.getType() == Material.FARMLAND) {
             targetBlock = clickedBlock.getRelative(BlockFace.UP);
             
@@ -245,92 +262,65 @@ public class FarmingListener implements Listener {
     }
     
     private void handleWateringCan(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
+        QualityItemManager qim = plugin.getQualityItemManager();
+        
+        // Check if right-clicking on water to fill the can
+        if (clickedBlock.getType() == Material.WATER) {
+            event.setCancelled(true);
+            
+            int currentWater = qim.getWateringCanWater(item);
+            int maxCapacity = qim.getWateringCanMaxCapacity(item);
+            
+            if (currentWater >= maxCapacity) {
+                player.sendMessage("§7Your watering can is already full!");
+                return;
+            }
+            
+            // Fill the can
+            ItemStack filledCan = qim.fillWateringCan(item);
+            player.getInventory().setItemInMainHand(filledCan);
+            player.sendMessage("§bFilled watering can! §7(" + maxCapacity + "/" + maxCapacity + " water)");
+            player.playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL, 0.5f, 1.2f);
+            return;
+        }
+        
+        // Check if watering a plant
         Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
         if (plant == null) {
             plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
         }
         
         if (plant == null) {
+            // Check if clicking on a pot - maybe want to fill from cauldron or water nearby
             return;
         }
         
         event.setCancelled(true);
         
-        // Get watering can rating for efficiency bonus
-        StarRating canRating = plugin.getQualityItemManager().getWateringCanRating(item);
-        if (canRating == null) canRating = StarRating.ONE_STAR;
+        // Check if can has water
+        int currentWater = qim.getWateringCanWater(item);
+        if (currentWater <= 0) {
+            player.sendMessage("§cYour watering can is empty! §7Right-click water to fill it.");
+            player.playSound(player.getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.5f, 1.0f);
+            return;
+        }
         
+        // Water the plant
         if (farmingManager.waterPlant(player, plant.getLocation())) {
-            // Watering can has durability - track uses via lore
             if (player.getGameMode() != GameMode.CREATIVE) {
-                int maxUses = canRating.getStars() * 5;
-                int currentUses = getWateringCanUses(item);
-                currentUses++;
+                // Decrease water level
+                int newWater = currentWater - 1;
+                int maxCapacity = qim.getWateringCanMaxCapacity(item);
+                ItemStack updatedCan = qim.setWateringCanWater(item, newWater);
+                player.getInventory().setItemInMainHand(updatedCan);
                 
-                if (currentUses >= maxUses) {
-                    // Watering can is depleted - remove it
-                    player.getInventory().setItemInMainHand(null);
-                    player.sendMessage("§cYour watering can has run out of water!");
+                if (newWater > 0) {
+                    player.sendMessage("§aWatered plant! §7(" + newWater + "/" + maxCapacity + " water remaining)");
                 } else {
-                    // Update uses in lore
-                    setWateringCanUses(item, currentUses, maxUses);
-                    player.sendMessage("§aWatered plant! §7(" + (maxUses - currentUses) + " uses remaining)");
+                    player.sendMessage("§aWatered plant! §cWatering can is now empty.");
                 }
             }
         }
-    }
-    
-    private int getWateringCanUses(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return 0;
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasLore()) return 0;
-        
-        List<String> lore = meta.getLore();
-        if (lore == null) return 0;
-        
-        for (String line : lore) {
-            if (line.startsWith("§8Uses: ")) {
-                try {
-                    String usesStr = line.substring(8).split("/")[0];
-                    return Integer.parseInt(usesStr);
-                } catch (Exception e) {
-                    return 0;
-                }
-            }
-        }
-        return 0;
-    }
-    
-    private void setWateringCanUses(ItemStack item, int uses, int maxUses) {
-        if (item == null || !item.hasItemMeta()) return;
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return;
-        
-        List<String> lore = meta.getLore();
-        if (lore == null) lore = new java.util.ArrayList<>();
-        
-        // Find and update or add the uses line
-        boolean found = false;
-        for (int i = 0; i < lore.size(); i++) {
-            if (lore.get(i).startsWith("§8Uses: ")) {
-                lore.set(i, "§8Uses: " + uses + "/" + maxUses);
-                found = true;
-                break;
-            }
-        }
-        
-        if (!found) {
-            // Add uses before the Rating line
-            for (int i = 0; i < lore.size(); i++) {
-                if (lore.get(i).startsWith("§8Rating: ")) {
-                    lore.add(i, "§8Uses: " + uses + "/" + maxUses);
-                    break;
-                }
-            }
-        }
-        
-        meta.setLore(lore);
-        item.setItemMeta(meta);
     }
     
     private void handleWatering(PlayerInteractEvent event, Player player, Block clickedBlock) {
@@ -547,12 +537,26 @@ public class FarmingListener implements Listener {
                         ItemStack pot = GrowingPot.createPotItem(plant.getPotRating(), 1);
                         event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), pot);
                         
+                        // Remove pot from tracking
+                        farmingManager.removePot(block.getLocation());
+                        
                         // Return lamp if present
                         if (plant.getLampRating() != null) {
                             ItemStack lamp = plugin.getQualityItemManager().createLamp(plant.getLampRating(), 1);
                             event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), lamp);
                         }
                     }
+                }
+            } else if (block.getType() == Material.FLOWER_POT) {
+                // Breaking an empty pot - return the pot item with its star rating
+                GrowingPot removedPot = farmingManager.removePot(block.getLocation());
+                if (removedPot != null) {
+                    event.setCancelled(true);
+                    block.setType(Material.AIR);
+                    
+                    ItemStack potItem = GrowingPot.createPotItem(removedPot.getStarRating(), 1);
+                    event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), potItem);
+                    event.getPlayer().sendMessage("§7Returned pot: " + removedPot.getStarRating().getDisplay());
                 }
             }
         }

@@ -79,27 +79,120 @@ public class QualityItemManager {
 
     // ====== WATER CAN ITEMS ======
 
+    /**
+     * Creates a watering can with the given star rating.
+     * The can starts empty and must be filled at a water source.
+     */
     public ItemStack createWateringCan(StarRating rating, int amount) {
+        return createWateringCan(rating, amount, 0); // Start empty
+    }
+    
+    /**
+     * Creates a watering can with the given star rating and water level.
+     * @param rating Star rating of the can
+     * @param amount Number of cans to create
+     * @param waterLevel Current water level (0 to max capacity)
+     */
+    public ItemStack createWateringCan(StarRating rating, int amount, int waterLevel) {
         ItemStack can = new ItemStack(Material.BUCKET, amount);
         ItemMeta meta = can.getItemMeta();
         
+        int maxCapacity = rating.getStars() * 5;
+        int currentWater = Math.min(waterLevel, maxCapacity);
+        
         if (meta != null) {
-            meta.setDisplayName(rating.getColorCode() + "Watering Can " + rating.getDisplay());
+            String statusColor = currentWater > 0 ? "§b" : "§7";
+            meta.setDisplayName(statusColor + "Watering Can " + rating.getDisplay());
             List<String> lore = new ArrayList<>();
             lore.add("§7Quality: " + rating.getDisplay());
             lore.add("");
-            lore.add("§7Water Efficiency: §a" + String.format("%.0f%%", (double) ((rating.getStars() * 15) + 70)));
-            lore.add("§7Capacity: §e" + (rating.getStars() * 5) + " uses");
+            lore.add("§7Water: " + createWaterBar(currentWater, maxCapacity));
+            lore.add("§7Capacity: §e" + currentWater + "/" + maxCapacity);
+            lore.add("§7Efficiency: §a" + String.format("%.0f%%", (double) ((rating.getStars() * 15) + 70)));
             lore.add("");
-            lore.add("§7Right-click on water to fill");
-            lore.add("§7Right-click on pot to water");
+            if (currentWater == 0) {
+                lore.add("§cEmpty! §7Right-click water to fill");
+            } else {
+                lore.add("§7Right-click on pot to water");
+            }
             lore.add("");
             lore.add("§8Rating: " + rating.getStars());
+            lore.add("§8Water: " + currentWater);
             meta.setLore(lore);
             can.setItemMeta(meta);
         }
         
         return can;
+    }
+    
+    /**
+     * Creates a visual water level bar.
+     */
+    private String createWaterBar(int current, int max) {
+        StringBuilder bar = new StringBuilder("§8[");
+        int filled = max > 0 ? (current * 10 / max) : 0;
+        for (int i = 0; i < 10; i++) {
+            if (i < filled) {
+                bar.append("§b█");
+            } else {
+                bar.append("§7░");
+            }
+        }
+        bar.append("§8]");
+        return bar.toString();
+    }
+    
+    /**
+     * Gets the current water level of a watering can.
+     */
+    public int getWateringCanWater(ItemStack item) {
+        if (!isWateringCanItem(item)) return 0;
+        if (!item.hasItemMeta()) return 0;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return 0;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) return 0;
+        
+        for (String line : lore) {
+            if (line.startsWith("§8Water: ")) {
+                try {
+                    return Integer.parseInt(line.substring(9).trim());
+                } catch (NumberFormatException e) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+    
+    /**
+     * Gets the maximum capacity of a watering can based on its rating.
+     */
+    public int getWateringCanMaxCapacity(ItemStack item) {
+        StarRating rating = getWateringCanRating(item);
+        return rating != null ? rating.getStars() * 5 : 5;
+    }
+    
+    /**
+     * Updates the water level of a watering can and returns the updated item.
+     */
+    public ItemStack setWateringCanWater(ItemStack item, int newWaterLevel) {
+        StarRating rating = getWateringCanRating(item);
+        if (rating == null) rating = StarRating.ONE_STAR;
+        
+        return createWateringCan(rating, 1, newWaterLevel);
+    }
+    
+    /**
+     * Fills a watering can to maximum capacity.
+     */
+    public ItemStack fillWateringCan(ItemStack item) {
+        StarRating rating = getWateringCanRating(item);
+        if (rating == null) rating = StarRating.ONE_STAR;
+        
+        int maxCapacity = rating.getStars() * 5;
+        return createWateringCan(rating, 1, maxCapacity);
     }
 
     public boolean isWateringCanItem(ItemStack item) {

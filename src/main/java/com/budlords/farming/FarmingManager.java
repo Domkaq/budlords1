@@ -40,6 +40,7 @@ public class FarmingManager {
         this.pots = new ConcurrentHashMap<>();
         
         loadPlants();
+        loadPots();
         startGrowthTask();
         startParticleTask();
         startCareDecayTask();
@@ -662,6 +663,121 @@ public class FarmingManager {
     public Collection<Plant> getAllPlants() {
         return Collections.unmodifiableCollection(plants.values());
     }
+    
+    // ====== POT MANAGEMENT ======
+    
+    private void loadPots() {
+        FileConfiguration config = dataManager.getPlantsConfig();
+        ConfigurationSection potsSection = config.getConfigurationSection("pots");
+        
+        if (potsSection == null) {
+            return;
+        }
+
+        for (String key : potsSection.getKeys(false)) {
+            try {
+                ConfigurationSection potSection = potsSection.getConfigurationSection(key);
+                if (potSection == null) continue;
+
+                String worldName = potSection.getString("world");
+                int x = potSection.getInt("x");
+                int y = potSection.getInt("y");
+                int z = potSection.getInt("z");
+                String ratingStr = potSection.getString("rating", "ONE_STAR");
+                String ownerStr = potSection.getString("owner");
+
+                World world = Bukkit.getWorld(worldName);
+                if (world == null) continue;
+
+                Location location = new Location(world, x, y, z);
+                StarRating rating;
+                try {
+                    rating = StarRating.valueOf(ratingStr);
+                } catch (IllegalArgumentException e) {
+                    rating = StarRating.ONE_STAR;
+                }
+                UUID owner = ownerStr != null ? UUID.fromString(ownerStr) : null;
+                
+                GrowingPot pot = new GrowingPot(UUID.randomUUID(), rating, location, owner);
+                pots.put(getLocationKey(location), pot);
+                
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load pot: " + key);
+            }
+        }
+        
+        plugin.getLogger().info("Loaded " + pots.size() + " placed pots.");
+    }
+    
+    public void savePots() {
+        FileConfiguration config = dataManager.getPlantsConfig();
+        config.set("pots", null); // Clear existing
+
+        int counter = 0;
+        for (Map.Entry<String, GrowingPot> entry : pots.entrySet()) {
+            GrowingPot pot = entry.getValue();
+            Location loc = pot.getLocation();
+            if (loc == null || loc.getWorld() == null) continue;
+            
+            String key = "pots.pot_" + counter;
+            config.set(key + ".world", loc.getWorld().getName());
+            config.set(key + ".x", loc.getBlockX());
+            config.set(key + ".y", loc.getBlockY());
+            config.set(key + ".z", loc.getBlockZ());
+            config.set(key + ".rating", pot.getStarRating().name());
+            if (pot.getOwnerUuid() != null) {
+                config.set(key + ".owner", pot.getOwnerUuid().toString());
+            }
+            counter++;
+        }
+
+        dataManager.savePlants();
+    }
+    
+    /**
+     * Places a pot at the specified location with the given star rating.
+     */
+    public void placePot(Location location, StarRating rating, UUID ownerUuid) {
+        String key = getLocationKey(location);
+        GrowingPot pot = new GrowingPot(UUID.randomUUID(), rating, location, ownerUuid);
+        pots.put(key, pot);
+    }
+    
+    /**
+     * Gets the pot at the specified location.
+     */
+    public GrowingPot getPotAt(Location location) {
+        return pots.get(getLocationKey(location));
+    }
+    
+    /**
+     * Gets the star rating of the pot at the specified location.
+     */
+    public StarRating getPotRatingAt(Location location) {
+        GrowingPot pot = getPotAt(location);
+        return pot != null ? pot.getStarRating() : null;
+    }
+    
+    /**
+     * Removes the pot at the specified location and returns it.
+     */
+    public GrowingPot removePot(Location location) {
+        return pots.remove(getLocationKey(location));
+    }
+    
+    /**
+     * Checks if there is a pot at the specified location.
+     */
+    public boolean hasPotAt(Location location) {
+        return pots.containsKey(getLocationKey(location));
+    }
+    
+    private String getLocationKey(Location location) {
+        return location.getWorld().getName() + "," + 
+               location.getBlockX() + "," + 
+               location.getBlockY() + "," + 
+               location.getBlockZ();
+    }
 
     public void shutdown() {
         if (growthTask != null) {
@@ -674,5 +790,6 @@ public class FarmingManager {
             careDecayTask.cancel();
         }
         savePlants();
+        savePots();
     }
 }
