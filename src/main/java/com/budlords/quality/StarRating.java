@@ -11,6 +11,11 @@ public enum StarRating {
     FOUR_STAR(4, "§9★★★★☆", "§9", 1.6, 1.15),
     FIVE_STAR(5, "§6★★★★★", "§6", 2.0, 1.35);
 
+    /** Minimum star rating value */
+    public static final int MIN_STARS = 1;
+    /** Maximum star rating value */
+    public static final int MAX_STARS = 5;
+
     private final int stars;
     private final String display;
     private final String colorCode;

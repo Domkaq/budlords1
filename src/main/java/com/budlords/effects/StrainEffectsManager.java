@@ -33,6 +33,11 @@ public class StrainEffectsManager implements Listener {
     private final Map<UUID, BukkitTask> particleTasks;
     private final Map<UUID, Long> lastMovementTime;
     
+    // Constants for entity effect application
+    private static final double ENTITY_EFFECT_CHANCE = 0.80;
+    private static final int MIN_STAR_RATING = 1;
+    private static final int MAX_STAR_RATING = 5;
+    
     public StrainEffectsManager(BudLords plugin) {
         this.plugin = plugin;
         this.activeSessions = new ConcurrentHashMap<>();
@@ -94,8 +99,8 @@ public class StrainEffectsManager implements Listener {
         
         // Apply effects to entity
         for (StrainEffect effect : effects) {
-            // 80% chance to apply each effect to entity
-            if (ThreadLocalRandom.current().nextDouble() > 0.80) {
+            // Apply each effect with configured chance
+            if (ThreadLocalRandom.current().nextDouble() > ENTITY_EFFECT_CHANCE) {
                 continue;
             }
             
@@ -672,9 +677,11 @@ public class StrainEffectsManager implements Listener {
     
     private void makeNearbyEntitiesGlow(Player player, int duration) {
         new BukkitRunnable() {
+            int elapsed = 0;
+            
             @Override
             public void run() {
-                if (!player.isOnline()) {
+                if (!player.isOnline() || elapsed >= duration) {
                     cancel();
                     return;
                 }
@@ -683,6 +690,7 @@ public class StrainEffectsManager implements Listener {
                         living.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 40, 0, false, false, true));
                     }
                 }
+                elapsed += 20;
             }
         }.runTaskTimer(plugin, 0L, 20L);
     }

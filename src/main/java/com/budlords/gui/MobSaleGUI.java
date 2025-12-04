@@ -527,7 +527,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                         for (String line : item.getItemMeta().getLore()) {
                             if (line.contains("★")) {
                                 int stars = (int) line.chars().filter(ch -> ch == '★').count();
-                                soldRating = StarRating.fromValue(Math.min(5, Math.max(1, stars)));
+                                soldRating = StarRating.fromValue(Math.min(StarRating.MAX_STARS, 
+                                    Math.max(StarRating.MIN_STARS, stars)));
                                 break;
                             }
                         }
