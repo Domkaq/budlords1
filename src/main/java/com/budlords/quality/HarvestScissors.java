@@ -34,6 +34,7 @@ public class HarvestScissors {
             case THREE_STAR -> 0.20;
             case FOUR_STAR -> 0.35;
             case FIVE_STAR -> 0.50;
+            case SIX_STAR -> 0.75;
         };
     }
 
@@ -48,6 +49,7 @@ public class HarvestScissors {
             case THREE_STAR -> 0.10;
             case FOUR_STAR -> 0.20;
             case FIVE_STAR -> 0.35;
+            case SIX_STAR -> 0.50;
         };
     }
 
@@ -62,6 +64,7 @@ public class HarvestScissors {
             case THREE_STAR -> 0.05;
             case FOUR_STAR -> 0.10;
             case FIVE_STAR -> 0.20;
+            case SIX_STAR -> 0.35;
         };
     }
 
@@ -75,6 +78,7 @@ public class HarvestScissors {
             case THREE_STAR -> 200;
             case FOUR_STAR -> 350;
             case FIVE_STAR -> 500;
+            case SIX_STAR -> 1000;
         };
     }
 
