@@ -458,8 +458,11 @@ public class FarmingListener implements Listener {
             return;
         }
         
-        // Water the plant
-        if (farmingManager.waterPlant(player, plant.getLocation())) {
+        // Get watering can quality for bonus
+        StarRating wateringCanRating = qim.getWateringCanRating(item);
+        
+        // Water the plant with quality bonus
+        if (farmingManager.waterPlant(player, plant.getLocation(), wateringCanRating)) {
             if (player.getGameMode() != GameMode.CREATIVE) {
                 // Decrease water level
                 int newWater = currentWater - 1;
@@ -468,9 +471,9 @@ public class FarmingListener implements Listener {
                 player.getInventory().setItemInMainHand(updatedCan);
                 
                 if (newWater > 0) {
-                    player.sendMessage("§aWatered plant! §7(" + newWater + "/" + maxCapacity + " water remaining)");
+                    player.sendMessage("§7Watering can: " + newWater + "/" + maxCapacity + " water remaining");
                 } else {
-                    player.sendMessage("§aWatered plant! §cWatering can is now empty.");
+                    player.sendMessage("§cWatering can is now empty.");
                 }
             }
         }

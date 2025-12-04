@@ -2,6 +2,7 @@ package com.budlords.progression;
 
 import com.budlords.BudLords;
 import com.budlords.data.DataManager;
+import com.budlords.economy.EconomyManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -51,8 +52,10 @@ public class RankManager {
     }
 
     public Rank getRank(Player player) {
-        double earnings = dataManager.getPlayersConfig()
-                .getDouble("players." + player.getUniqueId() + ".total-earnings", 0);
+        // Get live earnings from EconomyManager instead of config file
+        EconomyManager economyManager = plugin.getEconomyManager();
+        double earnings = economyManager != null ? economyManager.getTotalEarnings(player) : 
+                dataManager.getPlayersConfig().getDouble("players." + player.getUniqueId() + ".total-earnings", 0);
         return getRankForEarnings(earnings);
     }
 
@@ -69,8 +72,10 @@ public class RankManager {
     }
 
     public Rank getNextRank(Player player) {
-        double earnings = dataManager.getPlayersConfig()
-                .getDouble("players." + player.getUniqueId() + ".total-earnings", 0);
+        // Get live earnings from EconomyManager instead of config file
+        EconomyManager economyManager = plugin.getEconomyManager();
+        double earnings = economyManager != null ? economyManager.getTotalEarnings(player) : 
+                dataManager.getPlayersConfig().getDouble("players." + player.getUniqueId() + ".total-earnings", 0);
         
         for (Rank rank : ranks) {
             if (earnings < rank.requiredEarnings()) {
@@ -81,8 +86,10 @@ public class RankManager {
     }
 
     public double getProgressToNextRank(Player player) {
-        double earnings = dataManager.getPlayersConfig()
-                .getDouble("players." + player.getUniqueId() + ".total-earnings", 0);
+        // Get live earnings from EconomyManager instead of config file
+        EconomyManager economyManager = plugin.getEconomyManager();
+        double earnings = economyManager != null ? economyManager.getTotalEarnings(player) : 
+                dataManager.getPlayersConfig().getDouble("players." + player.getUniqueId() + ".total-earnings", 0);
         
         Rank current = getRankForEarnings(earnings);
         Rank next = null;

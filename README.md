@@ -1,8 +1,47 @@
 # BudLords - Minecraft Weed Economy Plugin
 
-## 🎉 VERSION 2.0.0 - MAJOR UPDATE! 🎉
+## 🎉 VERSION 2.0.1 - BUG FIX & CONTENT UPDATE! 🎉
 
 A comprehensive weed farming RPG + black market economy system for Minecraft Paper/Spigot 1.20.4.
+
+---
+
+## 🆕 v2.0.1 NEW FEATURES & FIXES
+
+### 🛠️ Bug Fixes
+- **Fixed Strain Creator naming** - Name input now properly saves and returns to GUI
+- **Fixed Effect Selector** - "No active strain builder session" error resolved
+- **Fixed Rank Updates** - `/bal` now correctly shows updated rank after earning money
+- **Fixed Package Command** - Now requires operator permission (`budlords.admin`)
+- **Improved Session Management** - Better handling of GUI transitions
+
+### 🌿 15+ New Weed Strains!
+- **Common**: Sour Diesel, Blue Dream, Green Crack
+- **Uncommon**: Girl Scout Cookies, Gorilla Glue, Jack Herer, Granddaddy Purple
+- **Rare**: Wedding Cake, Amnesia Haze, Skywalker OG, Trainwreck
+- **Legendary**: Pineapple Express, God's Favorite, Void Walker, Dragon's Breath
+
+### ✨ 35+ New Effects! (Now 100+ Total!)
+- **Visual**: Neon Glow, Crystal Shimmer, Smoke Screen, Electric Surge
+- **Movement**: Feather Fall, Blink Step, Water Walk
+- **Perception**: Predator Sense, Sonic Hearing, X-Ray Vision
+- **Gameplay**: Double Harvest, Money Magnet, Seed Finder, XP Boost
+- **Combat**: Poison Touch, Fire Punch, Ice Armor, Rage Mode
+- **Fun**: Rainbow Trail, Firework Explosion, Slime Bounce, Snowman
+- **Nature**: Plant Growth, Animal Friend, Rain Dancer, Earthquake
+- **Mystical**: Soul Sight, Fortune Teller, Elemental Chaos, Dimensional Rift
+- **Legendary**: Time Freeze, Infinity Power, Godmode Aura, Universe Control
+
+### 💧 Improved Watering Can System
+- Higher star watering cans now provide **quality bonuses** when watering
+- ★1: +1 quality | ★2: +2 quality | ★3: +3 quality | ★4: +4 quality | ★5: +5 quality
+- Water capacity still increases with star rating
+- Better feedback messages when watering plants
+
+### 🏪 Expanded BlackMarket Shop
+- Now displays all available strains (expanded from 4 to 19+ strains)
+- More slots in seeds and rare collections pages
+- All new strains available for purchase
 
 ---
 

@@ -198,6 +198,23 @@ public class Plant {
     public void water() {
         this.waterLevel = 1.0;
     }
+    
+    /**
+     * Waters the plant using a specific quality watering can.
+     * Higher quality watering cans provide additional quality bonuses.
+     * @param wateringCanRating The star rating of the watering can used
+     */
+    public void water(StarRating wateringCanRating) {
+        this.waterLevel = 1.0;
+        
+        // Higher star watering cans give quality bonus when watering
+        if (wateringCanRating != null) {
+            // Add quality bonus based on watering can quality
+            // 1-star: +1 quality, 5-star: +5 quality
+            int qualityBonus = wateringCanRating.getStars();
+            addQuality(qualityBonus);
+        }
+    }
 
     public double getNutrientLevel() {
         return nutrientLevel;

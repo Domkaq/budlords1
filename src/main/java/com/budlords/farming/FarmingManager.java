@@ -529,15 +529,32 @@ public class FarmingManager {
      * Waters a plant at the given location.
      */
     public boolean waterPlant(Player player, Location location) {
+        return waterPlant(player, location, null);
+    }
+    
+    /**
+     * Waters a plant at the given location with a specific watering can quality.
+     * @param wateringCanRating The star rating of the watering can (null for standard water bucket)
+     */
+    public boolean waterPlant(Player player, Location location, StarRating wateringCanRating) {
         Plant plant = getPlantAt(location);
         if (plant == null) {
             player.sendMessage("§cNo plant found at this location!");
             return false;
         }
         
-        plant.water();
-        player.sendMessage("§aWatered the plant! §7Water level: §b" + 
-            String.format("%.0f%%", plant.getWaterLevel() * 100));
+        // Use quality-aware watering if a watering can was used
+        if (wateringCanRating != null) {
+            plant.water(wateringCanRating);
+            String qualityBonus = wateringCanRating.getStars() > 1 ? 
+                " §a(+" + wateringCanRating.getStars() + " quality bonus!)" : "";
+            player.sendMessage("§aWatered the plant! §7Water level: §b" + 
+                String.format("%.0f%%", plant.getWaterLevel() * 100) + qualityBonus);
+        } else {
+            plant.water();
+            player.sendMessage("§aWatered the plant! §7Water level: §b" + 
+                String.format("%.0f%%", plant.getWaterLevel() * 100));
+        }
         
         // Update challenge progress
         if (plugin.getChallengeManager() != null) {

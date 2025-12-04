@@ -135,14 +135,17 @@ public class BudLords extends JavaPlugin {
             getLogger().info("✦ Enhanced Ambient Effects enabled!");
             getLogger().info("✦ Strain Special Effects System enabled with 60+ unique effects!");
             getLogger().info("");
-            getLogger().info("§6§l=== BudLords v2.0.0 MAJOR UPDATE ===");
+            getLogger().info("§6§l=== BudLords v2.0.1 BUG FIX & CONTENT UPDATE ===");
             getLogger().info("✦ Season System enabled with 4 seasons!");
             getLogger().info("✦ Weather System enabled!");
             getLogger().info("✦ Disease System enabled with 12+ diseases!");
             getLogger().info("✦ Achievement System enabled with 40+ achievements!");
             getLogger().info("✦ Skill Tree System enabled with 35+ skills!");
             getLogger().info("✦ Collection Book System enabled!");
-            getLogger().info("✦ 25+ New Seed Types added!");
+            getLogger().info("✦ 15+ New Weed Strains added!");
+            getLogger().info("✦ 35+ New Effects added (100+ total!)");
+            getLogger().info("✦ Improved Watering Can System!");
+            getLogger().info("✦ Bug fixes for Strain Creator, /bal, /package");
             getLogger().info("§6§l=====================================");
             
         } catch (Exception e) {
