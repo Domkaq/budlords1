@@ -207,6 +207,14 @@ public class NPCManager {
             chance += 0.1;
         }
         
+        // Apply prestige success bonus
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null && stats.getPrestigeLevel() > 0) {
+                chance += plugin.getPrestigeManager().getSuccessBonus(stats.getPrestigeLevel());
+            }
+        }
+        
         return Math.max(0.3, Math.min(0.98, chance));
     }
 

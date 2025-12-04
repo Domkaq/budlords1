@@ -315,15 +315,16 @@ public class AchievementManager implements InventoryHolder {
         
         if (currentRank == null) return;
         
-        String rankName = currentRank.name().toLowerCase();
+        // Normalize rank name for consistent comparison
+        String rankName = currentRank.name().toLowerCase(java.util.Locale.ROOT);
         
-        // Check for Kingpin rank (requires $50,000 total earnings)
+        // Check for Kingpin rank (requires $50,000 total earnings or has Kingpin+ rank)
         if (totalEarnings >= 50000 || rankName.contains("kingpin") || 
             rankName.contains("cartel") || rankName.contains("budlord")) {
             setProgress(player, Achievement.KINGPIN, 1);
         }
         
-        // Check for BudLord rank (requires $500,000 total earnings)
+        // Check for BudLord rank (requires $500,000 total earnings or has BudLord rank)
         if (totalEarnings >= 500000 || rankName.contains("budlord")) {
             setProgress(player, Achievement.BUDLORD, 1);
         }

@@ -571,11 +571,9 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 
                 // Happy particles (they're enjoying it!)
                 if (currentDelay >= 60) {
-                    w.spawnParticle(Particle.HEART, loc.clone().add(
-                        ThreadLocalRandom.current().nextDouble(-0.3, 0.3), 
-                        2.2, 
-                        ThreadLocalRandom.current().nextDouble(-0.3, 0.3)
-                    ), 1, 0, 0, 0, 0);
+                    double offsetX = ThreadLocalRandom.current().nextDouble(-0.3, 0.3);
+                    double offsetZ = ThreadLocalRandom.current().nextDouble(-0.3, 0.3);
+                    w.spawnParticle(Particle.HEART, loc.clone().add(offsetX, 2.2, offsetZ), 1, 0, 0, 0, 0);
                 }
                 
                 // Sound effects

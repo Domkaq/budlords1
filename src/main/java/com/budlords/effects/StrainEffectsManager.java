@@ -359,29 +359,31 @@ public class StrainEffectsManager implements Listener {
                     return;
                 }
                 
-                Location below = player.getLocation().clone().subtract(0, 0.1, 0);
+                Location playerLoc = player.getLocation();
+                Location below = playerLoc.clone().subtract(0, 0.1, 0);
                 
-                // Check if player is standing on water
-                if (below.getBlock().getType() == Material.WATER || 
-                    below.getBlock().getType() == Material.WATER_CAULDRON) {
-                    
-                    // Place temporary ice/barrier to walk on
-                    Location underFeet = player.getLocation().clone();
-                    underFeet.setY(Math.floor(underFeet.getY()) - 1);
-                    
+                // Check if player is standing on or in water
+                boolean onWater = below.getBlock().getType() == Material.WATER || 
+                    below.getBlock().getType() == Material.WATER_CAULDRON;
+                boolean inWater = playerLoc.getBlock().getType() == Material.WATER;
+                
+                if (onWater || inWater) {
                     // Visual effect - frost particles on water
                     player.getWorld().spawnParticle(Particle.SNOWFLAKE, 
-                        underFeet.clone().add(0.5, 1.1, 0.5), 5, 0.3, 0.05, 0.3, 0);
+                        playerLoc.clone().add(0, 0.1, 0), 3, 0.3, 0.05, 0.3, 0);
                     
-                    // Apply levitation to keep them above water  
-                    if (player.getLocation().getBlock().getType() == Material.WATER) {
-                        player.setVelocity(player.getVelocity().setY(0.05));
+                    // Only apply velocity boost if player is sinking into water
+                    // and not already moving upward
+                    if (inWater && player.getVelocity().getY() < 0.1) {
+                        org.bukkit.util.Vector currentVel = player.getVelocity();
+                        // Gentle upward push to keep them above water, preserving horizontal movement
+                        player.setVelocity(currentVel.setY(Math.max(currentVel.getY(), 0.08)));
                     }
                 }
                 
-                elapsed += 5; // Check every 5 ticks
+                elapsed += 10; // Check every 10 ticks (half a second)
             }
-        }.runTaskTimer(plugin, 0L, 5L);
+        }.runTaskTimer(plugin, 0L, 10L);
     }
     
     /**
@@ -399,26 +401,32 @@ public class StrainEffectsManager implements Listener {
                 }
                 
                 Location center = player.getLocation();
-                int radius = 5;
+                int radius = 3; // Reduced radius for better performance
+                int blocksProcessed = 0;
+                int maxBlocksPerTick = 5; // Limit blocks processed per check
                 
-                // Boost nearby crops
+                // Boost nearby crops with limited processing
+                outerLoop:
                 for (int x = -radius; x <= radius; x++) {
-                    for (int y = -2; y <= 2; y++) {
+                    for (int y = -1; y <= 1; y++) { // Reduced Y range
                         for (int z = -radius; z <= radius; z++) {
+                            if (blocksProcessed >= maxBlocksPerTick) break outerLoop;
+                            
                             Location blockLoc = center.clone().add(x, y, z);
                             org.bukkit.block.Block block = blockLoc.getBlock();
                             
                             // Check if it's a crop
                             if (block.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
                                 if (ageable.getAge() < ageable.getMaximumAge()) {
-                                    // 10% chance to grow one stage every 2 seconds
-                                    if (ThreadLocalRandom.current().nextDouble() < 0.10) {
+                                    // 5% chance to grow one stage per check (reduced from 10%)
+                                    if (ThreadLocalRandom.current().nextDouble() < 0.05) {
                                         ageable.setAge(Math.min(ageable.getMaximumAge(), ageable.getAge() + 1));
                                         block.setBlockData(ageable);
+                                        blocksProcessed++;
                                         
                                         // Particles
                                         player.getWorld().spawnParticle(Particle.COMPOSTER, 
-                                            blockLoc.clone().add(0.5, 0.5, 0.5), 5, 0.2, 0.2, 0.2, 0);
+                                            blockLoc.clone().add(0.5, 0.5, 0.5), 3, 0.2, 0.2, 0.2, 0);
                                     }
                                 }
                             }
@@ -426,9 +434,9 @@ public class StrainEffectsManager implements Listener {
                     }
                 }
                 
-                elapsed += 40; // Check every 2 seconds
+                elapsed += 60; // Check every 3 seconds (increased from 2)
             }
-        }.runTaskTimer(plugin, 0L, 40L);
+        }.runTaskTimer(plugin, 0L, 60L); // Increased interval
     }
     
     private void playActivationSound(Player player, StrainEffectType type) {

@@ -276,6 +276,18 @@ public class FarmingManager {
         } else if (wallCount >= 2) {
             qualityBonus += 5;
         }
+        
+        // Apply prestige quality bonus
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            UUID ownerUuid = plant.getOwnerUuid();
+            if (ownerUuid != null) {
+                com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(ownerUuid);
+                if (stats != null && stats.getPrestigeLevel() > 0) {
+                    double qualityMult = plugin.getPrestigeManager().getQualityMultiplier(stats.getPrestigeLevel());
+                    qualityBonus = (int) Math.round(qualityBonus * qualityMult);
+                }
+            }
+        }
 
         plant.addQuality(qualityBonus);
         plant.grow();
