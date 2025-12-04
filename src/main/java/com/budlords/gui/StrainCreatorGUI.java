@@ -291,12 +291,23 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         boolean shift = event.isShiftClick();
         int amount = shift ? 10 : 5;
         
-        // Allow placing items in icon area
-        if (slot == 34 && event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+        // Allow clicking in player inventory to pick up items for drag
+        if (slot >= 54) {
+            // Player inventory slot - allow normal interaction for picking up items
+            // But prevent shift-clicking into the GUI
+            if (shift) {
+                event.setCancelled(true);
+            }
+            return;
+        }
+        
+        // Allow placing items in icon area (slot 34 or 25)
+        if ((slot == 34 || slot == 25) && event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
             builder.iconMaterial = event.getCursor().getType();
             event.setCancelled(true);
             updateInventory(event.getInventory(), builder);
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.3f, 1.5f);
+            player.sendMessage("§aIcon set to: §f" + builder.iconMaterial.name());
             return;
         }
 

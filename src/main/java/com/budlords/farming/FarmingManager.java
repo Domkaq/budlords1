@@ -525,6 +525,12 @@ public class FarmingManager {
         player.sendMessage("§aWatered the plant! §7Water level: §b" + 
             String.format("%.0f%%", plant.getWaterLevel() * 100));
         
+        // Update challenge progress
+        if (plugin.getChallengeManager() != null) {
+            plugin.getChallengeManager().updateProgress(player, 
+                com.budlords.challenges.Challenge.ChallengeType.WATER_PLANTS, 1);
+        }
+        
         // Water particles
         Location particleLoc = location.clone().add(0.5, 0.5, 0.5);
         location.getWorld().spawnParticle(Particle.DRIP_WATER, particleLoc, 15, 0.3, 0.2, 0.3, 0);
@@ -546,6 +552,12 @@ public class FarmingManager {
         plant.fertilize(fertilizerRating);
         player.sendMessage("§aFertilized the plant with " + fertilizerRating.getDisplay() + " §afertilizer!");
         player.sendMessage("§7Nutrient level: §e" + String.format("%.0f%%", plant.getNutrientLevel() * 100));
+        
+        // Update challenge progress
+        if (plugin.getChallengeManager() != null) {
+            plugin.getChallengeManager().updateProgress(player, 
+                com.budlords.challenges.Challenge.ChallengeType.USE_FERTILIZER, 1);
+        }
         
         // Fertilizer particles
         Location particleLoc = location.clone().add(0.5, 0.3, 0.5);

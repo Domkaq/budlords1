@@ -391,10 +391,15 @@ public class RollingShopGUI implements InventoryHolder, Listener {
             }
             default -> {
                 if (itemId.startsWith("grinder_")) {
-                    int star = Integer.parseInt(itemId.substring(8));
-                    StarRating rating = StarRating.fromValue(star);
-                    purchasedItem = JointItems.createGrinder(rating, 1);
-                    itemName = "Grinder " + rating.getDisplay();
+                    try {
+                        int star = Integer.parseInt(itemId.substring(8));
+                        StarRating rating = StarRating.fromValue(star);
+                        purchasedItem = JointItems.createGrinder(rating, 1);
+                        itemName = "Grinder " + rating.getDisplay();
+                    } catch (NumberFormatException e) {
+                        plugin.getLogger().warning("Failed to parse grinder rating from item ID: " + itemId);
+                        return;
+                    }
                 }
             }
         }
