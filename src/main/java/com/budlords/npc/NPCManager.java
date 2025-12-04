@@ -95,7 +95,22 @@ public class NPCManager {
             }
         }
         
+        // Check if entity type is allowed in config
+        if (isEntityAllowedForSelling(entity)) {
+            return NPCType.CONFIGURABLE_MOB;
+        }
+        
         return NPCType.NONE;
+    }
+    
+    /**
+     * Checks if an entity type is allowed for selling based on config.
+     */
+    public boolean isEntityAllowedForSelling(Entity entity) {
+        if (entity == null) return false;
+        
+        String entityType = entity.getType().name().toLowerCase();
+        return plugin.getConfig().getBoolean("trading.allowed-mobs." + entityType, false);
     }
 
     public TradeResult attemptTrade(Player player, Entity trader, ItemStack item) {
@@ -263,7 +278,8 @@ public class NPCManager {
         NONE,
         MARKET_JOE,
         BLACKMARKET_JOE,
-        VILLAGE_VENDOR
+        VILLAGE_VENDOR,
+        CONFIGURABLE_MOB  // Entity types enabled in config trading.allowed-mobs
     }
 
     public record TradeResult(boolean success, String message, double amount) {

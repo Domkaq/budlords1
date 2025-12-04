@@ -57,6 +57,7 @@ public class PlayerStats {
     private int strainsCreated;
     private int crossbreedsAttempted;
     private int legendaryStrainsDiscovered;
+    private int sixStarStrainsCreated; // 6-star legendary strains from crossbreeding
     
     // v2.0.0 - New tracking stats
     private int diseasesCured;
@@ -339,6 +340,14 @@ public class PlayerStats {
 
     public void incrementLegendaryStrains() {
         this.legendaryStrainsDiscovered++;
+    }
+    
+    public int getSixStarStrains() {
+        return sixStarStrainsCreated;
+    }
+    
+    public void incrementSixStarStrains() {
+        this.sixStarStrainsCreated++;
     }
     
     // ===== v2.0.0 NEW STATS =====

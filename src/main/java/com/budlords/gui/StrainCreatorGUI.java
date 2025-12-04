@@ -191,7 +191,8 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         effectsLore.add("§7Add special visual and gameplay");
         effectsLore.add("§7effects to your strain!");
         effectsLore.add("");
-        effectsLore.add("§7Selected: §e" + builder.effects.size() + "/" + Strain.MAX_EFFECTS);
+        effectsLore.add("§7Selected: §e" + builder.effects.size() + "/" + Strain.MAX_EFFECTS_ADMIN);
+        effectsLore.add("§6Admin tool - unlimited effects!");
         if (!builder.effects.isEmpty()) {
             effectsLore.add("");
             for (StrainEffect effect : builder.effects) {
@@ -460,6 +461,9 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         );
         strain.setIconMaterial(builder.iconMaterial);
         
+        // Mark as admin-created to allow more effects
+        strain.setAdminCreated(true);
+        
         // Add effects from builder
         strain.setEffects(builder.effects);
         
@@ -558,7 +562,8 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         }
         
         public boolean addEffect(com.budlords.effects.StrainEffectType type, int intensity) {
-            if (effects.size() >= Strain.MAX_EFFECTS) {
+            // Admin strains can have up to MAX_EFFECTS_ADMIN effects!
+            if (effects.size() >= Strain.MAX_EFFECTS_ADMIN) {
                 return false;
             }
             // Check for duplicates
