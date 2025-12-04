@@ -18,20 +18,27 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Shop GUI for BlackMarket Joe where he SELLS items to players:
  * - Seeds of various strains (★1-5)
  * - Illegal items and special materials
  * 
- * This is different from regular Market Joe - BlackMarket Joe sells TO players,
- * not buys FROM them (though he also buys packaged products when player holds them).
+ * Features category pages for better organization:
+ * - Seeds Shop
+ * - Special Items
+ * - Grow Lamps
+ * - Rare Collection
  */
 public class BlackMarketShopGUI implements InventoryHolder, Listener {
 
     private final BudLords plugin;
     private final EconomyManager economyManager;
     private final StrainManager strainManager;
+    
+    // Track current page for each player
+    private final Map<UUID, ShopCategory> playerCategories = new HashMap<>();
 
     // Base prices for seeds (multiplied by star rating and rarity)
     private static final double SEED_BASE_PRICE = 100.0;
@@ -39,6 +46,15 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
     // Special item prices
     private static final double FERTILIZER_BASE_PRICE = 50.0;
     private static final double GROW_LAMP_BASE_PRICE = 150.0;
+    
+    // Shop categories
+    public enum ShopCategory {
+        MAIN("§5§l☠ BlackMarket Joe"),
+        SEEDS("§5§l☠ Seeds Shop"),
+        SPECIAL("§5§l☠ Special Items"),
+        LAMPS("§5§l☠ Grow Lamps"),
+        RARE("§5§l☠ Rare Collection")
+    }
 
     public BlackMarketShopGUI(BudLords plugin, EconomyManager economyManager, StrainManager strainManager) {
         this.plugin = plugin;
@@ -50,16 +66,22 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
     // Using deprecated Inventory title API for Bukkit/Spigot compatibility
     @SuppressWarnings("deprecation")
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(this, 54, "§5§l☠ BlackMarket Joe's Shop");
-        updateInventory(inv, player);
+        openCategory(player, ShopCategory.MAIN);
+    }
+    
+    @SuppressWarnings("deprecation")
+    public void openCategory(Player player, ShopCategory category) {
+        playerCategories.put(player.getUniqueId(), category);
+        Inventory inv = Bukkit.createInventory(this, 54, category.name().equals("MAIN") ? "§5§l☠ BlackMarket Joe's Shop" : category.name);
+        updateInventory(inv, player, category);
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 0.5f, 0.8f);
     }
 
-    private void updateInventory(Inventory inv, Player player) {
+    private void updateInventory(Inventory inv, Player player, ShopCategory category) {
         inv.clear();
 
-        // Border - Dark purple theme
+        // Border - Dark purple theme with better spacing
         ItemStack borderPurple = createItem(Material.PURPLE_STAINED_GLASS_PANE, " ", null);
         ItemStack borderBlack = createItem(Material.BLACK_STAINED_GLASS_PANE, " ", null);
 
@@ -83,34 +105,108 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                 "",
                 "§7Your balance: §e" + economyManager.formatMoney(balance),
                 "",
-                "§7Click an item to purchase",
-                "§5§oPremium prices for premium products"
+                "§7Browse categories below"
             ));
         inv.setItem(4, header);
 
-        // Get available strains
+        switch (category) {
+            case MAIN -> setupMainPage(inv, player);
+            case SEEDS -> setupSeedsPage(inv, player);
+            case SPECIAL -> setupSpecialPage(inv, player);
+            case LAMPS -> setupLampsPage(inv, player);
+            case RARE -> setupRarePage(inv, player);
+        }
+
+        // Close button (always at same position)
+        inv.setItem(49, createItem(Material.BARRIER, "§c§l✗ Close Shop",
+            Arrays.asList("", "§7Click to close")));
+            
+        // Back button for sub-pages
+        if (category != ShopCategory.MAIN) {
+            inv.setItem(45, createItem(Material.ARROW, "§7§l◀ Back to Main",
+                Arrays.asList("", "§7Return to category selection")));
+        }
+    }
+    
+    private void setupMainPage(Inventory inv, Player player) {
+        // Category selection menu - centered and well-aligned
+        
+        // Row 2: Categories
+        inv.setItem(20, createCategoryItem(Material.WHEAT_SEEDS, "§a§l🌱 Seeds Shop",
+            Arrays.asList(
+                "",
+                "§7Browse seeds of various strains",
+                "§7Different rarities available!",
+                "",
+                "§a▶ Click to browse"
+            ), "cat_seeds"));
+            
+        inv.setItem(22, createCategoryItem(Material.DRAGON_BREATH, "§5§l⚗ Special Items",
+            Arrays.asList(
+                "",
+                "§7Premium fertilizers and",
+                "§7other special supplies!",
+                "",
+                "§5▶ Click to browse"
+            ), "cat_special"));
+            
+        inv.setItem(24, createCategoryItem(Material.SEA_LANTERN, "§e§l💡 Grow Lamps",
+            Arrays.asList(
+                "",
+                "§7Elite grow lamps for",
+                "§7maximum plant quality!",
+                "",
+                "§e▶ Click to browse"
+            ), "cat_lamps"));
+        
+        // Row 3: Rare Collection
+        inv.setItem(31, createCategoryItem(Material.NETHER_STAR, "§6§l⭐ Rare Collection",
+            Arrays.asList(
+                "",
+                "§7Exclusive rare and legendary",
+                "§7strain seeds!",
+                "",
+                "§6Limited availability!",
+                "",
+                "§6▶ Click to browse"
+            ), "cat_rare"));
+        
+        // Info panel
+        inv.setItem(40, createItem(Material.BOOK, "§5§lBlackMarket Info",
+            Arrays.asList(
+                "",
+                "§7• Seeds sold here are §5premium",
+                "§7• Higher prices, better quality",
+                "§7• Special items not found elsewhere",
+                "",
+                "§7To sell products:",
+                "§7Close this menu, hold packaged",
+                "§7buds and right-click me!"
+            )));
+    }
+    
+    private void setupSeedsPage(Inventory inv, Player player) {
+        // Get available strains and sort by rarity
         Collection<Strain> allStrains = strainManager.getAllStrains();
         List<Strain> strainList = new ArrayList<>(allStrains);
-        
-        // Sort by rarity for display
         strainList.sort((a, b) -> a.getRarity().ordinal() - b.getRarity().ordinal());
-
-        // ====== SEEDS SECTION ======
         
-        // Section header
-        inv.setItem(10, createItem(Material.WHEAT_SEEDS, "§a§l🌱 Seeds for Sale",
-            Arrays.asList("", "§7Premium seeds from unknown sources", "§7Plant and grow your operation!")));
-
-        // Display up to 7 strains with star selection
-        int seedSlot = 11;
-        int maxSeeds = Math.min(strainList.size(), 7);
+        // Filter out rare/legendary for this page (they go in rare collection)
+        List<Strain> normalStrains = strainList.stream()
+            .filter(s -> s.getRarity() == Strain.Rarity.COMMON || s.getRarity() == Strain.Rarity.UNCOMMON)
+            .toList();
         
-        for (int i = 0; i < maxSeeds && seedSlot < 18; i++) {
-            Strain strain = strainList.get(i);
+        // Display seeds in rows (slots 10-16, 19-25, 28-34)
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
+        int slotIndex = 0;
+        
+        for (Strain strain : normalStrains) {
+            if (slotIndex >= slots.length) break;
+            
             StarRating rating = getRecommendedRating(strain);
             double price = calculateSeedPrice(strain, rating);
             
-            inv.setItem(seedSlot, createShopItem(
+            inv.setItem(slots[slotIndex], createShopItem(
                 Material.WHEAT_SEEDS,
                 strain.getRarity().getColorCode() + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
@@ -128,20 +224,16 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                 ),
                 "seed_" + strain.getId() + "_" + rating.getStars()
             ));
-            seedSlot++;
+            slotIndex++;
         }
-
-        // ====== SPECIAL ITEMS SECTION ======
-        
-        // Section header
-        inv.setItem(19, createItem(Material.DRAGON_BREATH, "§5§l⚗ Special Items",
-            Arrays.asList("", "§7Rare items not found elsewhere", "§7Boost your operation!")));
-
-        // Fertilizer (★3-5 only - premium versions)
-        for (int star = 3; star <= 5; star++) {
+    }
+    
+    private void setupSpecialPage(Inventory inv, Player player) {
+        // Fertilizers in first row (slots 11-15)
+        for (int star = 1; star <= 5; star++) {
             StarRating rating = StarRating.fromValue(star);
             double price = calculateFertilizerPrice(star);
-            inv.setItem(20 + star - 3, createShopItem(
+            inv.setItem(10 + star, createShopItem(
                 Material.BONE_MEAL,
                 rating.getColorCode() + "Premium Fertilizer " + rating.getDisplay(),
                 price,
@@ -160,12 +252,24 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                 "fertilizer_" + star
             ));
         }
-
-        // Grow Lamps (★3-5 only - premium versions)
-        for (int star = 3; star <= 5; star++) {
+        
+        // Info section
+        inv.setItem(22, createItem(Material.BOOK, "§5§lFertilizer Info",
+            Arrays.asList(
+                "",
+                "§7Fertilizers boost plant nutrients",
+                "§7and improve final bud quality!",
+                "",
+                "§7Higher ★ = Better results"
+            )));
+    }
+    
+    private void setupLampsPage(Inventory inv, Player player) {
+        // Grow Lamps (slots 11-15)
+        for (int star = 1; star <= 5; star++) {
             StarRating rating = StarRating.fromValue(star);
             double price = calculateGrowLampPrice(star);
-            inv.setItem(28 + star - 3, createShopItem(
+            inv.setItem(10 + star, createShopItem(
                 Material.SEA_LANTERN,
                 rating.getColorCode() + "Elite Grow Lamp " + rating.getDisplay(),
                 price,
@@ -184,64 +288,65 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
                 "grow_lamp_" + star
             ));
         }
-
-        // ====== RARE SEEDS SECTION (if available) ======
         
+        // Info section
+        inv.setItem(22, createItem(Material.BOOK, "§e§lLamp Info",
+            Arrays.asList(
+                "",
+                "§7Grow lamps provide light and",
+                "§7improve plant growth speed!",
+                "",
+                "§7Place near pots for best effect"
+            )));
+    }
+    
+    private void setupRarePage(Inventory inv, Player player) {
         // Find rare and legendary strains
-        List<Strain> rareStrains = strainList.stream()
+        Collection<Strain> allStrains = strainManager.getAllStrains();
+        List<Strain> rareStrains = allStrains.stream()
             .filter(s -> s.getRarity() == Strain.Rarity.RARE || s.getRarity() == Strain.Rarity.LEGENDARY)
             .toList();
         
-        if (!rareStrains.isEmpty()) {
-            inv.setItem(37, createItem(Material.NETHER_STAR, "§6§l⭐ Rare Collection",
-                Arrays.asList("", "§7Exclusive rare strain seeds", "§7Limited availability!")));
+        // Display rare seeds (slots 11-15, 20-24)
+        int[] slots = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24};
+        int slotIndex = 0;
+        
+        for (Strain strain : rareStrains) {
+            if (slotIndex >= slots.length) break;
             
-            int rareSlot = 38;
-            for (int i = 0; i < Math.min(rareStrains.size(), 4) && rareSlot < 42; i++) {
-                Strain strain = rareStrains.get(i);
-                StarRating rating = StarRating.FOUR_STAR; // Rare seeds come at 4★ minimum
-                double price = calculateSeedPrice(strain, rating) * 1.5; // Premium markup
-                
-                inv.setItem(rareSlot, createShopItem(
-                    Material.WHEAT_SEEDS,
-                    "§6✦ " + strain.getName() + " Seed " + rating.getDisplay(),
-                    price,
-                    Arrays.asList(
-                        "§6§l✦ RARE COLLECTION ✦",
-                        "",
-                        "§7Strain: §f" + strain.getName(),
-                        "§7Rarity: " + strain.getRarity().getDisplayName(),
-                        "§7Quality: " + rating.getDisplay(),
-                        "",
-                        "§7Potency: §e" + strain.getPotency() + "%",
-                        "§7Yield: §e" + strain.getYield() + " buds",
-                        "",
-                        "§7Price: §e" + economyManager.formatMoney(price),
-                        "",
-                        canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money"
-                    ),
-                    "rare_seed_" + strain.getId() + "_" + rating.getStars()
-                ));
-                rareSlot++;
+            StarRating rating = StarRating.FOUR_STAR; // Rare seeds at 4★ minimum
+            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
+                rating = StarRating.FIVE_STAR;
             }
+            double price = calculateSeedPrice(strain, rating) * 1.5; // Premium markup
+            
+            inv.setItem(slots[slotIndex], createShopItem(
+                Material.WHEAT_SEEDS,
+                "§6✦ " + strain.getName() + " Seed " + rating.getDisplay(),
+                price,
+                Arrays.asList(
+                    "§6§l✦ RARE COLLECTION ✦",
+                    "",
+                    "§7Strain: §f" + strain.getName(),
+                    "§7Rarity: " + strain.getRarity().getDisplayName(),
+                    "§7Quality: " + rating.getDisplay(),
+                    "",
+                    "§7Potency: §e" + strain.getPotency() + "%",
+                    "§7Yield: §e" + strain.getYield() + " buds",
+                    "",
+                    "§7Price: §e" + economyManager.formatMoney(price),
+                    "",
+                    canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money"
+                ),
+                "rare_seed_" + strain.getId() + "_" + rating.getStars()
+            ));
+            slotIndex++;
         }
-
-        // Info panel
-        inv.setItem(43, createItem(Material.BOOK, "§5§lBlackMarket Info",
-            Arrays.asList(
-                "",
-                "§7• Seeds sold here are §5premium",
-                "§7• Higher prices, better quality",
-                "§7• Special items not found elsewhere",
-                "",
-                "§7To sell products:",
-                "§7Close this menu, hold packaged",
-                "§7buds and right-click me!"
-            )));
-
-        // Close button
-        inv.setItem(49, createItem(Material.BARRIER, "§c§l✗ Close Shop",
-            Arrays.asList("", "§7Click to close")));
+        
+        if (rareStrains.isEmpty()) {
+            inv.setItem(22, createItem(Material.BARRIER, "§cNo Rare Seeds Available",
+                Arrays.asList("", "§7Check back later!", "§7Rare strains come and go...")));
+        }
     }
 
     private StarRating getRecommendedRating(Strain strain) {
@@ -252,6 +357,21 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             case RARE -> StarRating.FOUR_STAR;
             case LEGENDARY -> StarRating.FIVE_STAR;
         };
+    }
+
+    private ItemStack createCategoryItem(Material material, String name, List<String> lore, String categoryId) {
+        ItemStack item = createItem(material, name, lore);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            List<String> currentLore = meta.getLore();
+            if (currentLore != null) {
+                currentLore.add("§8ID: " + categoryId);
+                meta.setLore(currentLore);
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
     }
 
     private double calculateSeedPrice(Strain strain, StarRating rating) {
@@ -332,8 +452,17 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_CLOSE, 0.5f, 0.8f);
             return;
         }
+        
+        // Back button
+        if (slot == 45) {
+            ShopCategory current = playerCategories.getOrDefault(player.getUniqueId(), ShopCategory.MAIN);
+            if (current != ShopCategory.MAIN) {
+                openCategory(player, ShopCategory.MAIN);
+            }
+            return;
+        }
 
-        // Check if it's a shop item
+        // Check if it's a shop item or category
         ItemMeta meta = clicked.getItemMeta();
         if (meta == null || !meta.hasLore()) return;
 
@@ -356,7 +485,22 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             }
         }
 
-        if (itemId == null || price <= 0) return;
+        if (itemId == null) return;
+        
+        // Handle category navigation
+        if (itemId.startsWith("cat_")) {
+            String categoryName = itemId.substring(4).toUpperCase();
+            try {
+                ShopCategory category = ShopCategory.valueOf(categoryName);
+                openCategory(player, category);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Unknown category: " + categoryName);
+            }
+            return;
+        }
+        
+        // Below is purchase handling - needs valid price
+        if (price <= 0) return;
 
         // Process purchase
         if (!canAfford(player, price)) {
@@ -444,8 +588,9 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
         player.sendMessage("§5Purchased §f" + itemName + " §5for §e" + economyManager.formatMoney(price) + "§5!");
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 0.8f);
 
-        // Refresh the inventory
-        updateInventory(event.getInventory(), player);
+        // Refresh the inventory with current category
+        ShopCategory currentCategory = playerCategories.getOrDefault(player.getUniqueId(), ShopCategory.MAIN);
+        updateInventory(event.getInventory(), player, currentCategory);
     }
 
     @Override
