@@ -38,6 +38,7 @@ public class CrossbreedManager implements InventoryHolder {
     private final double baseCrossbreedCost;
     private final double mutationChance;
     private final double legendaryMutationBonus;
+    private final double effectInheritanceChance;
 
     public CrossbreedManager(BudLords plugin, StrainManager strainManager, 
                              EconomyManager economyManager, StatsManager statsManager) {
@@ -51,6 +52,7 @@ public class CrossbreedManager implements InventoryHolder {
         this.baseCrossbreedCost = plugin.getConfig().getDouble("crossbreed.base-cost", 500.0);
         this.mutationChance = plugin.getConfig().getDouble("crossbreed.mutation-chance", 0.05);
         this.legendaryMutationBonus = plugin.getConfig().getDouble("crossbreed.legendary-mutation-bonus", 0.10);
+        this.effectInheritanceChance = plugin.getConfig().getDouble("effects.inheritance-chance", 0.5);
     }
 
     /**
@@ -411,10 +413,10 @@ public class CrossbreedManager implements InventoryHolder {
         List<com.budlords.effects.StrainEffect> result = new ArrayList<>();
         Set<com.budlords.effects.StrainEffectType> usedTypes = new java.util.HashSet<>();
         
-        // Each effect from parent 1 has 50% chance to be inherited
+        // Each effect from parent 1 has configurable chance to be inherited
         for (com.budlords.effects.StrainEffect effect : parent1.getEffects()) {
             if (result.size() >= Strain.MAX_EFFECTS) break;
-            if (ThreadLocalRandom.current().nextDouble() < 0.5) {
+            if (ThreadLocalRandom.current().nextDouble() < effectInheritanceChance) {
                 if (!usedTypes.contains(effect.getType())) {
                     result.add(effect.copy());
                     usedTypes.add(effect.getType());
@@ -422,10 +424,10 @@ public class CrossbreedManager implements InventoryHolder {
             }
         }
         
-        // Each effect from parent 2 has 50% chance to be inherited
+        // Each effect from parent 2 has configurable chance to be inherited
         for (com.budlords.effects.StrainEffect effect : parent2.getEffects()) {
             if (result.size() >= Strain.MAX_EFFECTS) break;
-            if (ThreadLocalRandom.current().nextDouble() < 0.5) {
+            if (ThreadLocalRandom.current().nextDouble() < effectInheritanceChance) {
                 if (!usedTypes.contains(effect.getType())) {
                     result.add(effect.copy());
                     usedTypes.add(effect.getType());

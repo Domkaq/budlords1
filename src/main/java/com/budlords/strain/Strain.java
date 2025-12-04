@@ -100,9 +100,9 @@ public class Strain {
      */
     public void setEffects(List<StrainEffect> effects) {
         this.effects = new ArrayList<>(effects);
-        // Limit to MAX_EFFECTS
-        if (this.effects.size() > MAX_EFFECTS) {
-            this.effects = new ArrayList<>(this.effects.subList(0, MAX_EFFECTS));
+        // Limit to MAX_EFFECTS efficiently by removing excess elements
+        while (this.effects.size() > MAX_EFFECTS) {
+            this.effects.remove(this.effects.size() - 1);
         }
     }
     

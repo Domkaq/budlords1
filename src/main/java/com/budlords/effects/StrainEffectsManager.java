@@ -163,7 +163,7 @@ public class StrainEffectsManager implements Listener {
             case BERSERKER -> {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, duration, amplifier + 1, false, false, true));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier, false, false, true));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, -1, false, false, true)); // negative resistance
+                // No resistance for berserker - high damage output but vulnerable
             }
             case TANK_MODE -> {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, amplifier, false, false, true));
@@ -689,7 +689,8 @@ public class StrainEffectsManager implements Listener {
         for (StrainEffect effect : session.getActiveEffects()) {
             if (effect.getType() == StrainEffectType.VAMPIRE) {
                 double damage = event.getFinalDamage();
-                double heal = damage * (0.1 + effect.getIntensity() * 0.05); // 15% to 35% lifesteal
+                // Intensity 1 = 15%, intensity 5 = 35%
+                double heal = damage * (0.10 + effect.getIntensity() * 0.05);
                 player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + heal));
                 
                 player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, 
