@@ -129,6 +129,77 @@ ambient:
   # Pollen particles on healthy plants
   pollen-effects: true
 
+# =====================================================
+# BudLords v2.0.0 - MAJOR UPDATE SETTINGS
+# =====================================================
+
+# Season System settings
+seasons:
+  # Enable season system
+  enabled: true
+  # Duration of each season in hours (default: 168 = 7 days)
+  duration-hours: 168
+  # Show ambient seasonal particles
+  ambient-effects: true
+  # Broadcast season changes to all players
+  broadcast-changes: true
+
+# Weather System settings  
+weather:
+  # Enable weather effects on plants
+  enabled: true
+  # Broadcast weather changes
+  broadcast-changes: true
+  # Show weather particles near plants
+  particle-effects: true
+
+# Disease System settings
+diseases:
+  # Enable plant diseases
+  enabled: true
+  # Base infection chance multiplier (0.5 = half as likely)
+  infection-rate-multiplier: 1.0
+  # Allow diseases to spread to nearby plants
+  spread-enabled: true
+  # Maximum spread radius in blocks
+  spread-radius: 3
+
+# Achievement System settings
+achievements:
+  # Enable achievement system
+  enabled: true
+  # Broadcast rare+ achievements to server
+  broadcast-rare: true
+  # Show celebration particles on unlock
+  celebration-effects: true
+
+# Skill System settings
+skills:
+  # Enable skill tree system
+  enabled: true
+  # Skill points per prestige level
+  points-per-prestige: 3
+  # Skill points per 1000 total earnings
+  points-per-earnings: 1
+
+# Collection Book settings
+collection:
+  # Enable collection book system
+  enabled: true
+  # Give rewards for collection milestones
+  milestone-rewards: true
+  # Show discovery notifications
+  discovery-notifications: true
+
+# Seed Type settings (25+ new types!)
+seed-types:
+  # Enable seed type bonuses
+  enabled: true
+  # Allow legendary seeds in shop
+  legendary-in-shop: false
+  # Legendary seed drop chance from crossbreeding
+  legendary-drop-chance: 0.01
+
 # Rank progression (optional - uses defaults if not specified)
 # Uncomment and modify to customize ranks
 # ranks:

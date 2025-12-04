@@ -57,6 +57,15 @@ public class PlayerStats {
     private int strainsCreated;
     private int crossbreedsAttempted;
     private int legendaryStrainsDiscovered;
+    
+    // v2.0.0 - New tracking stats
+    private int diseasesCured;
+    private int mutations;
+    private int achievementsUnlocked;
+    private int skillsUnlocked;
+    private int strainsCollected;
+    private int seasonalHarvests;
+    private int eventsExperienced;
 
     public PlayerStats(UUID playerId) {
         this.playerId = playerId;
@@ -330,6 +339,85 @@ public class PlayerStats {
 
     public void incrementLegendaryStrains() {
         this.legendaryStrainsDiscovered++;
+    }
+    
+    // ===== v2.0.0 NEW STATS =====
+    
+    public int getDiseasesCured() {
+        return diseasesCured;
+    }
+    
+    public void incrementDiseasesCured() {
+        this.diseasesCured++;
+    }
+    
+    public int getMutations() {
+        return mutations;
+    }
+    
+    public void incrementMutations() {
+        this.mutations++;
+    }
+    
+    public int getAchievementsUnlocked() {
+        return achievementsUnlocked;
+    }
+    
+    public void incrementAchievements() {
+        this.achievementsUnlocked++;
+    }
+    
+    public int getSkillsUnlocked() {
+        return skillsUnlocked;
+    }
+    
+    public void incrementSkillsUnlocked() {
+        this.skillsUnlocked++;
+    }
+    
+    public int getStrainsCollected() {
+        return strainsCollected;
+    }
+    
+    public void incrementStrainsCollected() {
+        this.strainsCollected++;
+    }
+    
+    public int getSeasonalHarvests() {
+        return seasonalHarvests;
+    }
+    
+    public void incrementSeasonalHarvests() {
+        this.seasonalHarvests++;
+    }
+    
+    public int getEventsExperienced() {
+        return eventsExperienced;
+    }
+    
+    public void incrementEventsExperienced() {
+        this.eventsExperienced++;
+    }
+    
+    // Alias methods for compatibility
+    public int getPlantsHarvested() {
+        return totalPlantsHarvested;
+    }
+    
+    public int getSuccessfulTrades() {
+        return totalSalesSuccess;
+    }
+    
+    public int getFiveStarHarvests() {
+        return fiveStarBudsHarvested;
+    }
+    
+    public double getTotalEarnings() {
+        return totalMoneyEarned;
+    }
+    
+    public int getCrossbreeds() {
+        return crossbreedsAttempted;
     }
 
     // ===== OVERALL SCORE =====

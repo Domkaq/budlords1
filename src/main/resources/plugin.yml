@@ -2,7 +2,7 @@ name: BudLords
 version: '${project.version}'
 main: com.budlords.BudLords
 api-version: '1.20'
-description: A weed farming RPG + black market economy system for Minecraft
+description: A weed farming RPG + black market economy system for Minecraft - v2.0.0 Major Update
 author: BudLords Team
 
 commands:
@@ -58,6 +58,26 @@ commands:
     description: View server leaderboards
     usage: /<command> [category]
     aliases: [lb, top]
+    permission: budlords.use
+  # v2.0.0 New Commands
+  season:
+    description: View current season and bonuses
+    usage: /<command> [info|set]
+    permission: budlords.use
+  achievements:
+    description: View your achievements
+    usage: /<command> [category]
+    aliases: [achieve, ach]
+    permission: budlords.use
+  skills:
+    description: View and manage your skill tree
+    usage: /<command> [tree]
+    aliases: [skill, skilltree]
+    permission: budlords.use
+  collection:
+    description: View your strain collection book
+    usage: /<command> [page]
+    aliases: [book, strainbook]
     permission: budlords.use
 
 permissions:
