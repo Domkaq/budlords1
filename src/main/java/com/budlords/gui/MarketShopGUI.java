@@ -1,6 +1,7 @@
 package com.budlords.gui;
 
 import com.budlords.BudLords;
+import com.budlords.diseases.PlantDisease;
 import com.budlords.economy.EconomyManager;
 import com.budlords.quality.QualityItemManager;
 import com.budlords.quality.StarRating;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import java.util.List;
  * - Growing Pots (★1-5)
  * - Watering Cans (★1-5)
  * - Harvest Scissors (★1-5)
+ * - Disease Cures
  */
 public class MarketShopGUI implements InventoryHolder, Listener {
 
@@ -192,6 +195,25 @@ public class MarketShopGUI implements InventoryHolder, Listener {
             ),
             "rolling_shop"
         ));
+        
+        // Disease Cures Shop button
+        inv.setItem(37, createShopItem(Material.POTION, 
+            "§c§l✦ Disease Cures",
+            0,
+            Arrays.asList(
+                "",
+                "§7Cure plant diseases:",
+                "§5• Fungicide",
+                "§3• Antibacterial Spray",
+                "§8• Pesticide",
+                "§6• Nutrient Flush",
+                "§a• Neem Oil",
+                "§d• Healing Salve",
+                "",
+                "§a▶ Click to open"
+            ),
+            "cure_shop"
+        ));
 
         // Close button
         inv.setItem(49, createItem(Material.BARRIER, "§c§l✗ Close Shop",
@@ -286,6 +308,13 @@ public class MarketShopGUI implements InventoryHolder, Listener {
             plugin.getRollingShopGUI().open(player);
             return;
         }
+        
+        // Handle cure shop button
+        if (itemId.equals("cure_shop")) {
+            player.closeInventory();
+            openCureShopGUI(player);
+            return;
+        }
 
         if (price <= 0) return;
 
@@ -330,6 +359,17 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 plugin.getLogger().warning("Failed to parse scissors rating from item ID: " + itemId);
                 return;
             }
+        } else if (itemId.startsWith("cure_")) {
+            // Handle cure purchases
+            String cureName = itemId.substring(5);
+            try {
+                PlantDisease.Cure cure = PlantDisease.Cure.valueOf(cureName);
+                purchasedItem = createCureItem(cure);
+                itemName = cure.getDisplayName();
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Failed to find cure: " + cureName);
+                return;
+            }
         }
 
         if (purchasedItem == null) return;
@@ -342,7 +382,139 @@ public class MarketShopGUI implements InventoryHolder, Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.5f);
 
         // Refresh the inventory to update balance display
-        updateInventory(event.getInventory(), player);
+        // Check what kind of shop we're in based on title
+        String title = event.getView().getTitle();
+        if (title.contains("Disease Cures")) {
+            openCureShopGUI(player);
+        } else {
+            updateInventory(event.getInventory(), player);
+        }
+    }
+    
+    /**
+     * Creates a cure item that can be used on infected plants.
+     */
+    private ItemStack createCureItem(PlantDisease.Cure cure) {
+        ItemStack item = new ItemStack(cure.getMaterial(), 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(cure.getColoredDisplay());
+            List<String> lore = new ArrayList<>();
+            lore.add("");
+            lore.add("§7" + cure.getDescription());
+            lore.add("");
+            lore.add("§7Effectiveness: §a" + String.format("%.0f%%", cure.getEffectiveness() * 100));
+            lore.add("");
+            lore.add("§7Right-click on an infected plant");
+            lore.add("§7to apply this cure!");
+            lore.add("");
+            lore.add("§8Type: cure");
+            lore.add("§8Cure: " + cure.name());
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+    
+    /**
+     * Opens the disease cure shop GUI.
+     */
+    @SuppressWarnings("deprecation")
+    private void openCureShopGUI(Player player) {
+        Inventory inv = Bukkit.createInventory(this, 54, "§c§l✦ Disease Cures Shop");
+        
+        // Border
+        ItemStack borderRed = createItem(Material.RED_STAINED_GLASS_PANE, " ", null);
+        ItemStack borderPink = createItem(Material.PINK_STAINED_GLASS_PANE, " ", null);
+
+        for (int i = 0; i < 9; i++) {
+            inv.setItem(i, i % 2 == 0 ? borderRed : borderPink);
+            inv.setItem(45 + i, i % 2 == 0 ? borderRed : borderPink);
+        }
+        for (int i = 9; i < 45; i += 9) {
+            inv.setItem(i, borderRed);
+            inv.setItem(i + 8, borderRed);
+        }
+
+        // Header
+        double balance = economyManager.getBalance(player);
+        inv.setItem(4, createItem(Material.POTION,
+            "§c§l✦ Disease Cures Shop",
+            Arrays.asList(
+                "§7Protect your plants from diseases!",
+                "",
+                "§7Your balance: §e" + economyManager.formatMoney(balance),
+                "",
+                "§7Click a cure to purchase"
+            )));
+
+        // Add each cure type
+        int slot = 10;
+        for (PlantDisease.Cure cure : PlantDisease.Cure.values()) {
+            // Skip Golden Elixir - too rare for regular shop
+            if (cure == PlantDisease.Cure.GOLDEN_ELIXIR) continue;
+            
+            double price = cure.getBaseCost();
+            
+            List<String> lore = new ArrayList<>();
+            lore.add("");
+            lore.add("§7" + cure.getDescription());
+            lore.add("");
+            lore.add("§7Effectiveness: §a" + String.format("%.0f%%", cure.getEffectiveness() * 100));
+            lore.add("");
+            lore.add("§7Best for treating:");
+            lore.add("§7" + getCureTargetInfo(cure));
+            lore.add("");
+            lore.add("§7Price: §e" + economyManager.formatMoney(price));
+            lore.add("");
+            lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
+            
+            inv.setItem(slot, createShopItem(
+                cure.getMaterial(),
+                cure.getColoredDisplay(),
+                price,
+                lore,
+                "cure_" + cure.name()
+            ));
+            
+            slot++;
+            // Skip border slots
+            if (slot % 9 == 0) slot++;
+            if (slot % 9 == 8) slot++;
+        }
+        
+        // Info section
+        inv.setItem(31, createItem(Material.BOOK, "§e§lHow to Use Cures",
+            Arrays.asList(
+                "",
+                "§7When a plant gets infected:",
+                "§71. Check the disease type",
+                "§72. Buy the right cure",
+                "§73. Right-click the infected plant",
+                "§7   with the cure item!",
+                "",
+                "§7Different cures work best",
+                "§7against different diseases."
+            )));
+
+        // Back button
+        inv.setItem(49, createItem(Material.ARROW, "§e§l← Back to Main Shop",
+            Arrays.asList("", "§7Click to go back")));
+        
+        player.openInventory(inv);
+        player.playSound(player.getLocation(), Sound.BLOCK_BREWING_STAND_BREW, 0.5f, 1.0f);
+    }
+    
+    private String getCureTargetInfo(PlantDisease.Cure cure) {
+        return switch (cure) {
+            case FUNGICIDE -> "Root Rot, Powdery Mildew, Botrytis";
+            case ANTIBACTERIAL_SPRAY -> "Leaf Blight, Bacterial infections";
+            case PESTICIDE -> "Spider Mites, Aphids, Thrips";
+            case NUTRIENT_FLUSH -> "Nutrient Burn, Heat Stress, Light Burn";
+            case NEEM_OIL -> "Multiple pest types (general use)";
+            case HEALING_SALVE -> "General plant health (moderate effectiveness)";
+            case GOLDEN_ELIXIR -> "Mystical diseases (Zombie Fungus, Crystal Virus)";
+        };
     }
 
     @Override

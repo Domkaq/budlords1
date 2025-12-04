@@ -227,19 +227,21 @@ public class PrestigeManager implements InventoryHolder {
         // Epic celebration effects!
         playPrestigeCelebration(player, newPrestigeLevel);
         
-        // Send messages
+        // Send messages - simplified format without box alignment issues
         player.sendMessage("");
-        player.sendMessage("§5§l╔══════════════════════════════════════════╗");
-        player.sendMessage("§5§l║    §d§l✦ PRESTIGE COMPLETE! ✦             §5§l║");
-        player.sendMessage("§5§l╠══════════════════════════════════════════╣");
-        player.sendMessage("§5§l║ §7You are now Prestige " + getPrestigeDisplay(newPrestigeLevel) + "          §5§l║");
-        player.sendMessage("§5§l║                                          §5§l║");
-        player.sendMessage("§5§l║ §7New Bonuses:                            §5§l║");
-        player.sendMessage("§5§l║ §a• Earnings: +" + String.format("%-8.0f%%", getEarningsMultiplier(newPrestigeLevel) * 100 - 100) + "                 §5§l║");
-        player.sendMessage("§5§l║ §a• Growth Speed: +" + String.format("%-8.0f%%", getGrowthSpeedMultiplier(newPrestigeLevel) * 100 - 100) + "             §5§l║");
-        player.sendMessage("§5§l║ §a• Quality: +" + String.format("%-8.0f%%", getQualityMultiplier(newPrestigeLevel) * 100 - 100) + "                  §5§l║");
-        player.sendMessage("§5§l║ §a• Trade Success: +" + String.format("%-8.0f%%", getSuccessBonus(newPrestigeLevel) * 100) + "            §5§l║");
-        player.sendMessage("§5§l╚══════════════════════════════════════════╝");
+        player.sendMessage("§5§l═════════════════════════════════════");
+        player.sendMessage("§d§l    ✦ PRESTIGE COMPLETE! ✦");
+        player.sendMessage("§5§l═════════════════════════════════════");
+        player.sendMessage("");
+        player.sendMessage("§7You are now Prestige " + getPrestigeDisplay(newPrestigeLevel));
+        player.sendMessage("");
+        player.sendMessage("§7New Bonuses:");
+        player.sendMessage("§a  • Earnings: §f+" + String.format("%.0f%%", getEarningsMultiplier(newPrestigeLevel) * 100 - 100));
+        player.sendMessage("§a  • Growth Speed: §f+" + String.format("%.0f%%", getGrowthSpeedMultiplier(newPrestigeLevel) * 100 - 100));
+        player.sendMessage("§a  • Quality: §f+" + String.format("%.0f%%", getQualityMultiplier(newPrestigeLevel) * 100 - 100));
+        player.sendMessage("§a  • Trade Success: §f+" + String.format("%.0f%%", getSuccessBonus(newPrestigeLevel) * 100));
+        player.sendMessage("");
+        player.sendMessage("§5§l═════════════════════════════════════");
         player.sendMessage("");
         
         // Broadcast to server

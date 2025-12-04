@@ -3,8 +3,10 @@ package com.budlords.gui;
 import com.budlords.BudLords;
 import com.budlords.challenges.Challenge;
 import com.budlords.economy.EconomyManager;
+import com.budlords.joint.JointItems;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
+import com.budlords.quality.StarRating;
 import com.budlords.stats.PlayerStats;
 import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
@@ -207,24 +209,52 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         double multiplier = getPriceMultiplier(session.buyerType);
         
         for (ItemStack item : session.itemsToSell) {
-            if (item != null && packagingManager.isPackagedProduct(item)) {
-                double value = packagingManager.getValueFromPackage(item);
+            if (item == null) continue;
+            
+            double value = 0;
+            Strain strain = null;
+            
+            if (packagingManager.isPackagedProduct(item)) {
+                value = packagingManager.getValueFromPackage(item);
                 
                 // Get strain for rarity bonus
                 String strainId = packagingManager.getStrainIdFromPackage(item);
-                Strain strain = strainManager.getStrain(strainId);
+                strain = strainManager.getStrain(strainId);
+            } else if (JointItems.isJoint(item)) {
+                // Calculate joint value
+                String strainId = JointItems.getJointStrainId(item);
+                strain = strainManager.getStrain(strainId);
+                int potency = JointItems.getJointPotency(item);
+                StarRating rating = JointItems.getJointRating(item);
                 
-                if (strain != null && session.buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
+                // Base joint value = potency * quality multiplier * 2 (joints are premium)
+                double qualityMult = rating != null ? rating.getQualityMultiplier() : 1.0;
+                value = potency * qualityMult * 2.0;
+                
+                // Add strain rarity bonus
+                if (strain != null) {
                     value *= switch (strain.getRarity()) {
                         case COMMON -> 1.0;
-                        case UNCOMMON -> 1.1;
-                        case RARE -> 1.3;
-                        case LEGENDARY -> 1.5;
+                        case UNCOMMON -> 1.2;
+                        case RARE -> 1.5;
+                        case LEGENDARY -> 2.5;
                     };
                 }
-                
-                total += value * multiplier * item.getAmount();
+            } else {
+                continue; // Skip non-sellable items
             }
+            
+            // Apply black market rarity bonus
+            if (strain != null && session.buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
+                value *= switch (strain.getRarity()) {
+                    case COMMON -> 1.0;
+                    case UNCOMMON -> 1.1;
+                    case RARE -> 1.3;
+                    case LEGENDARY -> 1.5;
+                };
+            }
+            
+            total += value * multiplier * item.getAmount();
         }
         return total;
     }
@@ -244,16 +274,49 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         double multiplier = getPriceMultiplier(session.buyerType);
         
         for (ItemStack item : session.itemsToSell) {
-            if (item != null && packagingManager.isPackagedProduct(item)) {
+            if (item == null) continue;
+            
+            String name = "Unknown";
+            double value = 0;
+            
+            if (packagingManager.isPackagedProduct(item)) {
                 String strainId = packagingManager.getStrainIdFromPackage(item);
                 Strain strain = strainManager.getStrain(strainId);
-                String name = strain != null ? strain.getName() : "Unknown";
-                double value = packagingManager.getValueFromPackage(item) * multiplier * item.getAmount();
-                breakdown.append("§7• ").append(name).append(": §e").append(economyManager.formatMoney(value)).append("\n");
+                name = strain != null ? strain.getName() : "Unknown";
+                value = packagingManager.getValueFromPackage(item) * multiplier * item.getAmount();
+            } else if (JointItems.isJoint(item)) {
+                String strainId = JointItems.getJointStrainId(item);
+                Strain strain = strainManager.getStrain(strainId);
+                name = (strain != null ? strain.getName() : "Unknown") + " Joint";
+                int potency = JointItems.getJointPotency(item);
+                StarRating rating = JointItems.getJointRating(item);
+                double qualityMult = rating != null ? rating.getQualityMultiplier() : 1.0;
+                value = potency * qualityMult * 2.0;
+                if (strain != null) {
+                    value *= switch (strain.getRarity()) {
+                        case COMMON -> 1.0;
+                        case UNCOMMON -> 1.2;
+                        case RARE -> 1.5;
+                        case LEGENDARY -> 2.5;
+                    };
+                }
+                value *= multiplier * item.getAmount();
+            } else {
+                continue;
             }
+            
+            breakdown.append("§7• ").append(name).append(": §e").append(economyManager.formatMoney(value)).append("\n");
         }
         
         return breakdown.length() > 0 ? breakdown.toString().trim() : "§7No items";
+    }
+    
+    /**
+     * Checks if an item is sellable (packaged product or joint).
+     */
+    private boolean isSellableItem(ItemStack item) {
+        if (item == null) return false;
+        return packagingManager.isPackagedProduct(item) || JointItems.isJoint(item);
     }
 
     @EventHandler
@@ -268,9 +331,9 @@ public class MobSaleGUI implements InventoryHolder, Listener {
 
         // Player inventory - allow picking up items
         if (slot >= 45) {
-            // Clicking in player inventory - allow unless shift-clicking non-packaged items
+            // Clicking in player inventory - allow unless shift-clicking non-sellable items
             ItemStack clicked = event.getCurrentItem();
-            if (event.isShiftClick() && clicked != null && packagingManager.isPackagedProduct(clicked)) {
+            if (event.isShiftClick() && clicked != null && isSellableItem(clicked)) {
                 // Find empty sale slot
                 for (int i = 0; i < SALE_SLOTS.length; i++) {
                     if (session.itemsToSell[i] == null) {
@@ -297,7 +360,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 
                 // Placing item
                 if (cursor != null && cursor.getType() != Material.AIR) {
-                    if (packagingManager.isPackagedProduct(cursor)) {
+                    if (isSellableItem(cursor)) {
                         if (session.itemsToSell[i] != null) {
                             // Return existing item to cursor
                             player.setItemOnCursor(session.itemsToSell[i]);
@@ -306,7 +369,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                         player.setItemOnCursor(null);
                         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, 1.2f);
                     } else {
-                        player.sendMessage("§cYou can only sell packaged products!");
+                        player.sendMessage("§cYou can only sell packaged products and joints!");
                         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
                     }
                 } else if (session.itemsToSell[i] != null) {
