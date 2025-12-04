@@ -395,7 +395,7 @@ public class CrossbreedManager implements InventoryHolder {
             10, 0.3, 0.3, 0.3, 0);
         
         if (result.hasMutation) {
-            player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1, 0), 
+            player.spawnParticle(Particle.TOTEM, player.getLocation().add(0, 1, 0), 
                 50, 0.5, 0.5, 0.5, 0.2);
             player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.3f, 1.5f);
         }

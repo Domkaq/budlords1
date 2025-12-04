@@ -125,13 +125,13 @@ public class AmbientEffectsManager {
         if (plant.getWaterLevel() > 0.7) {
             // Well-watered - show moisture particles
             if (ThreadLocalRandom.current().nextDouble() < 0.3) {
-                world.spawnParticle(Particle.DRIPPING_WATER, particleLoc.clone().add(0, 0.3, 0), 
+                world.spawnParticle(Particle.DRIP_WATER, particleLoc.clone().add(0, 0.3, 0), 
                     1, 0.1, 0.1, 0.1, 0);
             }
         } else if (plant.getWaterLevel() < 0.3) {
             // Needs water - show dry/smoke particles
             if (ThreadLocalRandom.current().nextDouble() < 0.4) {
-                world.spawnParticle(Particle.SMOKE, particleLoc, 
+                world.spawnParticle(Particle.SMOKE_NORMAL, particleLoc, 
                     2, 0.15, 0.1, 0.15, 0.01);
             }
         }
@@ -258,13 +258,13 @@ public class AmbientEffectsManager {
         
         // Rain drops hitting the plant
         if (ThreadLocalRandom.current().nextDouble() < 0.4) {
-            world.spawnParticle(Particle.DRIPPING_WATER, particleLoc, 
+            world.spawnParticle(Particle.DRIP_WATER, particleLoc, 
                 3, 0.3, 0.2, 0.3, 0);
         }
         
         // Splash effects
         if (ThreadLocalRandom.current().nextDouble() < 0.2) {
-            world.spawnParticle(Particle.RAIN, particleLoc.clone().add(0, -0.5, 0), 
+            world.spawnParticle(Particle.WATER_DROP, particleLoc.clone().add(0, -0.5, 0), 
                 2, 0.2, 0.1, 0.2, 0);
         }
         
@@ -280,7 +280,7 @@ public class AmbientEffectsManager {
         if (plant.isFullyGrown()) {
             if (ThreadLocalRandom.current().nextDouble() < 0.1) {
                 Location particleLoc = loc.clone().add(0.5, 0.5, 0.5);
-                world.spawnParticle(Particle.ENCHANT, particleLoc, 
+                world.spawnParticle(Particle.ENCHANTMENT_TABLE, particleLoc, 
                     5, 0.3, 0.4, 0.3, 0.5);
             }
         }
@@ -371,7 +371,7 @@ public class AmbientEffectsManager {
         
         Location effectLoc = loc.clone().add(0.5, 0.5, 0.5);
         
-        world.spawnParticle(Particle.DRIPPING_WATER, effectLoc, 
+        world.spawnParticle(Particle.DRIP_WATER, effectLoc, 
             15, 0.3, 0.2, 0.3, 0);
         world.spawnParticle(Particle.WATER_SPLASH, effectLoc.clone().add(0, -0.2, 0), 
             8, 0.2, 0.1, 0.2, 0.02);
