@@ -90,12 +90,24 @@ public class NPCListener implements Listener {
             blackMarketShopGUI.open(player);
             return;
         }
+        
+        // Configurable mobs (enabled in config) - show message about what they buy
+        if (npcType == NPCManager.NPCType.CONFIGURABLE_MOB) {
+            String entityName = entity.getCustomName() != null ? entity.getCustomName() : entity.getType().name().replace("_", " ");
+            player.sendMessage("");
+            player.sendMessage("§e§l" + entityName);
+            player.sendMessage("§7This buyer is interested in your products!");
+            player.sendMessage("§7Hold a packaged product or joint to sell!");
+            player.sendMessage("");
+            return;
+        }
 
         // Show trader info for Village Vendors
         String traderName = switch (npcType) {
             case MARKET_JOE -> "§a§lMarket Joe";
             case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
             case VILLAGE_VENDOR -> "§e§lVillage Vendor";
+            case CONFIGURABLE_MOB -> "§e§l" + entity.getType().name().replace("_", " ");
             default -> "§7Trader";
         };
 

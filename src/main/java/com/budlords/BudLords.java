@@ -223,6 +223,7 @@ public class BudLords extends JavaPlugin {
         AchievementsCommand achievementsCommand = new AchievementsCommand(this);
         SkillsCommand skillsCommand = new SkillsCommand(this);
         CollectionCommand collectionCommand = new CollectionCommand(this);
+        DebugCommand debugCommand = new DebugCommand(this);
 
         Objects.requireNonNull(getCommand("bal")).setExecutor(balanceCommand);
         Objects.requireNonNull(getCommand("bal")).setTabCompleter(balanceCommand);
@@ -262,6 +263,10 @@ public class BudLords extends JavaPlugin {
         Objects.requireNonNull(getCommand("skills")).setTabCompleter(skillsCommand);
         Objects.requireNonNull(getCommand("collection")).setExecutor(collectionCommand);
         Objects.requireNonNull(getCommand("collection")).setTabCompleter(collectionCommand);
+        
+        // Register admin debug command
+        Objects.requireNonNull(getCommand("debug")).setExecutor(debugCommand);
+        Objects.requireNonNull(getCommand("debug")).setTabCompleter(debugCommand);
     }
 
     private void registerListeners() {

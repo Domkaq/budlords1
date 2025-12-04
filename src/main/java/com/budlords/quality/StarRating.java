@@ -1,15 +1,24 @@
 package com.budlords.quality;
 
 /**
- * Represents a 1-5 star quality rating for items in the BudLords system.
+ * Represents a 1-6 star quality rating for items in the BudLords system.
  * Higher star ratings provide better bonuses and outcomes.
+ * Note: 6-star rating is only achievable through crossbreeding mutations!
  */
 public enum StarRating {
-    ONE_STAR(1, "§7★☆☆☆☆", "§7", 1.0, 0.8),
-    TWO_STAR(2, "§e★★☆☆☆", "§e", 1.15, 0.9),
-    THREE_STAR(3, "§a★★★☆☆", "§a", 1.35, 1.0),
-    FOUR_STAR(4, "§9★★★★☆", "§9", 1.6, 1.15),
-    FIVE_STAR(5, "§6★★★★★", "§6", 2.0, 1.35);
+    ONE_STAR(1, "§7★☆☆☆☆☆", "§7", 1.0, 0.8),
+    TWO_STAR(2, "§e★★☆☆☆☆", "§e", 1.15, 0.9),
+    THREE_STAR(3, "§a★★★☆☆☆", "§a", 1.35, 1.0),
+    FOUR_STAR(4, "§9★★★★☆☆", "§9", 1.6, 1.15),
+    FIVE_STAR(5, "§6★★★★★☆", "§6", 2.0, 1.35),
+    SIX_STAR(6, "§d§l★★★★★★", "§d§l", 3.0, 2.0); // LEGENDARY - Only from crossbreeding!
+
+    /** Minimum star rating value */
+    public static final int MIN_STARS = 1;
+    /** Maximum star rating value for normal items */
+    public static final int MAX_STARS = 5;
+    /** Maximum star rating value including legendary 6-star (crossbreeding only) */
+    public static final int MAX_STARS_LEGENDARY = 6;
 
     private final int stars;
     private final String display;
@@ -44,14 +53,31 @@ public enum StarRating {
     public double getGrowthSpeedMultiplier() {
         return growthSpeedMultiplier;
     }
+    
+    /**
+     * Checks if this is the legendary 6-star rating.
+     */
+    public boolean isLegendary() {
+        return this == SIX_STAR;
+    }
 
     /**
      * Gets a star rating from an integer value (1-5).
-     * Values outside 1-5 are clamped.
+     * Values outside 1-5 are clamped. Use fromValueAllowSixStar for crossbreeding.
      */
     public static StarRating fromValue(int value) {
         if (value <= 1) return ONE_STAR;
         if (value >= 5) return FIVE_STAR;
+        return values()[value - 1];
+    }
+    
+    /**
+     * Gets a star rating from an integer value (1-6).
+     * Only use this for crossbreeding mutations!
+     */
+    public static StarRating fromValueAllowSixStar(int value) {
+        if (value <= 1) return ONE_STAR;
+        if (value >= 6) return SIX_STAR;
         return values()[value - 1];
     }
 

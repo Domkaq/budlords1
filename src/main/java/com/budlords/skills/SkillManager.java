@@ -136,12 +136,31 @@ public class SkillManager implements InventoryHolder {
     }
 
     /**
-     * Adds XP to a specific skill tree.
+     * Adds XP to a specific skill tree and checks for skill point rewards.
      */
     public void addTreeXP(UUID uuid, Skill.SkillTree tree, int amount) {
         Map<String, Integer> xp = treeXP.computeIfAbsent(uuid, k -> new HashMap<>());
-        int current = xp.getOrDefault(tree.name(), 0);
-        xp.put(tree.name(), current + amount);
+        int previousXP = xp.getOrDefault(tree.name(), 0);
+        int newXP = previousXP + amount;
+        xp.put(tree.name(), newXP);
+        
+        // Check for XP milestones that award skill points
+        // Award 1 skill point for every 100 XP gained in a tree
+        int previousMilestones = previousXP / 100;
+        int newMilestones = newXP / 100;
+        
+        if (newMilestones > previousMilestones) {
+            int skillPointsEarned = newMilestones - previousMilestones;
+            addSkillPoints(uuid, skillPointsEarned);
+            
+            // Notify player if online
+            org.bukkit.entity.Player player = org.bukkit.Bukkit.getPlayer(uuid);
+            if (player != null && player.isOnline()) {
+                player.sendMessage("§a§l✦ §eYou earned §a" + skillPointsEarned + " §eskill point(s) from " + 
+                    tree.getColor() + tree.getDisplayName() + " §eXP!");
+                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.5f);
+            }
+        }
     }
 
     /**

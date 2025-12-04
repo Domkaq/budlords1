@@ -20,8 +20,16 @@ public class Strain {
     private Material iconMaterial;
     private List<StrainEffect> effects;
     
-    // Maximum number of effects a strain can have
+    // Maximum number of effects a strain can have (normal)
     public static final int MAX_EFFECTS = 5;
+    // Maximum effects for crossbred strains with mutation
+    public static final int MAX_EFFECTS_CROSSBRED = 8;
+    // Absolute maximum for admin-created strains
+    public static final int MAX_EFFECTS_ADMIN = 15;
+    
+    // Flag for special crossbred strains
+    private boolean isCrossbred = false;
+    private boolean isAdminCreated = false;
 
     public Strain(String id, String name, Rarity rarity, int potency, int yield, int packagingQuality) {
         this.id = id;
@@ -86,6 +94,33 @@ public class Strain {
         this.iconMaterial = iconMaterial;
     }
     
+    // ===== CROSSBRED/ADMIN FLAGS =====
+    
+    public boolean isCrossbred() {
+        return isCrossbred;
+    }
+    
+    public void setCrossbred(boolean crossbred) {
+        this.isCrossbred = crossbred;
+    }
+    
+    public boolean isAdminCreated() {
+        return isAdminCreated;
+    }
+    
+    public void setAdminCreated(boolean adminCreated) {
+        this.isAdminCreated = adminCreated;
+    }
+    
+    /**
+     * Gets the maximum number of effects this strain can have.
+     */
+    public int getMaxEffects() {
+        if (isAdminCreated) return MAX_EFFECTS_ADMIN;
+        if (isCrossbred) return MAX_EFFECTS_CROSSBRED;
+        return MAX_EFFECTS;
+    }
+    
     // ===== EFFECTS MANAGEMENT =====
     
     /**
@@ -100,8 +135,9 @@ public class Strain {
      */
     public void setEffects(List<StrainEffect> effects) {
         this.effects = new ArrayList<>(effects);
-        // Limit to MAX_EFFECTS efficiently by removing excess elements
-        while (this.effects.size() > MAX_EFFECTS) {
+        int maxEffects = getMaxEffects();
+        // Limit to max effects efficiently by removing excess elements
+        while (this.effects.size() > maxEffects) {
             this.effects.remove(this.effects.size() - 1);
         }
     }
@@ -110,7 +146,7 @@ public class Strain {
      * Adds an effect to this strain if there's room.
      */
     public boolean addEffect(StrainEffect effect) {
-        if (effects.size() >= MAX_EFFECTS) {
+        if (effects.size() >= getMaxEffects()) {
             return false;
         }
         // Don't add duplicate effect types

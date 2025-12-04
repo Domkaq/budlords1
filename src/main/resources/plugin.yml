@@ -79,6 +79,12 @@ commands:
     usage: /<command> [page]
     aliases: [book, strainbook]
     permission: budlords.use
+  # Admin Debug Command
+  debug:
+    description: Admin debug tools for testing BudLords
+    usage: /<command> [toggle|plants|strains|player|effects|economy|entity|growplant|giveeffect|testmutation|reload|save|config|clear]
+    aliases: [bldebug, budlordsdebug]
+    permission: budlords.admin
 
 permissions:
   budlords.use:

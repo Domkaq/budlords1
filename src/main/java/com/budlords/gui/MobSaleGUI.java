@@ -43,6 +43,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     // Active sale sessions
     private final Map<UUID, SaleSession> activeSessions;
     
+    // Per-entity cooldowns: EntityUUID -> expiry time (prevents selling to same entity repeatedly)
+    private final Map<UUID, Long> entityCooldowns;
+    
+    // Cooldown time in milliseconds (30 seconds default)
+    private static final long ENTITY_COOLDOWN_MS = 30000L;
+    
     // Slots for items to sell (4 slots in the middle)
     private static final int[] SALE_SLOTS = {20, 21, 22, 23};
     private static final int CONFIRM_SLOT = 31;
@@ -56,6 +62,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         this.packagingManager = packagingManager;
         this.strainManager = strainManager;
         this.activeSessions = new ConcurrentHashMap<>();
+        this.entityCooldowns = new ConcurrentHashMap<>();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -64,6 +71,15 @@ public class MobSaleGUI implements InventoryHolder, Listener {
      */
     @SuppressWarnings("deprecation")
     public void open(Player player, Entity buyer, NPCManager.NPCType buyerType) {
+        // Check if this entity is on cooldown
+        if (isEntityOnCooldown(buyer.getUniqueId())) {
+            long remaining = getEntityCooldownRemaining(buyer.getUniqueId()) / 1000;
+            player.sendMessage("§c" + getBuyerName(buyerType) + " is still recovering from the last deal!");
+            player.sendMessage("§7Wait §e" + remaining + " seconds §7before selling to them again.");
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+            return;
+        }
+        
         SaleSession session = new SaleSession(player.getUniqueId(), buyer.getUniqueId(), buyerType);
         activeSessions.put(player.getUniqueId(), session);
         
@@ -72,6 +88,35 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         updateInventory(inv, session, player);
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_BARREL_OPEN, 0.5f, 1.2f);
+    }
+    
+    /**
+     * Checks if an entity is on sale cooldown.
+     */
+    private boolean isEntityOnCooldown(UUID entityId) {
+        Long cooldownEnd = entityCooldowns.get(entityId);
+        if (cooldownEnd == null) return false;
+        if (System.currentTimeMillis() >= cooldownEnd) {
+            entityCooldowns.remove(entityId);
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Gets the remaining cooldown time for an entity.
+     */
+    private long getEntityCooldownRemaining(UUID entityId) {
+        Long cooldownEnd = entityCooldowns.get(entityId);
+        if (cooldownEnd == null) return 0;
+        return Math.max(0, cooldownEnd - System.currentTimeMillis());
+    }
+    
+    /**
+     * Applies a cooldown to an entity after a sale.
+     */
+    private void applyEntityCooldown(UUID entityId) {
+        entityCooldowns.put(entityId, System.currentTimeMillis() + ENTITY_COOLDOWN_MS);
     }
 
     private String getBuyerName(NPCManager.NPCType type) {
@@ -440,6 +485,72 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.EARN_MONEY, (int) total);
         }
         
+        // Award Trading skill XP
+        if (plugin.getSkillManager() != null) {
+            com.budlords.skills.SkillManager skillManager = plugin.getSkillManager();
+            java.util.UUID uuid = player.getUniqueId();
+            
+            // Base 10 XP per trade, plus bonus based on sale value
+            int tradingXP = 10 + (int) (total / 100); // +1 XP per $100 earned
+            tradingXP = Math.min(tradingXP, 50); // Cap at 50 XP per trade
+            
+            // Bonus for black market trades
+            if (session.buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
+                tradingXP += 5;
+            }
+            
+            skillManager.addTreeXP(uuid, com.budlords.skills.Skill.SkillTree.TRADING, tradingXP);
+        }
+        
+        // Sync achievements with stats
+        if (plugin.getAchievementManager() != null) {
+            plugin.getAchievementManager().syncWithStats(player);
+        }
+        
+        // Apply cooldown to this buyer entity (prevents selling to same entity repeatedly)
+        applyEntityCooldown(session.buyerId);
+        
+        // Get strain info from sold items to apply effects to buyer
+        Strain soldStrain = null;
+        StarRating soldRating = null;
+        
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            
+            // Try to get strain from packaged product
+            if (packagingManager.isPackagedProduct(item)) {
+                String strainId = packagingManager.getStrainIdFromPackage(item);
+                if (strainId != null) {
+                    soldStrain = strainManager.getStrain(strainId);
+                    // Get rating from lore if available
+                    if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
+                        for (String line : item.getItemMeta().getLore()) {
+                            if (line.contains("★")) {
+                                int stars = (int) line.chars().filter(ch -> ch == '★').count();
+                                soldRating = StarRating.fromValue(Math.min(StarRating.MAX_STARS, 
+                                    Math.max(StarRating.MIN_STARS, stars)));
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            // Try to get strain from joint
+            if (JointItems.isJoint(item)) {
+                String strainId = JointItems.getJointStrainId(item);
+                if (strainId != null) {
+                    soldStrain = strainManager.getStrain(strainId);
+                    soldRating = JointItems.getJointRating(item);
+                    break;
+                }
+            }
+        }
+        
+        // Apply strain effects to buyer entity (villager gets high from the product!)
+        applyEffectsToBuyer(session.buyerId, soldStrain, soldRating);
+        
         // Clear sold items
         for (int i = 0; i < session.itemsToSell.length; i++) {
             session.itemsToSell[i] = null;
@@ -458,6 +569,86 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         player.sendMessage("§7Sold §e" + itemsSold + " §7item(s) for §a" + economyManager.formatMoney(total));
         player.sendMessage("§7New balance: §e" + economyManager.formatMoney(economyManager.getBalance(player)));
         player.sendMessage("");
+    }
+    
+    /**
+     * Applies strain effects to the buyer entity after purchase.
+     * The villager/buyer "gets high" from the product they bought!
+     */
+    private void applyEffectsToBuyer(UUID buyerId, Strain strain, StarRating rating) {
+        org.bukkit.entity.Entity buyer = Bukkit.getEntity(buyerId);
+        if (buyer == null || !(buyer instanceof org.bukkit.entity.LivingEntity living)) return;
+        
+        // Effect duration - 10-20 seconds (200-400 ticks)
+        int duration = 200 + (rating != null ? rating.getStars() * 40 : 0);
+        
+        // Apply effects via StrainEffectsManager
+        if (plugin.getStrainEffectsManager() != null && strain != null) {
+            plugin.getStrainEffectsManager().applyStrainEffectsToEntity(living, strain, rating, duration);
+        } else {
+            // Fallback - apply generic "high" effects with smoking animation
+            playBuyerSmokingAnimation(buyerId, null);
+        }
+    }
+    
+    /**
+     * Plays a smoking/high animation for the buyer entity after purchase.
+     */
+    private void playBuyerSmokingAnimation(UUID buyerId, Player player) {
+        org.bukkit.entity.Entity buyer = Bukkit.getEntity(buyerId);
+        if (buyer == null) return;
+        
+        org.bukkit.Location buyerLoc = buyer.getLocation();
+        org.bukkit.World world = buyerLoc.getWorld();
+        if (world == null) return;
+        
+        // Initial smoke puff when they receive the product
+        world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, buyerLoc.clone().add(0, 1.5, 0), 10, 0.2, 0.2, 0.2, 0.02);
+        world.playSound(buyerLoc, Sound.ENTITY_PLAYER_BREATH, 0.5f, 0.8f);
+        
+        // Schedule repeated smoke effects to simulate smoking
+        for (int delay = 20; delay <= 100; delay += 20) {
+            final int currentDelay = delay;
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                org.bukkit.entity.Entity entity = Bukkit.getEntity(buyerId);
+                if (entity == null || !entity.isValid()) return;
+                
+                org.bukkit.Location loc = entity.getLocation();
+                org.bukkit.World w = loc.getWorld();
+                if (w == null) return;
+                
+                // Smoke particles from head
+                w.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 1.8, 0), 
+                    5 + (currentDelay / 20), 0.15, 0.1, 0.15, 0.01);
+                
+                // Small cloud particles for "high" effect
+                if (currentDelay >= 40) {
+                    w.spawnParticle(Particle.CLOUD, loc.clone().add(0, 2.0, 0), 
+                        3, 0.3, 0.2, 0.3, 0.01);
+                }
+                
+                // Happy particles (they're enjoying it!)
+                if (currentDelay >= 60) {
+                    double offsetX = ThreadLocalRandom.current().nextDouble(-0.3, 0.3);
+                    double offsetZ = ThreadLocalRandom.current().nextDouble(-0.3, 0.3);
+                    w.spawnParticle(Particle.HEART, loc.clone().add(offsetX, 2.2, offsetZ), 1, 0, 0, 0, 0);
+                }
+                
+                // Sound effects
+                if (currentDelay == 40) {
+                    w.playSound(loc, Sound.ENTITY_PLAYER_BREATH, 0.4f, 0.7f);
+                } else if (currentDelay == 80) {
+                    w.playSound(loc, Sound.ENTITY_VILLAGER_CELEBRATE, 0.5f, 1.0f);
+                }
+            }, delay);
+        }
+        
+        // Final satisfied sound
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            org.bukkit.entity.Entity entity = Bukkit.getEntity(buyerId);
+            if (entity == null || !entity.isValid()) return;
+            entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_VILLAGER_YES, 0.7f, 1.2f);
+        }, 120);
     }
 
     private void returnItems(Player player, SaleSession session) {

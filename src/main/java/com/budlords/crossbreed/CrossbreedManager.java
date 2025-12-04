@@ -39,6 +39,9 @@ public class CrossbreedManager implements InventoryHolder {
     private final double mutationChance;
     private final double legendaryMutationBonus;
     private final double effectInheritanceChance;
+    private final double sixStarMutationChance;
+    private final double fiveStarParentBonus;
+    private final double effectMutationChance;
 
     public CrossbreedManager(BudLords plugin, StrainManager strainManager, 
                              EconomyManager economyManager, StatsManager statsManager) {
@@ -53,6 +56,9 @@ public class CrossbreedManager implements InventoryHolder {
         this.mutationChance = plugin.getConfig().getDouble("crossbreed.mutation-chance", 0.05);
         this.legendaryMutationBonus = plugin.getConfig().getDouble("crossbreed.legendary-mutation-bonus", 0.10);
         this.effectInheritanceChance = plugin.getConfig().getDouble("effects.inheritance-chance", 0.5);
+        this.sixStarMutationChance = plugin.getConfig().getDouble("crossbreed.six-star-mutation-chance", 0.02);
+        this.fiveStarParentBonus = plugin.getConfig().getDouble("crossbreed.five-star-parent-bonus", 0.10);
+        this.effectMutationChance = plugin.getConfig().getDouble("crossbreed.effect-mutation-chance", 0.15);
     }
 
     /**
@@ -342,6 +348,9 @@ public class CrossbreedManager implements InventoryHolder {
             (int) (result.seedRating.getStars() * 20) // Convert to quality percentage
         );
         
+        // Mark as crossbred - allows more effects!
+        newStrain.setCrossbred(true);
+        
         // Set icon based on parents
         Strain parent1 = strainManager.getStrain(session.strain1);
         Strain parent2 = strainManager.getStrain(session.strain2);
@@ -369,6 +378,10 @@ public class CrossbreedManager implements InventoryHolder {
         stats.incrementStrainsCreated();
         if (result.rarity == Strain.Rarity.LEGENDARY) {
             stats.incrementLegendaryStrains();
+        }
+        // Track 6-star achievements
+        if (result.seedRating.isLegendary()) {
+            stats.incrementSixStarStrains();
         }
         
         // Clear session
@@ -408,14 +421,18 @@ public class CrossbreedManager implements InventoryHolder {
      * Crossbreeds effects from two parent strains.
      * - Each parent has a chance to pass effects to offspring
      * - Mutations can create new random effects
+     * - Crossbred strains can have up to MAX_EFFECTS_CROSSBRED effects
      */
     private List<com.budlords.effects.StrainEffect> crossbreedEffects(Strain parent1, Strain parent2, boolean hasMutation) {
         List<com.budlords.effects.StrainEffect> result = new ArrayList<>();
         Set<com.budlords.effects.StrainEffectType> usedTypes = new java.util.HashSet<>();
         
+        // Crossbred strains can have more effects!
+        int maxEffects = hasMutation ? Strain.MAX_EFFECTS_CROSSBRED : Strain.MAX_EFFECTS;
+        
         // Each effect from parent 1 has configurable chance to be inherited
         for (com.budlords.effects.StrainEffect effect : parent1.getEffects()) {
-            if (result.size() >= Strain.MAX_EFFECTS) break;
+            if (result.size() >= maxEffects) break;
             if (ThreadLocalRandom.current().nextDouble() < effectInheritanceChance) {
                 if (!usedTypes.contains(effect.getType())) {
                     result.add(effect.copy());
@@ -426,7 +443,7 @@ public class CrossbreedManager implements InventoryHolder {
         
         // Each effect from parent 2 has configurable chance to be inherited
         for (com.budlords.effects.StrainEffect effect : parent2.getEffects()) {
-            if (result.size() >= Strain.MAX_EFFECTS) break;
+            if (result.size() >= maxEffects) break;
             if (ThreadLocalRandom.current().nextDouble() < effectInheritanceChance) {
                 if (!usedTypes.contains(effect.getType())) {
                     result.add(effect.copy());
@@ -435,24 +452,29 @@ public class CrossbreedManager implements InventoryHolder {
             }
         }
         
-        // If mutation occurred, possibly add a new random effect
-        if (hasMutation && result.size() < Strain.MAX_EFFECTS) {
+        // If mutation occurred, add 1-3 new random effects!
+        if (hasMutation) {
+            int numNewEffects = 1 + ThreadLocalRandom.current().nextInt(3); // 1-3 new effects
             com.budlords.effects.StrainEffectType[] allTypes = com.budlords.effects.StrainEffectType.values();
-            // Try to find a new effect
-            for (int attempt = 0; attempt < 10; attempt++) {
-                com.budlords.effects.StrainEffectType randomType = allTypes[ThreadLocalRandom.current().nextInt(allTypes.length)];
-                if (!usedTypes.contains(randomType)) {
-                    // Mutated effects get random intensity
-                    int intensity = 2 + ThreadLocalRandom.current().nextInt(3);
-                    result.add(new com.budlords.effects.StrainEffect(randomType, intensity));
-                    break;
+            
+            for (int i = 0; i < numNewEffects && result.size() < maxEffects; i++) {
+                // Try to find a new effect
+                for (int attempt = 0; attempt < 20; attempt++) {
+                    com.budlords.effects.StrainEffectType randomType = allTypes[ThreadLocalRandom.current().nextInt(allTypes.length)];
+                    if (!usedTypes.contains(randomType)) {
+                        // Mutated effects get random intensity (2-5)
+                        int intensity = 2 + ThreadLocalRandom.current().nextInt(4);
+                        result.add(new com.budlords.effects.StrainEffect(randomType, intensity));
+                        usedTypes.add(randomType);
+                        break;
+                    }
                 }
             }
         }
         
-        // Possibly mutate existing effects
+        // Possibly mutate existing effects (configurable chance per effect)
         for (int i = 0; i < result.size(); i++) {
-            if (ThreadLocalRandom.current().nextDouble() < 0.1) { // 10% chance per effect
+            if (ThreadLocalRandom.current().nextDouble() < this.effectMutationChance) {
                 result.set(i, result.get(i).mutate());
             }
         }
@@ -514,15 +536,30 @@ public class CrossbreedManager implements InventoryHolder {
         if (parent1.getRarity() == Strain.Rarity.LEGENDARY || parent2.getRarity() == Strain.Rarity.LEGENDARY) {
             effectiveMutationChance = this.mutationChance + this.legendaryMutationBonus;
         }
+        // Higher chance with 5-star parents (configurable)
+        if (rating1 >= 5 && rating2 >= 5) {
+            effectiveMutationChance += this.fiveStarParentBonus;
+        }
         boolean hasMutation = ThreadLocalRandom.current().nextDouble() < effectiveMutationChance;
         
         if (hasMutation) {
             // Mutation bonus!
             finalPotency = Math.min(100, finalPotency + 15);
             finalYield = Math.min(20, finalYield + 2);
-            finalRating = StarRating.fromValue(Math.min(5, finalRating.getStars() + 1));
-            if (finalRarity != Strain.Rarity.LEGENDARY && ThreadLocalRandom.current().nextDouble() < 0.3) {
-                finalRarity = Strain.Rarity.values()[Math.min(3, finalRarity.ordinal() + 1)];
+            
+            // LEGENDARY 6-STAR MUTATION! Very rare (configurable, default 2%)
+            boolean isSixStarMutation = ThreadLocalRandom.current().nextDouble() < this.sixStarMutationChance;
+            if (isSixStarMutation && rating1 >= 4 && rating2 >= 4) {
+                // 6-STAR LEGENDARY QUALITY!
+                finalRating = StarRating.SIX_STAR;
+                finalRarity = Strain.Rarity.LEGENDARY;
+                finalPotency = 100; // Max potency
+                finalYield = Math.min(20, finalYield + 5);
+            } else {
+                finalRating = StarRating.fromValue(Math.min(5, finalRating.getStars() + 1));
+                if (finalRarity != Strain.Rarity.LEGENDARY && ThreadLocalRandom.current().nextDouble() < 0.3) {
+                    finalRarity = Strain.Rarity.values()[Math.min(3, finalRarity.ordinal() + 1)];
+                }
             }
         }
         
