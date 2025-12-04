@@ -142,8 +142,12 @@ public class NPCManager {
             return new TradeResult(false, "§cThe deal went wrong! You seem suspicious... Cool off for a bit.", 0);
         }
 
-        // Calculate final price
-        double finalPrice = calculateFinalPrice(baseValue, strain, npcType, player);
+        // Calculate final price with prestige bonus
+        double basePrice = calculateFinalPrice(baseValue, strain, npcType, player);
+        double finalPrice = economyManager.applyPrestigeEarningsBonus(player, basePrice);
+        
+        // Show bonus if applicable
+        boolean hasPrestigeBonus = finalPrice > basePrice;
 
         // Process transaction
         economyManager.addBalance(player, finalPrice);
@@ -170,8 +174,12 @@ public class NPCManager {
             item.setAmount(item.getAmount() - 1);
         }
 
-        return new TradeResult(true, "§aSold " + strain.getName() + " - " + weight + "g for §e" + 
-                economyManager.formatMoney(finalPrice) + "§a!", finalPrice);
+        String message = "§aSold " + strain.getName() + " - " + weight + "g for §e" + 
+                economyManager.formatMoney(finalPrice) + "§a!";
+        if (hasPrestigeBonus) {
+            message += " §5(+Prestige Bonus!)";
+        }
+        return new TradeResult(true, message, finalPrice);
     }
 
     private double calculateSuccessChance(Player player, Strain strain, int weight, NPCType npcType) {

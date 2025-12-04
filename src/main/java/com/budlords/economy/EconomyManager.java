@@ -2,6 +2,7 @@ package com.budlords.economy;
 
 import com.budlords.BudLords;
 import com.budlords.data.DataManager;
+import com.budlords.stats.PlayerStats;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -79,6 +80,35 @@ public class EconomyManager {
 
     public void addBalance(Player player, double amount) {
         addBalance(player.getUniqueId(), amount);
+    }
+    
+    /**
+     * Adds balance with prestige bonus applied.
+     * Use this for earnings from sales to apply prestige multipliers.
+     */
+    public void addBalanceWithPrestigeBonus(Player player, double baseAmount) {
+        double bonusAmount = applyPrestigeEarningsBonus(player, baseAmount);
+        addBalance(player.getUniqueId(), bonusAmount);
+    }
+    
+    /**
+     * Applies the prestige earnings bonus to a base amount.
+     * @return The amount after applying prestige multiplier
+     */
+    public double applyPrestigeEarningsBonus(Player player, double baseAmount) {
+        if (plugin.getStatsManager() == null || plugin.getPrestigeManager() == null) {
+            return baseAmount;
+        }
+        
+        PlayerStats stats = plugin.getStatsManager().getStats(player);
+        int prestigeLevel = stats.getPrestigeLevel();
+        
+        if (prestigeLevel <= 0) {
+            return baseAmount;
+        }
+        
+        double multiplier = plugin.getPrestigeManager().getEarningsMultiplier(prestigeLevel);
+        return baseAmount * multiplier;
     }
 
     public boolean removeBalance(UUID playerUuid, double amount) {

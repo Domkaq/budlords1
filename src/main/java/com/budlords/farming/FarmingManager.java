@@ -164,6 +164,19 @@ public class FarmingManager {
 
                 // Calculate effective growth interval based on plant's quality bonuses
                 double growthMultiplier = plant.getGrowthSpeedMultiplier();
+                
+                // Apply prestige growth speed bonus if available
+                if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+                    UUID ownerUuid = plant.getOwnerUuid();
+                    if (ownerUuid != null) {
+                        com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(ownerUuid);
+                        if (stats != null && stats.getPrestigeLevel() > 0) {
+                            double prestigeMult = plugin.getPrestigeManager().getGrowthSpeedMultiplier(stats.getPrestigeLevel());
+                            growthMultiplier *= prestigeMult;
+                        }
+                    }
+                }
+                
                 long effectiveInterval = (long) (baseGrowthIntervalMs / growthMultiplier);
 
                 if (currentTime - plant.getLastGrowthUpdate() >= effectiveInterval) {
