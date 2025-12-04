@@ -93,10 +93,10 @@ public class StrainManager {
             girlScoutCookies.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.LUCKY_CHARM, 2));
             registerStrain(girlScoutCookies);
             
-            Strain gorillGlue = new Strain("gorilla_glue", "Gorilla Glue", Strain.Rarity.UNCOMMON, 65, 3, 70);
-            gorillGlue.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TANK_MODE, 2));
-            gorillGlue.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SLOW_MO, 2));
-            registerStrain(gorillGlue);
+            Strain gorillaGlue = new Strain("gorilla_glue", "Gorilla Glue", Strain.Rarity.UNCOMMON, 65, 3, 70);
+            gorillaGlue.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TANK_MODE, 2));
+            gorillaGlue.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SLOW_MO, 2));
+            registerStrain(gorillaGlue);
             
             Strain jackHerer = new Strain("jack_herer", "Jack Herer", Strain.Rarity.UNCOMMON, 60, 4, 65);
             jackHerer.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.EAGLE_SIGHT, 3));
