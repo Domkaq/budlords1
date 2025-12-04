@@ -63,6 +63,12 @@ public class FarmingListener implements Listener {
             return;
         }
         
+        // Check if using watering can (BudLords custom item)
+        if (plugin.getQualityItemManager().isWateringCanItem(item)) {
+            handleWateringCan(event, player, item, clickedBlock);
+            return;
+        }
+        
         // Check if using watering (water bucket on plant)
         if (item.getType() == Material.WATER_BUCKET) {
             handleWatering(event, player, clickedBlock);
@@ -113,10 +119,20 @@ public class FarmingListener implements Listener {
     private void handleSeedPlanting(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
         Block targetBlock;
         StarRating potRating = null;
+        boolean isPotPlanting = false;
         
         // Check if clicking on a pot (new system) or farmland (legacy)
         if (clickedBlock.getType() == Material.FLOWER_POT) {
-            targetBlock = clickedBlock;
+            // Plant on top of the pot (one block above)
+            targetBlock = clickedBlock.getRelative(BlockFace.UP);
+            isPotPlanting = true;
+            
+            // Check if space above pot is empty
+            if (targetBlock.getType() != Material.AIR) {
+                player.sendMessage("§cCannot plant here - space above pot is not empty!");
+                return;
+            }
+            
             // For pot-based planting, try to get pot rating from stored data
             // Default to basic pot if not found
             potRating = StarRating.ONE_STAR; // Could be enhanced with pot NBT data
@@ -140,8 +156,8 @@ public class FarmingListener implements Listener {
         if (seedRating == null) seedRating = StarRating.ONE_STAR;
         
         boolean success;
-        if (potRating != null) {
-            // Pot-based planting
+        if (isPotPlanting) {
+            // Pot-based planting - plant is placed above the pot
             success = farmingManager.plantSeed(player, targetBlock.getLocation(), strainId, potRating, seedRating);
         } else {
             // Legacy farmland planting
@@ -187,6 +203,95 @@ public class FarmingListener implements Listener {
                 }
             }
         }
+    }
+    
+    private void handleWateringCan(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
+        Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        if (plant == null) {
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
+        }
+        
+        if (plant == null) {
+            return;
+        }
+        
+        event.setCancelled(true);
+        
+        // Get watering can rating for efficiency bonus
+        StarRating canRating = plugin.getQualityItemManager().getWateringCanRating(item);
+        if (canRating == null) canRating = StarRating.ONE_STAR;
+        
+        if (farmingManager.waterPlant(player, plant.getLocation())) {
+            // Watering can has durability - track uses via lore
+            if (player.getGameMode() != GameMode.CREATIVE) {
+                int maxUses = canRating.getStars() * 5;
+                int currentUses = getWateringCanUses(item);
+                currentUses++;
+                
+                if (currentUses >= maxUses) {
+                    // Watering can is depleted - remove it
+                    player.getInventory().setItemInMainHand(null);
+                    player.sendMessage("§cYour watering can has run out of water!");
+                } else {
+                    // Update uses in lore
+                    setWateringCanUses(item, currentUses, maxUses);
+                    player.sendMessage("§aWatered plant! §7(" + (maxUses - currentUses) + " uses remaining)");
+                }
+            }
+        }
+    }
+    
+    private int getWateringCanUses(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return 0;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return 0;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) return 0;
+        
+        for (String line : lore) {
+            if (line.startsWith("§8Uses: ")) {
+                try {
+                    String usesStr = line.substring(8).split("/")[0];
+                    return Integer.parseInt(usesStr);
+                } catch (Exception e) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+    
+    private void setWateringCanUses(ItemStack item, int uses, int maxUses) {
+        if (item == null || !item.hasItemMeta()) return;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) lore = new java.util.ArrayList<>();
+        
+        // Find and update or add the uses line
+        boolean found = false;
+        for (int i = 0; i < lore.size(); i++) {
+            if (lore.get(i).startsWith("§8Uses: ")) {
+                lore.set(i, "§8Uses: " + uses + "/" + maxUses);
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            // Add uses before the Rating line
+            for (int i = 0; i < lore.size(); i++) {
+                if (lore.get(i).startsWith("§8Rating: ")) {
+                    lore.add(i, "§8Uses: " + uses + "/" + maxUses);
+                    break;
+                }
+            }
+        }
+        
+        meta.setLore(lore);
+        item.setItemMeta(meta);
     }
     
     private void handleWatering(PlayerInteractEvent event, Player player, Block clickedBlock) {
@@ -305,6 +410,30 @@ public class FarmingListener implements Listener {
                         } else {
                             giveHarvest(player, harvested);
                         }
+                        
+                        // Return pot if plant was pot-based
+                        if (harvested.hasPot() && harvested.getPotRating() != null) {
+                            ItemStack pot = GrowingPot.createPotItem(harvested.getPotRating(), 1);
+                            HashMap<Integer, ItemStack> potLeftover = player.getInventory().addItem(pot);
+                            if (!potLeftover.isEmpty()) {
+                                potLeftover.values().forEach(i -> 
+                                    player.getWorld().dropItemNaturally(player.getLocation(), i)
+                                );
+                            }
+                            player.sendMessage("§7Returned pot: " + harvested.getPotRating().getDisplay());
+                            
+                            // Return lamp if present
+                            if (harvested.getLampRating() != null) {
+                                ItemStack lamp = plugin.getQualityItemManager().createLamp(harvested.getLampRating(), 1);
+                                HashMap<Integer, ItemStack> lampLeftover = player.getInventory().addItem(lamp);
+                                if (!lampLeftover.isEmpty()) {
+                                    lampLeftover.values().forEach(i -> 
+                                        player.getWorld().dropItemNaturally(player.getLocation(), i)
+                                    );
+                                }
+                                player.sendMessage("§7Returned lamp: " + harvested.getLampRating().getDisplay());
+                            }
+                        }
                     }
                 } else {
                     // Return seed if not fully grown
@@ -320,6 +449,31 @@ public class FarmingListener implements Listener {
                             );
                         }
                     }
+                    
+                    // Return pot if plant was pot-based
+                    if (plant.hasPot() && plant.getPotRating() != null) {
+                        ItemStack pot = GrowingPot.createPotItem(plant.getPotRating(), 1);
+                        HashMap<Integer, ItemStack> potLeftover = player.getInventory().addItem(pot);
+                        if (!potLeftover.isEmpty()) {
+                            potLeftover.values().forEach(i -> 
+                                player.getWorld().dropItemNaturally(player.getLocation(), i)
+                            );
+                        }
+                        player.sendMessage("§7Returned pot: " + plant.getPotRating().getDisplay());
+                        
+                        // Return lamp if present
+                        if (plant.getLampRating() != null) {
+                            ItemStack lamp = plugin.getQualityItemManager().createLamp(plant.getLampRating(), 1);
+                            HashMap<Integer, ItemStack> lampLeftover = player.getInventory().addItem(lamp);
+                            if (!lampLeftover.isEmpty()) {
+                                lampLeftover.values().forEach(i -> 
+                                    player.getWorld().dropItemNaturally(player.getLocation(), i)
+                                );
+                            }
+                            player.sendMessage("§7Returned lamp: " + lamp.getItemMeta().getDisplayName());
+                        }
+                    }
+                    
                     farmingManager.removePlant(block.getLocation());
                     block.setType(Material.AIR);
                     player.sendMessage("§eHarvested early - returned seed.");
@@ -344,6 +498,21 @@ public class FarmingListener implements Listener {
                             plant.getSeedRating() : StarRating.ONE_STAR;
                         ItemStack seed = strainManager.createSeedItem(strain, 1, seedRating);
                         event.getPlayer().getWorld().dropItemNaturally(above.getLocation(), seed);
+                    }
+                    
+                    // Return pot if it's pot-based planting and breaking the pot
+                    if (block.getType() == Material.FLOWER_POT && plant.hasPot() && plant.getPotRating() != null) {
+                        event.setCancelled(true);
+                        block.setType(Material.AIR);
+                        
+                        ItemStack pot = GrowingPot.createPotItem(plant.getPotRating(), 1);
+                        event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), pot);
+                        
+                        // Return lamp if present
+                        if (plant.getLampRating() != null) {
+                            ItemStack lamp = plugin.getQualityItemManager().createLamp(plant.getLampRating(), 1);
+                            event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), lamp);
+                        }
                     }
                 }
             }
@@ -392,6 +561,41 @@ public class FarmingListener implements Listener {
                 player.getWorld().dropItemNaturally(player.getLocation(), item)
             );
         }
+        
+        // Update stats
+        if (plugin.getStatsManager() != null) {
+            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
+            stats.incrementPlantsHarvested();
+            
+            if (finalRating == StarRating.FIVE_STAR) {
+                stats.incrementFiveStarBuds();
+            }
+            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
+                stats.incrementLegendaryBuds();
+            }
+            if (plant.getQuality() >= 90) {
+                stats.incrementPerfectHarvests();
+            }
+        }
+        
+        // Update challenge progress
+        if (plugin.getChallengeManager() != null) {
+            plugin.getChallengeManager().updateProgress(player, 
+                com.budlords.challenges.Challenge.ChallengeType.HARVEST_PLANTS, 1);
+            
+            if (finalRating == StarRating.FIVE_STAR) {
+                plugin.getChallengeManager().updateProgress(player, 
+                    com.budlords.challenges.Challenge.ChallengeType.FIVE_STAR_BUDS, 1);
+            }
+            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
+                plugin.getChallengeManager().updateProgress(player, 
+                    com.budlords.challenges.Challenge.ChallengeType.LEGENDARY_HARVESTS, 1);
+            }
+            if (plant.getQuality() >= 90) {
+                plugin.getChallengeManager().updateProgress(player, 
+                    com.budlords.challenges.Challenge.ChallengeType.PERFECT_HARVESTS, 1);
+            }
+        }
 
         player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");
         player.sendMessage("§7Quality: " + getQualityDisplay(plant.getQuality()));
@@ -418,6 +622,41 @@ public class FarmingListener implements Listener {
             leftover.values().forEach(item -> 
                 player.getWorld().dropItemNaturally(player.getLocation(), item)
             );
+        }
+        
+        // Update stats
+        if (plugin.getStatsManager() != null) {
+            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
+            stats.incrementPlantsHarvested();
+            
+            if (finalRating == StarRating.FIVE_STAR) {
+                stats.incrementFiveStarBuds();
+            }
+            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
+                stats.incrementLegendaryBuds();
+            }
+            if (plant.getQuality() >= 90) {
+                stats.incrementPerfectHarvests();
+            }
+        }
+        
+        // Update challenge progress
+        if (plugin.getChallengeManager() != null) {
+            plugin.getChallengeManager().updateProgress(player, 
+                com.budlords.challenges.Challenge.ChallengeType.HARVEST_PLANTS, 1);
+            
+            if (finalRating == StarRating.FIVE_STAR) {
+                plugin.getChallengeManager().updateProgress(player, 
+                    com.budlords.challenges.Challenge.ChallengeType.FIVE_STAR_BUDS, 1);
+            }
+            if (strain.getRarity() == Strain.Rarity.LEGENDARY) {
+                plugin.getChallengeManager().updateProgress(player, 
+                    com.budlords.challenges.Challenge.ChallengeType.LEGENDARY_HARVESTS, 1);
+            }
+            if (plant.getQuality() >= 90) {
+                plugin.getChallengeManager().updateProgress(player, 
+                    com.budlords.challenges.Challenge.ChallengeType.PERFECT_HARVESTS, 1);
+            }
         }
 
         player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");

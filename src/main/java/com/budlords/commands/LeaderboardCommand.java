@@ -36,7 +36,7 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
         String type = args.length > 0 ? args[0].toLowerCase() : "score";
 
         player.sendMessage("");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§8═══════════════════════════════════");
         
         switch (type) {
             case "score" -> showScoreLeaderboard(player);
@@ -45,8 +45,8 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
             case "prestige" -> showPrestigeLeaderboard(player);
             case "streak" -> showStreakLeaderboard(player);
             default -> {
-                player.sendMessage("§e§l         ✦ Leaderboard Categories ✦");
-                player.sendMessage("§8§l═══════════════════════════════════════");
+                player.sendMessage("§e§l      ✦ Leaderboard Categories ✦");
+                player.sendMessage("§8═══════════════════════════════════");
                 player.sendMessage("");
                 player.sendMessage("§e/leaderboard score §7- Top by BudLord Score");
                 player.sendMessage("§e/leaderboard earnings §7- Top by Total Earnings");
@@ -57,14 +57,14 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
         }
         
         player.sendMessage("");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§8═══════════════════════════════════");
 
         return true;
     }
 
     private void showScoreLeaderboard(Player player) {
-        player.sendMessage("§e§l         ✦ Top BudLord Scores ✦");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§e§l      ✦ Top BudLord Scores ✦");
+        player.sendMessage("§8═══════════════════════════════════");
         player.sendMessage("");
         
         List<StatsManager.LeaderboardEntry> top = statsManager.getTopByScore(10);
@@ -73,7 +73,7 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
 
     private void showEarningsLeaderboard(Player player) {
         player.sendMessage("§a§l         ✦ Top Earnings ✦");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§8═══════════════════════════════════");
         player.sendMessage("");
         
         List<StatsManager.LeaderboardEntry> top = statsManager.getTopByEarnings(10);
@@ -81,8 +81,8 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
     }
 
     private void showHarvestsLeaderboard(Player player) {
-        player.sendMessage("§a§l         ✦ Top Harvesters ✦");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§a§l        ✦ Top Harvesters ✦");
+        player.sendMessage("§8═══════════════════════════════════");
         player.sendMessage("");
         
         List<StatsManager.LeaderboardEntry> top = statsManager.getTopByHarvests(10);
@@ -90,8 +90,8 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
     }
 
     private void showPrestigeLeaderboard(Player player) {
-        player.sendMessage("§5§l         ✦ Top Prestige ✦");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§5§l        ✦ Top Prestige ✦");
+        player.sendMessage("§8═══════════════════════════════════");
         player.sendMessage("");
         
         List<StatsManager.LeaderboardEntry> top = statsManager.getTopByPrestige(10);
@@ -100,7 +100,7 @@ public class LeaderboardCommand implements CommandExecutor, TabCompleter {
 
     private void showStreakLeaderboard(Player player) {
         player.sendMessage("§6§l         ✦ Top Streaks ✦");
-        player.sendMessage("§8§l═══════════════════════════════════════");
+        player.sendMessage("§8═══════════════════════════════════");
         player.sendMessage("");
         
         List<StatsManager.LeaderboardEntry> top = statsManager.getTopByStreak(10);

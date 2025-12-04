@@ -1,9 +1,11 @@
 package com.budlords.npc;
 
 import com.budlords.BudLords;
+import com.budlords.challenges.Challenge;
 import com.budlords.economy.EconomyManager;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
+import com.budlords.stats.PlayerStats;
 import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
 import org.bukkit.Location;
@@ -130,6 +132,13 @@ public class NPCManager {
         if (!success) {
             // Failed deal - apply cooldown
             applyCooldown(playerId);
+            
+            // Update failed sales stats
+            if (plugin.getStatsManager() != null) {
+                PlayerStats stats = plugin.getStatsManager().getStats(player);
+                stats.incrementFailedSales();
+            }
+            
             return new TradeResult(false, "§cThe deal went wrong! You seem suspicious... Cool off for a bit.", 0);
         }
 
@@ -139,6 +148,20 @@ public class NPCManager {
         // Process transaction
         economyManager.addBalance(player, finalPrice);
         economyManager.recordEarnings(player, finalPrice);
+
+        // Update stats and challenges
+        if (plugin.getStatsManager() != null) {
+            PlayerStats stats = plugin.getStatsManager().getStats(player);
+            stats.incrementSuccessfulSales();
+            stats.recordSale(finalPrice);
+        }
+        
+        // Update challenge progress
+        if (plugin.getChallengeManager() != null) {
+            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SELL_PRODUCTS, 1);
+            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SUCCESSFUL_TRADES, 1);
+            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.EARN_MONEY, (int) finalPrice);
+        }
 
         // Remove item from hand
         if (item.getAmount() == 1) {
