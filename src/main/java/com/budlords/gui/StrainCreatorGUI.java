@@ -223,7 +223,22 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
     }
     
     private String formatMaterialName(Material mat) {
-        return mat.name().replace('_', ' ').toLowerCase();
+        String name = mat.name().toLowerCase().replace('_', ' ');
+        // Capitalize first letter of each word
+        StringBuilder sb = new StringBuilder();
+        boolean capitalizeNext = true;
+        for (char c : name.toCharArray()) {
+            if (c == ' ') {
+                sb.append(c);
+                capitalizeNext = true;
+            } else if (capitalizeNext) {
+                sb.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
     
     private String createProgressBar(int value) {

@@ -199,7 +199,7 @@ public class JointEffectsManager implements Listener {
 
         // Initial smoke burst
         player.playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
-        player.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.add(0, 1.5, 0), 5, 0.2, 0.1, 0.2, 0.02);
+        player.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 1.5, 0), 5, 0.2, 0.1, 0.2, 0.02);
 
         // Cancel existing particle task
         BukkitTask existing = particleTasks.remove(player.getUniqueId());
@@ -227,7 +227,7 @@ public class JointEffectsManager implements Listener {
                 if (ticks % 20 == 0) {
                     player.getWorld().spawnParticle(
                         Particle.CAMPFIRE_SIGNAL_SMOKE,
-                        playerLoc.add(0, 1.6, 0),
+                        playerLoc.clone().add(0, 1.6, 0),
                         1, 0.1, 0.05, 0.1, 0.01
                     );
                 }
@@ -236,7 +236,7 @@ public class JointEffectsManager implements Listener {
                 if (session.getPotency() > 60 && ticks % 40 == 0) {
                     player.getWorld().spawnParticle(
                         Particle.SPELL_MOB,
-                        playerLoc.add(0, 1.2, 0),
+                        playerLoc.clone().add(0, 1.2, 0),
                         3, 0.3, 0.3, 0.3, 1
                     );
                 }
@@ -245,7 +245,7 @@ public class JointEffectsManager implements Listener {
                 if (session.getRating().getStars() >= 4 && ticks % 60 == 0) {
                     player.getWorld().spawnParticle(
                         Particle.HEART,
-                        playerLoc.add(0, 2, 0),
+                        playerLoc.clone().add(0, 2, 0),
                         1, 0.2, 0.1, 0.2, 0
                     );
                 }

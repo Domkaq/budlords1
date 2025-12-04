@@ -53,7 +53,17 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
         SEEDS("§5§l☠ Seeds Shop"),
         SPECIAL("§5§l☠ Special Items"),
         LAMPS("§5§l☠ Grow Lamps"),
-        RARE("§5§l☠ Rare Collection")
+        RARE("§5§l☠ Rare Collection");
+        
+        private final String displayName;
+        
+        ShopCategory(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
     public BlackMarketShopGUI(BudLords plugin, EconomyManager economyManager, StrainManager strainManager) {
@@ -72,7 +82,8 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
     @SuppressWarnings("deprecation")
     public void openCategory(Player player, ShopCategory category) {
         playerCategories.put(player.getUniqueId(), category);
-        Inventory inv = Bukkit.createInventory(this, 54, category.name().equals("MAIN") ? "§5§l☠ BlackMarket Joe's Shop" : category.name);
+        String title = category == ShopCategory.MAIN ? "§5§l☠ BlackMarket Joe's Shop" : category.getDisplayName();
+        Inventory inv = Bukkit.createInventory(this, 54, title);
         updateInventory(inv, player, category);
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 0.5f, 0.8f);
