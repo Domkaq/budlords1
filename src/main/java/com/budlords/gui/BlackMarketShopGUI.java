@@ -383,7 +383,6 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
         }
         return item;
     }
-    }
 
     private double calculateSeedPrice(Strain strain, StarRating rating) {
         double basePrice = SEED_BASE_PRICE;
