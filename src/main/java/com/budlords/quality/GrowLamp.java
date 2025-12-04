@@ -42,6 +42,7 @@ public class GrowLamp {
             case THREE_STAR -> 0.8;
             case FOUR_STAR -> 0.7;
             case FIVE_STAR -> 0.6;
+            case SIX_STAR -> 0.5;
         };
     }
 
@@ -62,6 +63,7 @@ public class GrowLamp {
             case THREE_STAR -> Material.GLOWSTONE;
             case FOUR_STAR -> Material.SHROOMLIGHT;
             case FIVE_STAR -> Material.END_ROD;
+            case SIX_STAR -> Material.BEACON;
         };
     }
 
