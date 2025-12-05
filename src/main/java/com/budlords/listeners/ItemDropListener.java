@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -219,6 +220,19 @@ public class ItemDropListener implements Listener {
         if (JointItems.isGrindedBud(mainHand)) {
             event.setCancelled(true);
             tryStartJointRolling(player, mainHand);
+        }
+    }
+    
+    /**
+     * Prevent grinder from being placed as a block.
+     * The BlockPlaceEvent is the most reliable way to prevent block placement.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        ItemStack item = event.getItemInHand();
+        if (JointItems.isGrinder(item)) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cYou can't place a grinder! Use it with buds to grind them.");
         }
     }
 

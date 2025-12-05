@@ -92,7 +92,7 @@ public class RollingShopGUI implements InventoryHolder, Listener {
         inv.setItem(10, createItem(Material.PAPER, "§f§l✦ Rolling Supplies",
             Arrays.asList("", "§7Items for rolling joints", "§7Essential for the minigame!")));
 
-        // Rolling Paper (x5)
+        // Rolling Paper (x5) - slot 11
         inv.setItem(11, createShopItem(
             Material.PAPER,
             "§f✦ Rolling Paper §7(x5)",
@@ -109,7 +109,7 @@ public class RollingShopGUI implements InventoryHolder, Listener {
             "rolling_paper"
         ));
 
-        // Tobacco (x5)
+        // Tobacco (x5) - slot 12
         inv.setItem(12, createShopItem(
             Material.DRIED_KELP,
             "§6✦ Tobacco §7(x5)",
@@ -126,11 +126,17 @@ public class RollingShopGUI implements InventoryHolder, Listener {
             "tobacco"
         ));
 
-        // Grinders (★1-5)
+        // ====== GRINDERS SECTION (Row 3: slots 19-25) ======
+        
+        // Section header
+        inv.setItem(19, createItem(Material.CAULDRON, "§e§l✦ Grinders",
+            Arrays.asList("", "§7Quality grinders for processing", "§7Higher stars = Better results!")));
+
+        // Grinders (★1-5) - placed at slots 20-24 to stay in valid range
         for (int star = 1; star <= 5; star++) {
             StarRating rating = StarRating.fromValue(star);
             double price = calculateGrinderPrice(star);
-            inv.setItem(13 + star - 1, createShopItem(
+            inv.setItem(19 + star, createShopItem(
                 Material.CAULDRON,
                 rating.getColorCode() + "✦ Grinder " + rating.getDisplay(),
                 price,
@@ -150,7 +156,7 @@ public class RollingShopGUI implements InventoryHolder, Listener {
             ));
         }
 
-        // ====== PACKAGING SECTION ======
+        // ====== PACKAGING SECTION (Row 4: slots 28-35) ======
         
         // Section header
         inv.setItem(28, createItem(Material.BROWN_DYE, "§6§l✦ Packaging Supplies",
@@ -236,10 +242,10 @@ public class RollingShopGUI implements InventoryHolder, Listener {
             "pack_10g"
         ));
 
-        // ====== INFO SECTION ======
+        // ====== INFO SECTION (Row 5: slots 37-43) ======
         
         // How to roll joints
-        inv.setItem(19, createItem(Material.BOOK, "§e§lHow to Roll Joints",
+        inv.setItem(38, createItem(Material.BOOK, "§e§lHow to Roll Joints",
             Arrays.asList(
                 "",
                 "§71. Buy a §fGrinder §7and §fTobacco",
@@ -255,7 +261,7 @@ public class RollingShopGUI implements InventoryHolder, Listener {
             )));
 
         // How to package
-        inv.setItem(37, createItem(Material.BOOK, "§6§lHow to Package",
+        inv.setItem(42, createItem(Material.BOOK, "§6§lHow to Package",
             Arrays.asList(
                 "",
                 "§71. Harvest some buds",

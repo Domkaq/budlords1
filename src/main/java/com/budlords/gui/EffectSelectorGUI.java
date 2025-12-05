@@ -86,7 +86,8 @@ public class EffectSelectorGUI implements InventoryHolder, Listener {
                 "",
                 "§7Add special effects to your strain!",
                 "",
-                "§7Selected: §e" + session.builder.effects.size() + "/" + Strain.MAX_EFFECTS,
+                "§7Selected: §e" + session.builder.effects.size() + " effects",
+                "§6Admin tool - §e§lUNLIMITED!",
                 "",
                 "§aLeft-click §7to add/remove effect",
                 "§eRight-click §7to adjust intensity"
@@ -164,7 +165,7 @@ public class EffectSelectorGUI implements InventoryHolder, Listener {
         
         // Current selections display
         ItemStack selectionsItem = createItem(Material.WRITABLE_BOOK,
-            "§e§lCurrent Effects §7(" + session.builder.effects.size() + "/" + Strain.MAX_EFFECTS + ")",
+            "§e§lCurrent Effects §7(" + session.builder.effects.size() + " §6UNLIMITED§7)",
             getSelectedEffectsLore(session));
         inv.setItem(49, selectionsItem);
         
@@ -192,11 +193,9 @@ public class EffectSelectorGUI implements InventoryHolder, Listener {
                 Arrays.asList("", "§7Remove all selected effects")));
         }
         
-        // Random effect button
-        if (session.builder.effects.size() < Strain.MAX_EFFECTS) {
-            inv.setItem(51, createItem(Material.ENDER_EYE, "§d§lRandom Effect!",
-                Arrays.asList("", "§7Add a random effect", "§7Rarer effects have lower chance!")));
-        }
+        // Random effect button (always show for admin)
+        inv.setItem(51, createItem(Material.ENDER_EYE, "§d§lRandom Effect!",
+            Arrays.asList("", "§7Add a random effect", "§7Rarer effects have lower chance!")));
     }
     
     private List<String> getSelectedEffectsLore(EffectSession session) {
@@ -323,19 +322,14 @@ public class EffectSelectorGUI implements InventoryHolder, Listener {
                         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
                     }
                 } else {
-                    // Add effect
-                    if (session.builder.effects.size() >= Strain.MAX_EFFECTS) {
-                        player.sendMessage("§cMaximum " + Strain.MAX_EFFECTS + " effects allowed!");
-                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+                    // Add effect - NO LIMIT for admin strains!
+                    session.builder.addEffect(effectType, 3);
+                    player.sendMessage("§aAdded: " + effectType.getColoredName() + " §7(Total: " + session.builder.effects.size() + ")");
+                    
+                    if (effectType.isLegendary()) {
+                        player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.5f, 1.0f);
                     } else {
-                        session.builder.addEffect(effectType, 3);
-                        player.sendMessage("§aAdded: " + effectType.getColoredName());
-                        
-                        if (effectType.isLegendary()) {
-                            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.5f, 1.0f);
-                        } else {
-                            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.2f);
-                        }
+                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.2f);
                     }
                 }
                 

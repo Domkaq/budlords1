@@ -177,6 +177,10 @@ public class FarmingManager {
                     }
                 }
                 
+                // Apply cooperative farming bonus (nearby players boost growth)
+                double coopBonus = getCooperativeFarmingBonus(plant.getLocation());
+                growthMultiplier *= coopBonus;
+                
                 long effectiveInterval = (long) (baseGrowthIntervalMs / growthMultiplier);
 
                 if (currentTime - plant.getLastGrowthUpdate() >= effectiveInterval) {
@@ -184,6 +188,36 @@ public class FarmingManager {
                 }
             }
         }, intervalTicks, intervalTicks);
+    }
+    
+    /**
+     * Calculates cooperative farming bonus based on nearby online players.
+     * More players nearby = faster growth and better quality!
+     * @param location The plant location
+     * @return Multiplier for growth speed (1.0 to 1.5)
+     */
+    private static final int COOPERATIVE_FARMING_RADIUS = 20; // blocks
+    
+    private double getCooperativeFarmingBonus(Location location) {
+        if (location.getWorld() == null) return 1.0;
+        
+        // Count nearby players within configured radius
+        int nearbyPlayers = 0;
+        for (Player player : location.getWorld().getPlayers()) {
+            if (player.getLocation().distance(location) <= COOPERATIVE_FARMING_RADIUS) {
+                nearbyPlayers++;
+            }
+        }
+        
+        // Bonus caps at 4 players for max 50% boost
+        // 1 player: +10%, 2 players: +20%, 3 players: +35%, 4+ players: +50%
+        return switch (nearbyPlayers) {
+            case 0 -> 1.0;
+            case 1 -> 1.10;
+            case 2 -> 1.20;
+            case 3 -> 1.35;
+            default -> 1.50;
+        };
     }
 
     private void startParticleTask() {

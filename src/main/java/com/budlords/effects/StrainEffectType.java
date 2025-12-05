@@ -297,7 +297,166 @@ public enum StrainEffectType {
         "Golden divine aura and invincibility hints", EffectCategory.LEGENDARY),
     
     UNIVERSE_CONTROL("Universe Control", "§d🌌", "Control the very fabric of reality!", Material.END_CRYSTAL,
-        "Cosmic particles and reality distortion", EffectCategory.LEGENDARY);
+        "Cosmic particles and reality distortion", EffectCategory.LEGENDARY),
+    
+    // ===== V3.0.0 NEW EFFECTS - 25+ ADDITIONAL EFFECTS =====
+    
+    // NEW TRANSFORMATION EFFECTS
+    WEREWOLF_FORM("Werewolf Form", "§4🐺", "Transform under the full moon!", Material.BONE,
+        "Wolf-like strength at night", EffectCategory.TRANSFORMATION),
+    
+    ELEMENTAL_FORM("Elemental Form", "§e🔶", "Become pure elemental energy!", Material.MAGMA_CREAM,
+        "Random elemental transformations", EffectCategory.TRANSFORMATION),
+    
+    QUANTUM_STATE("Quantum State", "§b◊", "Exist in multiple states!", Material.CHORUS_FRUIT,
+        "Flickering visibility and random teleports", EffectCategory.TRANSFORMATION),
+    
+    CRYSTALLINE_BODY("Crystalline Body", "§b💎", "Your body turns to crystal!", Material.DIAMOND,
+        "Crystal armor and reflection particles", EffectCategory.TRANSFORMATION),
+    
+    SMOKE_FORM("Smoke Form", "§8💨", "Become living smoke!", Material.GUNPOWDER,
+        "Ethereal smoke particles and phasing hints", EffectCategory.TRANSFORMATION),
+    
+    // NEW VISUAL EFFECTS
+    PLASMA_AURA("Plasma Aura", "§d⚡", "Crackling plasma surrounds you!", Material.END_ROD,
+        "Electric plasma particles all around", EffectCategory.VISUAL),
+    
+    VOID_EYES("Void Eyes", "§0👁", "Your eyes become dark voids!", Material.ENDER_EYE,
+        "Dark particles emanating from head", EffectCategory.VISUAL),
+    
+    GOLDEN_GLOW("Golden Glow", "§6✨", "Radiate golden light!", Material.GOLD_BLOCK,
+        "Warm golden particle aura", EffectCategory.VISUAL),
+    
+    BLOOD_TRAIL("Blood Trail", "§4💧", "Leave a crimson path!", Material.REDSTONE,
+        "Red particle trail when walking", EffectCategory.VISUAL),
+    
+    MIRROR_IMAGE("Mirror Image", "§f👤", "Create illusory copies!", Material.GLASS,
+        "Ghost-like duplicate particles nearby", EffectCategory.VISUAL),
+    
+    // NEW MOVEMENT EFFECTS
+    GRAVITY_WELL("Gravity Well", "§8⬇", "Control local gravity!", Material.OBSIDIAN,
+        "Pull particles toward you", EffectCategory.MOVEMENT),
+    
+    PHASE_SHIFT("Phase Shift", "§5✧", "Phase through matter!", Material.PHANTOM_MEMBRANE,
+        "Ghostly pass-through particles", EffectCategory.MOVEMENT),
+    
+    SONIC_BOOM("Sonic Boom", "§f💥", "Move faster than sound!", Material.FIREWORK_ROCKET,
+        "Explosive speed burst particles", EffectCategory.MOVEMENT),
+    
+    MAGNETIC_PULL("Magnetic Pull", "§8🧲", "Attract nearby items!", Material.IRON_INGOT,
+        "Items drift slowly toward you", EffectCategory.MOVEMENT),
+    
+    TELEKINETIC_LIFT("Telekinetic Lift", "§d⬆", "Float objects around you!", Material.SHULKER_SHELL,
+        "Floating particle effects", EffectCategory.MOVEMENT),
+    
+    // NEW PERCEPTION EFFECTS
+    DEATH_SENSE("Death Sense", "§4☠", "Sense death nearby!", Material.WITHER_ROSE,
+        "See when entities are low health", EffectCategory.PERCEPTION),
+    
+    TREASURE_HUNTER("Treasure Hunter", "§6🗝", "Find hidden treasures!", Material.RAW_GOLD,
+        "Sparkles near valuable blocks", EffectCategory.PERCEPTION),
+    
+    DANGER_SENSE("Danger Sense", "§c⚠", "Feel danger approaching!", Material.TNT,
+        "Warning particles when hostiles nearby", EffectCategory.PERCEPTION),
+    
+    AURA_READING("Aura Reading", "§d👁", "See players' auras!", Material.SPECTRAL_ARROW,
+        "Colored aura around entities", EffectCategory.PERCEPTION),
+    
+    // NEW GAMEPLAY EFFECTS
+    LUCKY_DROPS("Lucky Drops", "§a🍀", "Everything drops more!", Material.RABBIT_FOOT,
+        "Increased drop rates from all sources", EffectCategory.GAMEPLAY),
+    
+    MERCHANT_BLESSING("Merchant Blessing", "§6💰", "Better trade prices!", Material.EMERALD,
+        "NPCs offer better deals", EffectCategory.GAMEPLAY),
+    
+    HARVEST_MOON("Harvest Moon", "§e🌙", "Moonlit farming bonus!", Material.WHEAT,
+        "Plants grow faster at night", EffectCategory.GAMEPLAY),
+    
+    SEED_MULTIPLIER("Seed Multiplier", "§a🌱", "Seeds multiply!", Material.OAK_SAPLING,
+        "Chance to get extra seeds", EffectCategory.GAMEPLAY),
+    
+    QUALITY_BOOST("Quality Boost", "§b⭐", "Everything is better quality!", Material.NETHER_STAR,
+        "Bonus quality to all crafted/grown items", EffectCategory.GAMEPLAY),
+    
+    // NEW COMBAT EFFECTS
+    LIGHTNING_FIST("Lightning Fist", "§e⚡", "Punch with lightning!", Material.LIGHTNING_ROD,
+        "Melee attacks cause lightning particles", EffectCategory.COMBAT),
+    
+    SHADOW_STRIKE("Shadow Strike", "§8⚔", "Strike from the shadows!", Material.IRON_SWORD,
+        "Bonus damage from stealth", EffectCategory.COMBAT),
+    
+    LIFE_DRAIN("Life Drain", "§4❤", "Drain life from enemies!", Material.WITHER_SKELETON_SKULL,
+        "Steal health on hit", EffectCategory.COMBAT),
+    
+    SHIELD_BASH("Shield Bash", "§f🛡", "Your shields hit back!", Material.SHIELD,
+        "Reflect damage to attackers", EffectCategory.COMBAT),
+    
+    CRITICAL_FURY("Critical Fury", "§c💢", "Increased critical chance!", Material.NETHERITE_SWORD,
+        "Higher critical hit rate", EffectCategory.COMBAT),
+    
+    // NEW FUN EFFECTS
+    PARTY_MODE("Party Mode", "§d🎊", "Turn everything into a party!", Material.CAKE,
+        "Confetti, music, and celebrations", EffectCategory.FUN),
+    
+    LAUGH_TRACK("Laugh Track", "§e😂", "Everything is hilarious!", Material.NOTE_BLOCK,
+        "Random laugh sound effects", EffectCategory.FUN),
+    
+    PET_MAGNET("Pet Magnet", "§a🐕", "Animals follow you!", Material.LEAD,
+        "Passive animals are attracted to you", EffectCategory.FUN),
+    
+    SPARKLE_STEP("Sparkle Step", "§f✨", "Every step sparkles!", Material.GLOWSTONE_DUST,
+        "Sparkling particles under feet", EffectCategory.FUN),
+    
+    GHOST_FRIEND("Ghost Friend", "§f👻", "A friendly ghost follows you!", Material.SOUL_LANTERN,
+        "Ghostly particle companion", EffectCategory.FUN),
+    
+    // NEW NATURE EFFECTS
+    PHOTOSYNTHESIS("Photosynthesis", "§a☀", "Heal in sunlight!", Material.SUNFLOWER,
+        "Regenerate health in daylight", EffectCategory.NATURE),
+    
+    ROOT_CONNECTION("Root Connection", "§6🌳", "Connect with all plants!", Material.OAK_SAPLING,
+        "Nature particles when near plants", EffectCategory.NATURE),
+    
+    STORM_RIDER("Storm Rider", "§9⛈", "Ride the storm!", Material.WIND_CHARGE,
+        "Boost during rainy weather", EffectCategory.NATURE),
+    
+    VOLCANIC_HEAT("Volcanic Heat", "§c🌋", "Radiate volcanic energy!", Material.MAGMA_BLOCK,
+        "Fire resistance and heat particles", EffectCategory.NATURE),
+    
+    ARCTIC_CHILL("Arctic Chill", "§b❄", "Freeze everything around!", Material.BLUE_ICE,
+        "Slow nearby mobs with cold", EffectCategory.NATURE),
+    
+    // NEW MYSTICAL EFFECTS
+    ORACLE_VISION("Oracle Vision", "§5🔮", "See glimpses of the future!", Material.END_CRYSTAL,
+        "Predictive particles and luck boost", EffectCategory.MYSTICAL),
+    
+    ANCESTOR_SPIRITS("Ancestor Spirits", "§f👻", "Call upon ancient spirits!", Material.SOUL_TORCH,
+        "Spiritual particles surround you", EffectCategory.MYSTICAL),
+    
+    CHAKRA_ALIGNMENT("Chakra Alignment", "§d🕉", "Align your chakras!", Material.AMETHYST_CLUSTER,
+        "Rainbow energy points along body", EffectCategory.MYSTICAL),
+    
+    KARMA_BALANCE("Karma Balance", "§e☯", "Balance your karma!", Material.ENCHANTED_BOOK,
+        "Good luck after bad events", EffectCategory.MYSTICAL),
+    
+    ETHER_SIGHT("Ether Sight", "§b✦", "See the ethereal plane!", Material.ENDER_EYE,
+        "See invisible entities and particles", EffectCategory.MYSTICAL),
+    
+    // NEW LEGENDARY EFFECTS
+    TITAN_FORM("Titan Form", "§4§l👹", "Become a titan of power!", Material.NETHERITE_BLOCK,
+        "Massive strength and size illusion", EffectCategory.LEGENDARY),
+    
+    SINGULARITY("Singularity", "§0§l◉", "Create a singularity!", Material.END_PORTAL_FRAME,
+        "Black hole particle effects", EffectCategory.LEGENDARY),
+    
+    COSMIC_REBIRTH("Cosmic Rebirth", "§d§l✦", "Be reborn from the cosmos!", Material.NETHER_STAR,
+        "Death triggers cosmic respawn effect", EffectCategory.LEGENDARY),
+    
+    MULTIVERSE_ECHO("Multiverse Echo", "§5§l◇", "Echo across realities!", Material.END_CRYSTAL,
+        "Multiple phantom copies of yourself", EffectCategory.LEGENDARY),
+    
+    ENTROPY_MASTER("Entropy Master", "§8§l♠", "Control chaos itself!", Material.DRAGON_EGG,
+        "Random beneficial effects stack", EffectCategory.LEGENDARY);
     
     private final String displayName;
     private final String symbol;
@@ -456,6 +615,56 @@ public enum StrainEffectType {
             case INFINITY_POWER -> Particle.END_ROD;
             case GODMODE_AURA -> Particle.TOTEM;
             case UNIVERSE_CONTROL -> Particle.REVERSE_PORTAL;
+            // V3.0.0 NEW EFFECTS
+            case WEREWOLF_FORM -> Particle.SMOKE_LARGE;
+            case ELEMENTAL_FORM -> Particle.FLAME;
+            case QUANTUM_STATE -> Particle.PORTAL;
+            case CRYSTALLINE_BODY -> Particle.END_ROD;
+            case SMOKE_FORM -> Particle.SMOKE_LARGE;
+            case PLASMA_AURA -> Particle.FIREWORKS_SPARK;
+            case VOID_EYES -> Particle.PORTAL;
+            case GOLDEN_GLOW -> Particle.FALLING_HONEY;
+            case BLOOD_TRAIL -> Particle.DAMAGE_INDICATOR;
+            case MIRROR_IMAGE -> Particle.END_ROD;
+            case GRAVITY_WELL -> Particle.PORTAL;
+            case PHASE_SHIFT -> Particle.SOUL;
+            case SONIC_BOOM -> Particle.CLOUD;
+            case MAGNETIC_PULL -> Particle.CRIT_MAGIC;
+            case TELEKINETIC_LIFT -> Particle.END_ROD;
+            case DEATH_SENSE -> Particle.DAMAGE_INDICATOR;
+            case TREASURE_HUNTER -> Particle.FALLING_HONEY;
+            case DANGER_SENSE -> Particle.VILLAGER_ANGRY;
+            case AURA_READING -> Particle.SPELL_MOB;
+            case LUCKY_DROPS -> Particle.VILLAGER_HAPPY;
+            case MERCHANT_BLESSING -> Particle.FALLING_HONEY;
+            case HARVEST_MOON -> Particle.END_ROD;
+            case SEED_MULTIPLIER -> Particle.COMPOSTER;
+            case QUALITY_BOOST -> Particle.END_ROD;
+            case LIGHTNING_FIST -> Particle.FIREWORKS_SPARK;
+            case SHADOW_STRIKE -> Particle.SMOKE_LARGE;
+            case LIFE_DRAIN -> Particle.DAMAGE_INDICATOR;
+            case SHIELD_BASH -> Particle.CRIT_MAGIC;
+            case CRITICAL_FURY -> Particle.CRIT;
+            case PARTY_MODE -> Particle.FIREWORKS_SPARK;
+            case LAUGH_TRACK -> Particle.NOTE;
+            case PET_MAGNET -> Particle.HEART;
+            case SPARKLE_STEP -> Particle.FIREWORKS_SPARK;
+            case GHOST_FRIEND -> Particle.SOUL;
+            case PHOTOSYNTHESIS -> Particle.VILLAGER_HAPPY;
+            case ROOT_CONNECTION -> Particle.COMPOSTER;
+            case STORM_RIDER -> Particle.CLOUD;
+            case VOLCANIC_HEAT -> Particle.FLAME;
+            case ARCTIC_CHILL -> Particle.SNOWFLAKE;
+            case ORACLE_VISION -> Particle.ENCHANTMENT_TABLE;
+            case ANCESTOR_SPIRITS -> Particle.SOUL;
+            case CHAKRA_ALIGNMENT -> Particle.END_ROD;
+            case KARMA_BALANCE -> Particle.VILLAGER_HAPPY;
+            case ETHER_SIGHT -> Particle.END_ROD;
+            case TITAN_FORM -> Particle.DAMAGE_INDICATOR;
+            case SINGULARITY -> Particle.PORTAL;
+            case COSMIC_REBIRTH -> Particle.TOTEM;
+            case MULTIVERSE_ECHO -> Particle.REVERSE_PORTAL;
+            case ENTROPY_MASTER -> Particle.SPELL_MOB;
         };
     }
     

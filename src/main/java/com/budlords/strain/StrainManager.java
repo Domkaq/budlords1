@@ -166,6 +166,109 @@ public class StrainManager {
             dragonBreath.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GHOST_RIDER, 4));
             registerStrain(dragonBreath);
             
+            // ===== V3.0.0 NEW STRAINS - 15+ ADDITIONAL STRAINS =====
+            
+            // NEW COMMON STRAINS
+            Strain lemonHaze = new Strain("lemon_haze", "Lemon Haze", Strain.Rarity.COMMON, 42, 4, 48);
+            lemonHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GOLDEN_GLOW, 2));
+            lemonHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SPARKLE_STEP, 1));
+            registerStrain(lemonHaze);
+            
+            Strain akBuddy = new Strain("ak_buddy", "AK Buddy", Strain.Rarity.COMMON, 48, 3, 52);
+            akBuddy.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BUNNY_HOP, 2));
+            akBuddy.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.PET_MAGNET, 1));
+            registerStrain(akBuddy);
+            
+            // NEW UNCOMMON STRAINS
+            Strain tropicalThunder = new Strain("tropical_thunder", "Tropical Thunder", Strain.Rarity.UNCOMMON, 58, 4, 62);
+            tropicalThunder.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.STORM_RIDER, 3));
+            tropicalThunder.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.RAIN_DANCER, 2));
+            tropicalThunder.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SONIC_BOOM, 2));
+            registerStrain(tropicalThunder);
+            
+            Strain crystalKush = new Strain("crystal_kush", "Crystal Kush", Strain.Rarity.UNCOMMON, 62, 4, 68);
+            crystalKush.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.CRYSTALLINE_BODY, 3));
+            crystalKush.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.FROST_AURA, 2));
+            registerStrain(crystalKush);
+            
+            Strain midnightShadow = new Strain("midnight_shadow", "Midnight Shadow", Strain.Rarity.UNCOMMON, 55, 5, 60);
+            midnightShadow.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SHADOW_STRIKE, 3));
+            midnightShadow.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.NINJA_MODE, 2));
+            registerStrain(midnightShadow);
+            
+            Strain goldenHarvest = new Strain("golden_harvest", "Golden Harvest", Strain.Rarity.UNCOMMON, 52, 6, 65);
+            goldenHarvest.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.HARVEST_MOON, 3));
+            goldenHarvest.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SEED_MULTIPLIER, 3));
+            goldenHarvest.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.LUCKY_DROPS, 2));
+            registerStrain(goldenHarvest);
+            
+            // NEW RARE STRAINS
+            Strain plasmaFire = new Strain("plasma_fire", "Plasma Fire", Strain.Rarity.RARE, 78, 5, 82);
+            plasmaFire.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.PLASMA_AURA, 4));
+            plasmaFire.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.LIGHTNING_FIST, 3));
+            plasmaFire.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.FIRE_TRAIL, 3));
+            registerStrain(plasmaFire);
+            
+            Strain quantumLeap = new Strain("quantum_leap", "Quantum Leap", Strain.Rarity.RARE, 75, 4, 78);
+            quantumLeap.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.QUANTUM_STATE, 4));
+            quantumLeap.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.PHASE_SHIFT, 3));
+            quantumLeap.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TIME_WARP, 3));
+            registerStrain(quantumLeap);
+            
+            Strain bloodMoon = new Strain("blood_moon", "Blood Moon", Strain.Rarity.RARE, 82, 5, 80);
+            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.WEREWOLF_FORM, 4));
+            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BLOOD_TRAIL, 3));
+            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.LIFE_DRAIN, 3));
+            registerStrain(bloodMoon);
+            
+            Strain spiritWalker = new Strain("spirit_walker", "Spirit Walker", Strain.Rarity.RARE, 74, 5, 76);
+            spiritWalker.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ANCESTOR_SPIRITS, 4));
+            spiritWalker.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GHOST_FRIEND, 3));
+            spiritWalker.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ETHER_SIGHT, 3));
+            registerStrain(spiritWalker);
+            
+            Strain merchantsDream = new Strain("merchants_dream", "Merchant's Dream", Strain.Rarity.RARE, 70, 6, 85);
+            merchantsDream.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MERCHANT_BLESSING, 4));
+            merchantsDream.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.QUALITY_BOOST, 3));
+            merchantsDream.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TREASURE_HUNTER, 3));
+            registerStrain(merchantsDream);
+            
+            // NEW LEGENDARY STRAINS
+            Strain titanicFury = new Strain("titanic_fury", "Titanic Fury", Strain.Rarity.LEGENDARY, 94, 8, 94);
+            titanicFury.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TITAN_FORM, 5));
+            titanicFury.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.CRITICAL_FURY, 4));
+            titanicFury.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BERSERKER, 4));
+            titanicFury.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VOLCANIC_HEAT, 4));
+            registerStrain(titanicFury);
+            
+            Strain singularityPrime = new Strain("singularity_prime", "Singularity Prime", Strain.Rarity.LEGENDARY, 97, 6, 97);
+            singularityPrime.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SINGULARITY, 5));
+            singularityPrime.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GRAVITY_WELL, 5));
+            singularityPrime.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VOID_EYES, 4));
+            singularityPrime.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DIMENSIONAL_RIFT, 4));
+            registerStrain(singularityPrime);
+            
+            Strain cosmicRebirth = new Strain("cosmic_rebirth_strain", "Cosmic Rebirth", Strain.Rarity.LEGENDARY, 99, 9, 99);
+            cosmicRebirth.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.COSMIC_REBIRTH, 5));
+            cosmicRebirth.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.PHOENIX_REBIRTH, 5));
+            cosmicRebirth.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.CELESTIAL_BEING, 5));
+            cosmicRebirth.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.GODMODE_AURA, 4));
+            registerStrain(cosmicRebirth);
+            
+            Strain entropyMaster = new Strain("entropy_master_strain", "Entropy Master", Strain.Rarity.LEGENDARY, 95, 7, 95);
+            entropyMaster.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ENTROPY_MASTER, 5));
+            entropyMaster.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.KARMA_BALANCE, 4));
+            entropyMaster.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.ORACLE_VISION, 4));
+            entropyMaster.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.PARTY_MODE, 3));
+            registerStrain(entropyMaster);
+            
+            Strain multiverseEcho = new Strain("multiverse_echo_strain", "Multiverse Echo", Strain.Rarity.LEGENDARY, 96, 8, 96);
+            multiverseEcho.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MULTIVERSE_ECHO, 5));
+            multiverseEcho.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MIRROR_IMAGE, 4));
+            multiverseEcho.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.QUANTUM_STATE, 4));
+            multiverseEcho.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TELEKINETIC_LIFT, 4));
+            registerStrain(multiverseEcho);
+            
             saveStrains();
         }
     }

@@ -1,36 +1,208 @@
 # BudLords - Minecraft Weed Economy Plugin
 
-## 🎉 VERSION 2.0.1 - BUG FIX & CONTENT UPDATE! 🎉
+## 🎉 VERSION 3.0.0 - MASSIVE CONTENT UPDATE! 🎉
 
 A comprehensive weed farming RPG + black market economy system for Minecraft Paper/Spigot 1.20.4.
 
 ---
 
-## 🆕 v2.0.1 NEW FEATURES & FIXES
+## 🆕 v3.0.0 MAJOR UPDATE
 
 ### 🛠️ Bug Fixes
-- **Fixed Strain Creator naming** - Name input now properly saves and returns to GUI
-- **Fixed Effect Selector** - "No active strain builder session" error resolved
-- **Fixed Rank Updates** - `/bal` now correctly shows updated rank after earning money
-- **Fixed Package Command** - Now requires operator permission (`budlords.admin`)
-- **Improved Session Management** - Better handling of GUI transitions
+- **Fixed Rolling Shop Menu** - Grinder menu no longer misaligned (moved to dedicated row)
+- **Fixed Grinder Placement** - Grinders can no longer be placed as blocks on the ground
+- **Fixed Lamp System** - Lamps now buff ALL nearby plants within radius (based on star rating)
+- **Fixed Effect Limits** - Admin-created strains now have UNLIMITED effects!
+- **Fixed Watering Can** - No longer converts to water bucket when filling!
+- **Fixed Water Bucket** - Detects plants in all directions with feedback
+- **Improved Rank System** - Better tracking and display of player ranks
+- **Improved Prestige System** - Better integration with economy and bonuses
 
-### 🌿 15+ New Weed Strains!
+### 💰 Enhanced Selling System (NEW!)
+
+#### Buyer Reputation System
+- Build reputation with different buyers (Market Joe, BlackMarket Joe, Village Vendor)
+- 6 reputation levels: **Suspicious** → **Neutral** → **Friendly** → **Trusted** → **VIP** → **★LEGENDARY★**
+- Higher reputation = better prices (up to +25% at Legendary!)
+- Reputation unlocks customer tips (up to 50% chance at Legendary!)
+- Use `/reputation` to check your standing
+
+#### Bulk Orders
+- Buyers place special orders for specific strains with bonus payouts
+- 5 order tiers: Small (+15-25%) → Medium (+25-40%) → Large (+40-60%) → Massive (+60-100%) → **Legendary (+100-200%)**
+- Orders refresh every 30 minutes
+- Complete orders for massive bonus payouts!
+- Use `/orders` to view current order
+
+#### Customer Tips
+- Satisfied customers may leave tips based on your reputation!
+- Tips range from 2-25% of sale value
+- Higher reputation = higher tip chance and amount
+- Legendary status: 50% chance for 15-25% tips!
+
+#### 10 Customer Types
+Different customers have different preferences:
+- **Casual User** - Balanced prices
+- **Connoisseur** - Pays +50% more for rare strains!
+- **Bulk Buyer** - Wants volume discounts
+- **Rush Customer** - Pays +30% for quick deals
+- **Skeptic** - May reject low quality
+- **Party Animal** - Loves fun strains
+- **Medical User** - Prefers calming effects
+- **Mystery Buyer** - Random prices (risky!)
+- **VIP Client** - +50% for discretion
+- **Collector** - +150% for rare strains!
+
+### ✨ 50+ NEW Effects! (Now 139 Total!)
+
+#### New Transformation Effects
+- **Werewolf Form** - Transform under the full moon with wolf-like strength!
+- **Elemental Form** - Become pure elemental energy
+- **Quantum State** - Exist in multiple states with flickering visibility
+- **Crystalline Body** - Your body turns to crystal armor
+- **Smoke Form** - Become living smoke
+
+#### New Visual Effects
+- **Plasma Aura** - Crackling plasma surrounds you
+- **Void Eyes** - Dark void particles from eyes
+- **Golden Glow** - Radiate warm golden light
+- **Blood Trail** - Leave a crimson path
+- **Mirror Image** - Create illusory copies
+
+#### New Movement Effects
+- **Gravity Well** - Control local gravity
+- **Phase Shift** - Phase through matter hints
+- **Sonic Boom** - Explosive speed burst
+- **Magnetic Pull** - Attract nearby items
+- **Telekinetic Lift** - Float objects around you
+
+#### New Perception Effects
+- **Death Sense** - Sense low health entities
+- **Treasure Hunter** - Sparkles near valuables
+- **Danger Sense** - Warning when hostiles nearby
+- **Aura Reading** - See players' auras
+
+#### New Gameplay Effects
+- **Lucky Drops** - Increased drop rates
+- **Merchant Blessing** - Better trade prices
+- **Harvest Moon** - Moonlit farming bonus
+- **Seed Multiplier** - Chance for extra seeds
+- **Quality Boost** - Better quality to all items
+
+#### New Combat Effects
+- **Lightning Fist** - Punch with lightning
+- **Shadow Strike** - Bonus damage from stealth
+- **Life Drain** - Steal health on hit
+- **Shield Bash** - Reflect damage
+- **Critical Fury** - Higher critical hit rate
+
+#### New Fun Effects
+- **Party Mode** - Turn everything into a party!
+- **Laugh Track** - Random laugh sounds
+- **Pet Magnet** - Animals follow you
+- **Sparkle Step** - Every step sparkles
+- **Ghost Friend** - Ghostly particle companion
+
+#### New Nature Effects
+- **Photosynthesis** - Heal in sunlight
+- **Root Connection** - Connect with plants
+- **Storm Rider** - Boost during rain
+- **Volcanic Heat** - Radiate volcanic energy
+- **Arctic Chill** - Freeze nearby mobs
+
+#### New Mystical Effects
+- **Oracle Vision** - Glimpse the future
+- **Ancestor Spirits** - Call ancient spirits
+- **Chakra Alignment** - Align your chakras
+- **Karma Balance** - Good luck after bad events
+- **Ether Sight** - See invisible entities
+
+#### New Legendary Effects
+- **Titan Form** - Become a titan of power!
+- **Singularity** - Create a singularity!
+- **Cosmic Rebirth** - Be reborn from the cosmos
+- **Multiverse Echo** - Echo across realities
+- **Entropy Master** - Control chaos itself!
+
+### 🌿 15+ New Strains!
+
+#### Common Strains
+- **Lemon Haze** - Citrus glow with sparkle steps
+- **AK Buddy** - Hopping companion strain
+
+#### Uncommon Strains
+- **Tropical Thunder** - Storm rider with sonic booms
+- **Crystal Kush** - Crystalline body and frost aura
+- **Midnight Shadow** - Ninja stealth and shadow strikes
+- **Golden Harvest** - Farming bonuses and seed multiplication
+
+#### Rare Strains
+- **Plasma Fire** - Electric plasma with lightning punches
+- **Quantum Leap** - Phase through reality
+- **Blood Moon** - Werewolf transformation with life drain
+- **Spirit Walker** - Connect with ancestral spirits
+- **Merchant's Dream** - Trading bonuses and treasure finding
+
+#### Legendary Strains
+- **Titanic Fury** - Transform into a powerful titan
+- **Singularity Prime** - Control gravity and create black holes
+- **Cosmic Rebirth** - Ultimate rebirth and divine protection
+- **Entropy Master** - Master of chaos and karma
+- **Multiverse Echo** - Create multiple phantom copies
+
+### 💡 Improved Lamp System
+- Lamp effect radius now based on star rating: ★1=1 block to ★5=5 blocks
+- Single lamp buffs ALL plants within its radius
+- Better visual feedback when installing lamps
+- Shows affected plant count when placed
+
+### 🔓 Unlimited Effects for Admins
+- Strain Creator now allows unlimited effects for admin-created strains
+- Effect Selector shows "UNLIMITED" status
+- No more effect count restrictions in admin tools
+
+### 🎁 Daily Reward System (NEW!)
+- Use `/daily` to claim your daily reward
+- Base reward of $100 with streak bonuses
+- Streak bonus: +5% per day (up to +100% at 20-day streak)
+- Milestone bonuses:
+  - 7 days: $500 bonus
+  - 30 days: $5,000 bonus
+  - 100 days: $50,000 bonus
+- 32-hour grace period to maintain streak
+- Prestige multiplier applied to rewards
+
+### 📈 Dynamic Market System (NEW!)
+- Prices fluctuate based on supply and demand!
+- Use `/market` to check current market conditions
+- **Market Events** (random 15-45 minute events):
+  - 🟢 **Buyer Rush** - +30% all prices
+  - 🔴 **Police Crackdown** - -20% all prices
+  - 🟣 **Festival Season** - +50% all prices
+  - 🟠 **Supply Shortage** - +40% rare strains
+  - 🔴 **Market Crash** - -30% all prices
+  - 🟣 **Premium Demand** - +25% legendary strains
+- Individual strain demand affects pricing
+- Server-wide notifications when events occur
+- Smart selling: wait for high demand events!
+
+### 👥 Cooperative Farming Bonus
+- Farm together for faster growth!
+- Nearby players within 20 blocks boost growth:
+  - 1 player: +10%
+  - 2 players: +20%
+  - 3 players: +35%
+  - 4+ players: +50%
+
+---
+
+## 🆕 v2.0.1 Previous Features
+
+### 🌿 15+ Weed Strains (Included in v2.0.1)
 - **Common**: Sour Diesel, Blue Dream, Green Crack
 - **Uncommon**: Girl Scout Cookies, Gorilla Glue, Jack Herer, Granddaddy Purple
 - **Rare**: Wedding Cake, Amnesia Haze, Skywalker OG, Trainwreck
 - **Legendary**: Pineapple Express, God's Favorite, Void Walker, Dragon's Breath
-
-### ✨ 35+ New Effects! (Now 100+ Total!)
-- **Visual**: Neon Glow, Crystal Shimmer, Smoke Screen, Electric Surge
-- **Movement**: Feather Fall, Blink Step, Water Walk
-- **Perception**: Predator Sense, Sonic Hearing, X-Ray Vision
-- **Gameplay**: Double Harvest, Money Magnet, Seed Finder, XP Boost
-- **Combat**: Poison Touch, Fire Punch, Ice Armor, Rage Mode
-- **Fun**: Rainbow Trail, Firework Explosion, Slime Bounce, Snowman
-- **Nature**: Plant Growth, Animal Friend, Rain Dancer, Earthquake
-- **Mystical**: Soul Sight, Fortune Teller, Elemental Chaos, Dimensional Rift
-- **Legendary**: Time Freeze, Infinity Power, Godmode Aura, Universe Control
 
 ### 💧 Improved Watering Can System
 - Higher star watering cans now provide **quality bonuses** when watering
