@@ -348,6 +348,15 @@ public class FarmingManager {
     }
 
     private void updatePlantVisual(Plant plant) {
+        // Check if 3D visualization is enabled
+        PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();
+        if (vizManager != null && plugin.getConfig().getBoolean("farming.3d-visualization", true)) {
+            // Use new armor stand-based 3D visualization
+            vizManager.updatePlantVisual(plant);
+            return;
+        }
+        
+        // Fallback to original wheat block visualization
         Location loc = plant.getLocation();
         Block block = loc.getBlock();
         
@@ -579,6 +588,13 @@ public class FarmingManager {
     }
     
     /**
+     * Gets the configured watering bonus cooldown in milliseconds.
+     */
+    private long getWateringBonusCooldownMs() {
+        return plugin.getConfig().getLong("farming.watering-bonus-cooldown-seconds", 60) * 1000L;
+    }
+    
+    /**
      * Waters a plant at the given location with a specific watering can quality.
      * @param wateringCanRating The star rating of the watering can (null for standard water bucket)
      */
@@ -589,13 +605,22 @@ public class FarmingManager {
             return false;
         }
         
+        long cooldownMs = getWateringBonusCooldownMs();
+        
         // Use quality-aware watering if a watering can was used
         if (wateringCanRating != null) {
-            plant.water(wateringCanRating);
-            String qualityBonus = wateringCanRating.getStars() > 1 ? 
-                " §a(+" + wateringCanRating.getStars() + " quality bonus!)" : "";
-            player.sendMessage("§aWatered the plant! §7Water level: §b" + 
-                String.format("%.0f%%", plant.getWaterLevel() * 100) + qualityBonus);
+            boolean gotBonus = plant.water(wateringCanRating, cooldownMs);
+            if (gotBonus) {
+                String qualityBonus = " §a(+" + wateringCanRating.getStars() + " quality bonus!)";
+                player.sendMessage("§aWatered the plant! §7Water level: §b" + 
+                    String.format("%.0f%%", plant.getWaterLevel() * 100) + qualityBonus);
+            } else {
+                // On cooldown - still water but no quality bonus
+                long cooldownRemaining = plant.getWateringBonusCooldownRemaining(cooldownMs);
+                player.sendMessage("§aWatered the plant! §7Water level: §b" + 
+                    String.format("%.0f%%", plant.getWaterLevel() * 100));
+                player.sendMessage("§7Quality bonus on cooldown (§e" + cooldownRemaining + "s§7 remaining)");
+            }
         } else {
             plant.water();
             player.sendMessage("§aWatered the plant! §7Water level: §b" + 
@@ -730,6 +755,12 @@ public class FarmingManager {
                             location.getBlockY() + "," + 
                             location.getBlockZ();
         plants.remove(locationKey);
+        
+        // Clean up 3D visualization if enabled
+        PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();
+        if (vizManager != null) {
+            vizManager.removeVisualization(location);
+        }
     }
 
     public int getPlantCount() {

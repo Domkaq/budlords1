@@ -23,9 +23,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
@@ -330,6 +333,46 @@ public class ItemDropListener implements Listener {
             if (slot >= 0 && slot < event.getInventory().getSize()) {
                 jointRollingManager.handleMinigameClick(player, slot);
             }
+        }
+    }
+    
+    /**
+     * Handle joint rolling session cleanup when inventory is closed.
+     * This ensures players can roll again after closing the GUI.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) return;
+        
+        // Check if it's the joint rolling GUI or if player has an active session
+        // The holder check may not work in all cases, so also check active session
+        if (event.getInventory().getHolder() instanceof JointRollingManager || 
+            jointRollingManager.hasActiveSession(player)) {
+            jointRollingManager.handleInventoryClose(player);
+        }
+    }
+    
+    /**
+     * Handle joint rolling session cleanup when player dies.
+     * This ensures players can roll again after death.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        if (jointRollingManager.hasActiveSession(player)) {
+            jointRollingManager.forceCleanup(player.getUniqueId());
+        }
+    }
+    
+    /**
+     * Handle joint rolling session cleanup when player quits.
+     * This ensures no lingering sessions in memory.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        if (jointRollingManager.hasActiveSession(player)) {
+            jointRollingManager.forceCleanup(player.getUniqueId());
         }
     }
 }

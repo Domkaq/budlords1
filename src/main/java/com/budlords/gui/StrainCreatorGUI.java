@@ -26,6 +26,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
     private final StrainManager strainManager;
     private final Map<UUID, StrainBuilder> activeBuilders;
     private EffectSelectorGUI effectSelectorGUI;
+    private VisualCustomizerGUI visualCustomizerGUI;
     
     // Maximum number of effects to display in lore (to prevent overflow)
     private static final int MAX_DISPLAYED_EFFECTS = 10;
@@ -38,6 +39,8 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         
         // Initialize effect selector
         this.effectSelectorGUI = new EffectSelectorGUI(plugin, this);
+        // Initialize visual customizer
+        this.visualCustomizerGUI = new VisualCustomizerGUI(plugin, this);
     }
 
     @SuppressWarnings("deprecation")
@@ -188,7 +191,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
             )));
         inv.setItem(39, createIncreaseButton("Quality"));
         
-        // EFFECTS BUTTON - Center
+        // EFFECTS BUTTON - Left of center
         List<String> effectsLore = new ArrayList<>();
         effectsLore.add("");
         effectsLore.add("§7Add special visual and gameplay");
@@ -210,9 +213,35 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         effectsLore.add("");
         effectsLore.add("§a▶ Click to select effects!");
         
-        inv.setItem(41, createItem(Material.BEACON, 
+        inv.setItem(40, createItem(Material.BEACON, 
             "§d§l✦ Special Effects §7(" + builder.effects.size() + ")",
             effectsLore));
+        
+        // VISUAL CUSTOMIZER BUTTON - Right of center
+        String themeName = builder.visualConfig != null ? 
+            builder.visualConfig.getVisualTheme().getDisplayName() : "Classic";
+        String budTypeName = builder.visualConfig != null ? 
+            builder.visualConfig.getBudType().getDisplayName() : "Normal";
+        
+        inv.setItem(42, createItem(Material.PAINTING, 
+            "§d§l✿ Visual Appearance",
+            Arrays.asList(
+                "",
+                "§7Customize how your strain",
+                "§7looks when growing!",
+                "",
+                "§7Theme: §f" + themeName,
+                "§7Buds: §f" + budTypeName,
+                "",
+                "§6Features:",
+                "§7• 20+ visual themes",
+                "§7• Custom bud types (skulls, etc.)",
+                "§7• Particle effects",
+                "§7• Glow effects",
+                "§7• Animation styles",
+                "",
+                "§a▶ Click to customize!"
+            )));
 
         // Preview area - Right side
         List<String> previewLore = new ArrayList<>();
@@ -224,6 +253,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         if (!builder.effects.isEmpty()) {
             previewLore.add("§7Effects: §d" + builder.effects.size());
         }
+        previewLore.add("§7Visual: §d" + themeName);
         previewLore.add("§8━━━━━━━━━━━━━━━━━");
         previewLore.add("");
         previewLore.add("§a✓ Preview of your strain");
@@ -441,9 +471,13 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
                 updateInventory(event.getInventory(), builder);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.3f, 1.2f);
             }
-            case 41 -> { // Effects selector
+            case 40 -> { // Effects selector (moved from 41)
                 player.closeInventory();
                 effectSelectorGUI.open(player);
+            }
+            case 42 -> { // Visual customizer (new!)
+                player.closeInventory();
+                visualCustomizerGUI.open(player);
             }
             case 46 -> { // Cancel (moved from 45)
                 player.closeInventory();
@@ -474,6 +508,11 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         
         // Add effects from builder
         strain.setEffects(builder.effects);
+        
+        // Set visual configuration
+        if (builder.visualConfig != null) {
+            strain.setVisualConfig(builder.visualConfig);
+        }
         
         strainManager.registerStrain(strain);
         strainManager.saveStrains();
@@ -564,6 +603,7 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         StarRating seedStarRating = StarRating.ONE_STAR;
         boolean awaitingName = false;
         List<com.budlords.effects.StrainEffect> effects = new ArrayList<>();
+        com.budlords.strain.StrainVisualConfig visualConfig = new com.budlords.strain.StrainVisualConfig();
         
         public StrainBuilder() {
             // Default constructor

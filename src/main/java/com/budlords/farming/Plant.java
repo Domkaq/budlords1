@@ -25,6 +25,11 @@ public class Plant {
     private double waterLevel;
     private double nutrientLevel;
     private UUID potId;
+    
+    // Cooldown tracking for watering quality bonus
+    private long lastWateringBonusTime;
+    // Default cooldown - can be overridden by config via FarmingManager
+    private static final long DEFAULT_WATERING_BONUS_COOLDOWN_MS = 60000L;
 
     public Plant(String strainId, Location location, UUID ownerUuid) {
         this.id = UUID.randomUUID();
@@ -37,6 +42,7 @@ public class Plant {
         this.lastGrowthUpdate = System.currentTimeMillis();
         this.waterLevel = 0.5;
         this.nutrientLevel = 0.3;
+        this.lastWateringBonusTime = 0;
     }
 
     public Plant(UUID id, String strainId, Location location, UUID ownerUuid, 
@@ -51,6 +57,7 @@ public class Plant {
         this.lastGrowthUpdate = lastGrowthUpdate;
         this.waterLevel = 0.5;
         this.nutrientLevel = 0.3;
+        this.lastWateringBonusTime = 0;
     }
     
     /**
@@ -75,6 +82,7 @@ public class Plant {
         this.waterLevel = waterLevel;
         this.nutrientLevel = nutrientLevel;
         this.potId = potId;
+        this.lastWateringBonusTime = 0;
     }
 
     public UUID getId() {
@@ -201,19 +209,42 @@ public class Plant {
     
     /**
      * Waters the plant using a specific quality watering can.
-     * Higher quality watering cans provide additional quality bonuses.
+     * Higher quality watering cans provide additional quality bonuses, but only
+     * if the watering bonus cooldown has passed (prevents spam for free quality).
      * @param wateringCanRating The star rating of the watering can used
+     * @param cooldownMs The cooldown time in milliseconds (from config)
+     * @return true if quality bonus was applied, false if still on cooldown
      */
-    public void water(StarRating wateringCanRating) {
+    public boolean water(StarRating wateringCanRating, long cooldownMs) {
         this.waterLevel = 1.0;
         
         // Higher star watering cans give quality bonus when watering
+        // But only if the cooldown has passed to prevent spam
         if (wateringCanRating != null) {
-            // Add quality bonus based on watering can quality
-            // 1-star: +1 quality, 5-star: +5 quality
-            int qualityBonus = wateringCanRating.getStars();
-            addQuality(qualityBonus);
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastWateringBonusTime >= cooldownMs) {
+                // Add quality bonus based on watering can quality
+                // 1-star: +1 quality, 5-star: +5 quality
+                int qualityBonus = wateringCanRating.getStars();
+                addQuality(qualityBonus);
+                lastWateringBonusTime = currentTime;
+                return true;
+            }
         }
+        return false;
+    }
+    
+    /**
+     * Gets the remaining cooldown time for watering quality bonus in seconds.
+     * @param cooldownMs The cooldown time in milliseconds (from config)
+     * @return remaining cooldown in seconds, or 0 if no cooldown active
+     */
+    public long getWateringBonusCooldownRemaining(long cooldownMs) {
+        long elapsed = System.currentTimeMillis() - lastWateringBonusTime;
+        if (elapsed >= cooldownMs) {
+            return 0;
+        }
+        return (cooldownMs - elapsed) / 1000;
     }
 
     public double getNutrientLevel() {

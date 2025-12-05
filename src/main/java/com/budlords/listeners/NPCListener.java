@@ -3,8 +3,10 @@ package com.budlords.listeners;
 import com.budlords.BudLords;
 import com.budlords.economy.EconomyManager;
 import com.budlords.gui.BlackMarketShopGUI;
+import com.budlords.gui.BuyerProfileGUI;
 import com.budlords.gui.MarketShopGUI;
 import com.budlords.gui.MobSaleGUI;
+import com.budlords.items.PhoneItems;
 import com.budlords.joint.JointItems;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
@@ -30,11 +32,13 @@ public class NPCListener implements Listener {
     private final BlackMarketShopGUI blackMarketShopGUI;
     private final MobSaleGUI mobSaleGUI;
     private final StrainManager strainManager;
+    private final BuyerProfileGUI buyerProfileGUI;
 
     public NPCListener(BudLords plugin, NPCManager npcManager, EconomyManager economyManager, 
                        RankManager rankManager, PackagingManager packagingManager,
                        MarketShopGUI marketShopGUI, BlackMarketShopGUI blackMarketShopGUI,
-                       MobSaleGUI mobSaleGUI, StrainManager strainManager) {
+                       MobSaleGUI mobSaleGUI, StrainManager strainManager,
+                       BuyerProfileGUI buyerProfileGUI) {
         this.plugin = plugin;
         this.npcManager = npcManager;
         this.economyManager = economyManager;
@@ -44,6 +48,7 @@ public class NPCListener implements Listener {
         this.blackMarketShopGUI = blackMarketShopGUI;
         this.mobSaleGUI = mobSaleGUI;
         this.strainManager = strainManager;
+        this.buyerProfileGUI = buyerProfileGUI;
     }
 
     // Using deprecated sendMessage and BungeeCord Chat API for Bukkit/Spigot compatibility
@@ -62,6 +67,16 @@ public class NPCListener implements Listener {
         event.setCancelled(true);
 
         ItemStack item = player.getInventory().getItemInMainHand();
+
+        // Check if holding phone - open buyer profile GUI
+        if (PhoneItems.isPhone(item)) {
+            if (buyerProfileGUI != null) {
+                buyerProfileGUI.openBuyerProfile(player, npcType, entity);
+            } else {
+                player.sendMessage("§cPhone system is not available!");
+            }
+            return;
+        }
 
         // Check if holding seeds - BlackMarket Joe doesn't buy seeds
         if (strainManager.isSeedItem(item)) {
