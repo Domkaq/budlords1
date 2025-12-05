@@ -192,7 +192,7 @@ public class BulkOrderManager {
             var stats = plugin.getStatsManager().getStats(playerId);
             if (stats != null) {
                 prestigeLevel = stats.getPrestigeLevel();
-                successfulSales = stats.getTotalSuccessfulSales();
+                successfulSales = stats.getTotalSalesSuccess();
             }
         }
         
