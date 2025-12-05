@@ -566,16 +566,19 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         
         StrainBuilder builder = activeBuilders.get(player.getUniqueId());
         // Only remove the builder if the player is NOT awaiting name input
-        // and is NOT opening another GUI (like the effect selector)
+        // and is NOT opening another GUI (like the effect selector or visual customizer)
         // We keep the builder active for a short time to allow returning to the GUI
         if (builder != null && !builder.awaitingName) {
-            // Schedule removal with a delay to allow effect selector to access it
+            // Schedule removal with a delay to allow effect selector/visual customizer to access it
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                // Only remove if the player doesn't have the effect selector open
+                // Only remove if the player doesn't have a related GUI open
                 Player p = plugin.getServer().getPlayer(player.getUniqueId());
                 if (p != null && p.getOpenInventory() != null) {
                     String title = p.getOpenInventory().getTitle();
-                    if (title != null && (title.contains("Effect Selector") || title.contains("Strain Creator"))) {
+                    if (title != null && (title.contains("Effect Selector") || 
+                                          title.contains("Strain Creator") ||
+                                          title.contains("Visual Customizer") ||
+                                          title.contains("Bud Types"))) {
                         return; // Don't remove if in related GUI
                     }
                 }

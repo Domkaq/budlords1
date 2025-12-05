@@ -153,6 +153,17 @@ public class FarmingListener implements Listener {
             return;
         }
 
+        // Check if clicking on a pot to show plant info or harvest
+        if (clickedBlock.getType() == Material.FLOWER_POT) {
+            // Check if there's a plant above the pot
+            Location plantLocation = clickedBlock.getRelative(BlockFace.UP).getLocation();
+            Plant plant = farmingManager.getPlantAt(plantLocation);
+            if (plant != null) {
+                handlePlantInteraction(event, player, clickedBlock.getRelative(BlockFace.UP));
+                return;
+            }
+        }
+
         // Check if harvesting a plant (without scissors) - check for WHEAT (legacy) or AIR with plant tracking (3D)
         if (clickedBlock.getType() == Material.WHEAT || farmingManager.getPlantAt(clickedBlock.getLocation()) != null) {
             handlePlantInteraction(event, player, clickedBlock);
@@ -547,6 +558,18 @@ public class FarmingListener implements Listener {
     private void handleScissorsHarvest(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
         // Check for WHEAT (legacy) or any block with plant tracking (3D visualization)
         Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        
+        // If clicking on a pot, check the block above for the plant
+        if (plant == null && clickedBlock.getType() == Material.FLOWER_POT) {
+            Location plantLocation = clickedBlock.getRelative(BlockFace.UP).getLocation();
+            plant = farmingManager.getPlantAt(plantLocation);
+            if (plant != null) {
+                // Use the plant location for harvesting
+                handleScissorsHarvestPlant(event, player, item, plant, plantLocation);
+                return;
+            }
+        }
+        
         if (plant == null && clickedBlock.getType() != Material.WHEAT) {
             return;
         }
@@ -554,6 +577,10 @@ public class FarmingListener implements Listener {
         // plant may still be null if WHEAT block but no tracking (shouldn't happen)
         if (plant == null) return;
         
+        handleScissorsHarvestPlant(event, player, item, plant, clickedBlock.getLocation());
+    }
+    
+    private void handleScissorsHarvestPlant(PlayerInteractEvent event, Player player, ItemStack item, Plant plant, Location plantLocation) {
         event.setCancelled(true);
         
         if (!plant.isFullyGrown()) {
@@ -565,7 +592,7 @@ public class FarmingListener implements Listener {
         StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
         if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
         
-        Plant harvested = farmingManager.harvestPlant(player, clickedBlock.getLocation(), scissorsRating);
+        Plant harvested = farmingManager.harvestPlant(player, plantLocation, scissorsRating);
         if (harvested != null) {
             giveHarvestWithScissors(player, harvested, scissorsRating);
         }

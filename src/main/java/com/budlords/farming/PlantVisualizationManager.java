@@ -137,6 +137,7 @@ public class PlantVisualizationManager {
      * Creates the seed stage visual (Stage 0).
      * A realistic cannabis seed sitting in soil with a small dirt mound appearance.
      * Professional visualization with proper depth and detail.
+     * Plants appear INSIDE the pot, not floating above.
      */
     private List<UUID> createSeedVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
@@ -146,17 +147,18 @@ public class PlantVisualizationManager {
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         boolean glowing = config != null && config.isGlowing();
         
-        // Base location - centered above pot
-        Location baseLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Base location - centered on the pot block (one below the tracked plant location)
+        // Plant location is 1 block above pot, so we adjust down to be inside the pot
+        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
         
-        // Soil/dirt layer - represents the growing medium
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.85, 0));
+        // Soil/dirt layer - represents the growing medium inside pot
+        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.1, 0));
         soilLayer.setHelmet(new ItemStack(Material.COARSE_DIRT));
         soilLayer.setSmall(true);
         ids.add(soilLayer.getUniqueId());
         
-        // The seed - positioned slightly below soil surface (just cracking through)
-        ArmorStand seed = createBaseArmorStand(world, baseLoc.clone().add(0, -0.75 * heightScale, 0));
+        // The seed - positioned inside the pot, just visible in soil
+        ArmorStand seed = createBaseArmorStand(world, baseLoc.clone().add(0, 0.0 * heightScale, 0));
         seed.setHelmet(new ItemStack(Material.COCOA_BEANS)); // Brown seed appearance
         seed.setSmall(true);
         if (glowing) seed.setGlowing(true);
@@ -165,8 +167,8 @@ public class PlantVisualizationManager {
         seed.setHeadPose(new EulerAngle(Math.toRadians(15), Math.toRadians(45), 0));
         ids.add(seed.getUniqueId());
         
-        // Tiny crack/sprout indicator - showing life beginning
-        ArmorStand sproutTip = createBaseArmorStand(world, baseLoc.clone().add(0, -0.65 * heightScale, 0));
+        // Tiny crack/sprout indicator - showing life beginning (just above soil)
+        ArmorStand sproutTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.1 * heightScale, 0));
         sproutTip.setHelmet(new ItemStack(Material.SMALL_DRIPLEAF));
         sproutTip.setSmall(true);
         if (glowing) sproutTip.setGlowing(true);
@@ -179,6 +181,7 @@ public class PlantVisualizationManager {
      * Creates the sprout stage visual (Stage 1).
      * A realistic cannabis seedling with cotyledons (seed leaves) and first true leaves emerging.
      * Shows the characteristic double-round seed leaves with the first serrated cannabis leaves above.
+     * Now includes bamboo decoration in pot for better texture.
      */
     private List<UUID> createSproutVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
@@ -193,17 +196,24 @@ public class PlantVisualizationManager {
             config.getLeafColorPrimary() : getStrainColor(plant);
         boolean glowing = config != null && config.isGlowing();
         
-        // Base location - centered above pot  
-        Location baseLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Base location - centered inside the pot
+        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
         
-        // Soil base for realism
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.85, 0));
+        // Soil base for realism inside pot
+        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.1, 0));
         soilLayer.setHelmet(new ItemStack(Material.COARSE_DIRT));
         soilLayer.setSmall(true);
         ids.add(soilLayer.getUniqueId());
         
+        // Small bamboo shoot decoration inside pot
+        ArmorStand bambooDecor = createBaseArmorStand(world, baseLoc.clone().add(0.1, 0.0, 0.1));
+        bambooDecor.setHelmet(new ItemStack(Material.BAMBOO));
+        bambooDecor.setSmall(true);
+        bambooDecor.setHeadPose(new EulerAngle(Math.toRadians(10), Math.toRadians(45), 0));
+        ids.add(bambooDecor.getUniqueId());
+        
         // Thin stem emerging from soil
-        ArmorStand stem = createBaseArmorStand(world, baseLoc.clone().add(0, -0.6 * heightScale, 0));
+        ArmorStand stem = createBaseArmorStand(world, baseLoc.clone().add(0, 0.15 * heightScale, 0));
         stem.setHelmet(new ItemStack(Material.END_ROD)); // Thin white-green stem
         stem.setSmall(true);
         if (glowing) stem.setGlowing(true);
@@ -211,14 +221,14 @@ public class PlantVisualizationManager {
         
         // Cotyledons (seed leaves) - round leaves that emerge first
         // Left cotyledon
-        ArmorStand leftCoty = createBaseArmorStand(world, baseLoc.clone().add(-0.08 * leafScale, -0.45 * heightScale, 0));
+        ArmorStand leftCoty = createBaseArmorStand(world, baseLoc.clone().add(-0.08 * leafScale, 0.25 * heightScale, 0));
         leftCoty.setHelmet(new ItemStack(Material.LILY_PAD)); // Round leaf shape
         leftCoty.setSmall(true);
         leftCoty.setHeadPose(new EulerAngle(Math.toRadians(60), Math.toRadians(-90), Math.toRadians(10)));
         ids.add(leftCoty.getUniqueId());
         
         // Right cotyledon  
-        ArmorStand rightCoty = createBaseArmorStand(world, baseLoc.clone().add(0.08 * leafScale, -0.45 * heightScale, 0));
+        ArmorStand rightCoty = createBaseArmorStand(world, baseLoc.clone().add(0.08 * leafScale, 0.25 * heightScale, 0));
         rightCoty.setHelmet(new ItemStack(Material.LILY_PAD));
         rightCoty.setSmall(true);
         rightCoty.setHeadPose(new EulerAngle(Math.toRadians(60), Math.toRadians(90), Math.toRadians(-10)));
@@ -226,14 +236,14 @@ public class PlantVisualizationManager {
         
         // First true leaves (cannabis leaves) - emerging above cotyledons
         // These show the characteristic serrated edge pattern
-        ArmorStand firstLeaf1 = createBaseArmorStand(world, baseLoc.clone().add(0, -0.35 * heightScale, 0.06 * leafScale));
+        ArmorStand firstLeaf1 = createBaseArmorStand(world, baseLoc.clone().add(0, 0.35 * heightScale, 0.06 * leafScale));
         firstLeaf1.setHelmet(new ItemStack(leafMaterial));
         firstLeaf1.setSmall(true);
         firstLeaf1.setHeadPose(new EulerAngle(Math.toRadians(45), 0, 0));
         if (glowing) firstLeaf1.setGlowing(true);
         ids.add(firstLeaf1.getUniqueId());
         
-        ArmorStand firstLeaf2 = createBaseArmorStand(world, baseLoc.clone().add(0, -0.35 * heightScale, -0.06 * leafScale));
+        ArmorStand firstLeaf2 = createBaseArmorStand(world, baseLoc.clone().add(0, 0.35 * heightScale, -0.06 * leafScale));
         firstLeaf2.setHelmet(new ItemStack(leafMaterial));
         firstLeaf2.setSmall(true);
         firstLeaf2.setHeadPose(new EulerAngle(Math.toRadians(45), Math.toRadians(180), 0));
@@ -241,7 +251,7 @@ public class PlantVisualizationManager {
         ids.add(firstLeaf2.getUniqueId());
         
         // Growing tip (apical meristem)
-        ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, -0.25 * heightScale, 0));
+        ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.45 * heightScale, 0));
         growingTip.setHelmet(new ItemStack(Material.SWEET_BERRIES)); // Small green bud
         growingTip.setSmall(true);
         if (glowing) growingTip.setGlowing(true);
@@ -255,14 +265,15 @@ public class PlantVisualizationManager {
      * A detailed cannabis plant in vegetative growth with multiple node levels,
      * realistic fan leaves with proper finger arrangement, and a structured stem system.
      * This stage shows rapid vegetative growth with lush green foliage.
+     * Includes bamboo and small sapling decorations in pot for professional look.
      */
     private List<UUID> createVegetativeVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        // Base location centered above pot
-        Location baseLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Base location centered inside the pot
+        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         double leafScale = config != null ? config.getLeafScale() : 1.0;
@@ -273,28 +284,43 @@ public class PlantVisualizationManager {
         boolean glowing = config != null && config.isGlowing();
         
         // ===== SOIL BASE =====
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.85, 0));
+        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.1, 0));
         soilLayer.setHelmet(new ItemStack(Material.COARSE_DIRT));
         soilLayer.setSmall(true);
         ids.add(soilLayer.getUniqueId());
         
+        // ===== POT DECORATIONS - Bamboo and small plants =====
+        // Bamboo decoration left side
+        ArmorStand bamboo1 = createBaseArmorStand(world, baseLoc.clone().add(-0.12, 0.0, 0.08));
+        bamboo1.setHelmet(new ItemStack(Material.BAMBOO));
+        bamboo1.setSmall(true);
+        bamboo1.setHeadPose(new EulerAngle(Math.toRadians(8), Math.toRadians(-30), 0));
+        ids.add(bamboo1.getUniqueId());
+        
+        // Small sapling decoration right side
+        ArmorStand sapling = createBaseArmorStand(world, baseLoc.clone().add(0.12, 0.0, -0.08));
+        sapling.setHelmet(new ItemStack(Material.OAK_SAPLING));
+        sapling.setSmall(true);
+        sapling.setHeadPose(new EulerAngle(Math.toRadians(5), Math.toRadians(60), 0));
+        ids.add(sapling.getUniqueId());
+        
         // ===== MAIN STEM STRUCTURE =====
         // Lower stem segment
-        ArmorStand stemLower = createBaseArmorStand(world, baseLoc.clone().add(0, -0.65 * heightScale, 0));
+        ArmorStand stemLower = createBaseArmorStand(world, baseLoc.clone().add(0, 0.1 * heightScale, 0));
         stemLower.setHelmet(new ItemStack(Material.BAMBOO)); // Thicker base
         stemLower.setSmall(true);
         if (glowing) stemLower.setGlowing(true);
         ids.add(stemLower.getUniqueId());
         
         // Middle stem segment
-        ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, -0.45 * heightScale, 0));
+        ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, 0.3 * heightScale, 0));
         stemMiddle.setHelmet(new ItemStack(Material.STICK)); // Thinner middle
         stemMiddle.setSmall(true);
         if (glowing) stemMiddle.setGlowing(true);
         ids.add(stemMiddle.getUniqueId());
         
         // Upper stem segment
-        ArmorStand stemUpper = createBaseArmorStand(world, baseLoc.clone().add(0, -0.25 * heightScale, 0));
+        ArmorStand stemUpper = createBaseArmorStand(world, baseLoc.clone().add(0, 0.5 * heightScale, 0));
         stemUpper.setHelmet(new ItemStack(Material.END_ROD)); // Thinnest top
         stemUpper.setSmall(true);
         if (glowing) stemUpper.setGlowing(true);
@@ -302,7 +328,7 @@ public class PlantVisualizationManager {
         
         // ===== NODE 1 - BOTTOM FAN LEAVES (largest, oldest) =====
         // Cannabis plants have opposite leaves that become alternate later
-        double node1Height = -0.55 * heightScale;
+        double node1Height = 0.2 * heightScale;
         for (int i = 0; i < 2; i++) {
             double angle = Math.PI * i; // Opposite arrangement
             double offsetX = Math.cos(angle) * 0.18 * leafScale;
@@ -337,7 +363,7 @@ public class PlantVisualizationManager {
         }
         
         // ===== NODE 2 - MIDDLE FAN LEAVES =====
-        double node2Height = -0.35 * heightScale;
+        double node2Height = 0.4 * heightScale;
         for (int i = 0; i < 2; i++) {
             double angle = Math.PI * i + Math.toRadians(90); // Rotated 90° from node 1
             double offsetX = Math.cos(angle) * 0.15 * leafScale;
@@ -357,7 +383,7 @@ public class PlantVisualizationManager {
         }
         
         // ===== NODE 3 - UPPER GROWING LEAVES (smallest, youngest) =====
-        double node3Height = -0.18 * heightScale;
+        double node3Height = 0.55 * heightScale;
         for (int i = 0; i < 4; i++) {
             double angle = (Math.PI / 2) * i + Math.toRadians(45);
             double offsetX = Math.cos(angle) * 0.08 * leafScale;
@@ -378,7 +404,7 @@ public class PlantVisualizationManager {
         }
         
         // ===== APICAL MERISTEM (growing tip) =====
-        ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, -0.08 * heightScale, 0));
+        ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.65 * heightScale, 0));
         growingTip.setHelmet(new ItemStack(Material.SWEET_BERRIES)); // Bright green growth
         growingTip.setSmall(true);
         if (glowing) growingTip.setGlowing(true);
@@ -396,14 +422,15 @@ public class PlantVisualizationManager {
      * - Lower fan leaves for canopy structure
      * - Proper trichome representation on high-quality plants
      * - Realistic proportions matching actual cannabis plants
+     * - Bamboo and decorative plants in pot base for professional look
      */
     private List<UUID> createFloweringVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        // Base location centered above pot
-        Location baseLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Base location centered inside the pot
+        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
         StarRating rating = plant.calculateFinalBudRating(null);
         int qualityLevel = rating != null ? rating.getStars() : 2;
         
@@ -419,35 +446,57 @@ public class PlantVisualizationManager {
         BudType budType = config != null ? config.getBudType() : BudType.NORMAL;
         boolean glowing = config != null && config.isGlowing();
         
-        // ===== SOIL BASE =====
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.85, 0));
+        // ===== SOIL BASE INSIDE POT =====
+        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.1, 0));
         soilLayer.setHelmet(new ItemStack(Material.COARSE_DIRT));
         soilLayer.setSmall(true);
         ids.add(soilLayer.getUniqueId());
         
+        // ===== POT DECORATIONS - Bamboo shoots for professional look =====
+        // Bamboo decoration left back
+        ArmorStand bamboo1 = createBaseArmorStand(world, baseLoc.clone().add(-0.15, 0.0, 0.1));
+        bamboo1.setHelmet(new ItemStack(Material.BAMBOO));
+        bamboo1.setSmall(true);
+        bamboo1.setHeadPose(new EulerAngle(Math.toRadians(8), Math.toRadians(-45), 0));
+        ids.add(bamboo1.getUniqueId());
+        
+        // Bamboo decoration right back
+        ArmorStand bamboo2 = createBaseArmorStand(world, baseLoc.clone().add(0.15, 0.0, 0.1));
+        bamboo2.setHelmet(new ItemStack(Material.BAMBOO));
+        bamboo2.setSmall(true);
+        bamboo2.setHeadPose(new EulerAngle(Math.toRadians(8), Math.toRadians(45), 0));
+        ids.add(bamboo2.getUniqueId());
+        
+        // Small fern/grass decoration in front
+        ArmorStand fern = createBaseArmorStand(world, baseLoc.clone().add(0, 0.0, -0.12));
+        fern.setHelmet(new ItemStack(Material.FERN));
+        fern.setSmall(true);
+        fern.setHeadPose(new EulerAngle(Math.toRadians(10), 0, 0));
+        ids.add(fern.getUniqueId());
+        
         // ===== MAIN STEM STRUCTURE (3 segments for realism) =====
         // Thick base stem
-        ArmorStand stemBase = createBaseArmorStand(world, baseLoc.clone().add(0, -0.7 * heightScale, 0));
+        ArmorStand stemBase = createBaseArmorStand(world, baseLoc.clone().add(0, 0.1 * heightScale, 0));
         stemBase.setHelmet(new ItemStack(Material.BAMBOO));
         stemBase.setSmall(true);
         if (glowing) stemBase.setGlowing(true);
         ids.add(stemBase.getUniqueId());
         
         // Middle stem
-        ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, -0.45 * heightScale, 0));
+        ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, 0.35 * heightScale, 0));
         stemMiddle.setHelmet(new ItemStack(Material.STICK));
         stemMiddle.setSmall(true);
         ids.add(stemMiddle.getUniqueId());
         
         // Upper stem (leads to main cola)
-        ArmorStand stemUpper = createBaseArmorStand(world, baseLoc.clone().add(0, -0.2 * heightScale, 0));
+        ArmorStand stemUpper = createBaseArmorStand(world, baseLoc.clone().add(0, 0.55 * heightScale, 0));
         stemUpper.setHelmet(new ItemStack(Material.END_ROD));
         stemUpper.setSmall(true);
         ids.add(stemUpper.getUniqueId());
         
         // ===== BOTTOM FAN LEAVES (CANOPY BASE) =====
         // Large fan leaves provide structure and show plant health
-        double fanLeafLevel = -0.6 * heightScale;
+        double fanLeafLevel = 0.2 * heightScale;
         for (int i = 0; i < 4; i++) {
             double angle = (Math.PI / 2) * i + Math.toRadians(45);
             double offsetX = Math.cos(angle) * 0.22 * leafScale;
@@ -481,7 +530,7 @@ public class PlantVisualizationManager {
         
         // ===== MIDDLE SUGAR LEAVES & SMALL BUDS =====
         // Sugar leaves are smaller, covered in trichomes, intermingled with buds
-        double sugarLeafLevel = -0.35 * heightScale;
+        double sugarLeafLevel = 0.45 * heightScale;
         for (int i = 0; i < 6; i++) {
             double angle = (Math.PI / 3) * i;
             double offsetX = Math.cos(angle) * 0.12 * leafScale;
@@ -508,7 +557,7 @@ public class PlantVisualizationManager {
             double radius = 0.14 * budScale;
             double offsetX = Math.cos(angle) * radius;
             double offsetZ = Math.sin(angle) * radius;
-            double height = (-0.25 + (i % 2) * 0.06) * heightScale;
+            double height = (0.55 + (i % 2) * 0.06) * heightScale;
             
             // Branch stem connecting to main stem
             ArmorStand branchStem = createBaseArmorStand(world, baseLoc.clone().add(offsetX * 0.5, height - 0.08, offsetZ * 0.5));
@@ -550,7 +599,7 @@ public class PlantVisualizationManager {
         
         // ===== MAIN COLA (top bud - the prize) =====
         // Cola base with sugar leaves
-        double colaBase = -0.1 * heightScale;
+        double colaBase = 0.7 * heightScale;
         for (int i = 0; i < 4; i++) {
             double angle = (Math.PI / 2) * i + Math.toRadians(22.5);
             ArmorStand colaSugarLeaf = createBaseArmorStand(world, baseLoc.clone().add(
