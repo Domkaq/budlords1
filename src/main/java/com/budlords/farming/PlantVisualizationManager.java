@@ -135,7 +135,7 @@ public class PlantVisualizationManager {
 
     /**
      * Creates the seed stage visual (Stage 0).
-     * A small seed sitting in the pot.
+     * A small seed sitting in the pot - uses a small green/brown item to represent cannabis seed.
      */
     private List<UUID> createSeedVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
@@ -144,12 +144,12 @@ public class PlantVisualizationManager {
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         
-        // Create a tiny armor stand with a seed item
-        Location seedLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Create a tiny armor stand with a seed item - use melon seeds for a more greenish look
+        Location seedLoc = loc.clone().add(0.5, -1.0, 0.5); // Position inside pot
         ArmorStand seed = createBaseArmorStand(world, seedLoc);
         
-        // Use wheat seeds as the visual
-        ItemStack seedItem = new ItemStack(Material.WHEAT_SEEDS);
+        // Use melon seeds (greenish) or pumpkin seeds instead of wheat for cannabis seeds
+        ItemStack seedItem = new ItemStack(Material.MELON_SEEDS);
         seed.setHelmet(seedItem);
         seed.setSmall(true);
         
@@ -158,8 +158,8 @@ public class PlantVisualizationManager {
             seed.setGlowing(true);
         }
         
-        // Position adjustments
-        seed.teleport(seedLoc.add(0, -0.7 * heightScale, 0));
+        // Position inside the pot (lower position to sit in the dirt/pot)
+        seed.teleport(seedLoc.clone().add(0, 0.1 * heightScale, 0));
         
         ids.add(seed.getUniqueId());
         return ids;
@@ -167,7 +167,7 @@ public class PlantVisualizationManager {
 
     /**
      * Creates the sprout stage visual (Stage 1).
-     * A small green sprout emerging from the pot.
+     * A small green sprout emerging from the pot - looks like a young cannabis seedling.
      */
     private List<UUID> createSproutVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
@@ -175,15 +175,15 @@ public class PlantVisualizationManager {
         if (world == null) return ids;
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
-        double leafScale = config != null ? config.getLeafScale() : 1.0;
-        Material leafMaterial = config != null ? config.getLeafMaterial() : Material.FERN;
+        Material leafMaterial = config != null && config.getLeafMaterial() != null ? 
+            config.getLeafMaterial() : Material.FERN;
         
-        // Main sprout
-        Location sproutLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Main sprout - positioned to grow from the pot
+        Location sproutLoc = loc.clone().add(0.5, -0.9, 0.5);
         ArmorStand sprout = createBaseArmorStand(world, sproutLoc);
         
-        // Use configured leaf material or fern as sprout visual
-        ItemStack sproutItem = new ItemStack(leafMaterial != null ? leafMaterial : Material.FERN);
+        // Use fern or sweet berry bush for a more cannabis-like leaf appearance
+        ItemStack sproutItem = new ItemStack(leafMaterial);
         sprout.setHelmet(sproutItem);
         sprout.setSmall(true);
         
@@ -192,88 +192,75 @@ public class PlantVisualizationManager {
             sprout.setGlowing(true);
         }
         
-        // Position
-        sprout.teleport(sproutLoc.add(0, -0.5 * heightScale, 0));
-        
-        // Add small leaves using the config color or strain color
-        Color leafColor = config != null && config.getLeafColorPrimary() != null ? 
-            config.getLeafColorPrimary() : getStrainColor(plant);
-        ArmorStand leaves = createBaseArmorStand(world, sproutLoc.clone().add(0, 0.1 * heightScale, 0));
-        leaves.setHelmet(createColoredLeaf(leafColor, true, config));
-        leaves.setSmall(true);
+        // Position slightly above pot level
+        sprout.teleport(sproutLoc.clone().add(0, 0.2 * heightScale, 0));
         
         ids.add(sprout.getUniqueId());
-        ids.add(leaves.getUniqueId());
         
         return ids;
     }
 
     /**
      * Creates the vegetative stage visual (Stage 2).
-     * Medium sized plant with spreading leaves.
+     * Medium sized plant with spreading leaves - looks like a growing cannabis plant.
      */
     private List<UUID> createVegetativeVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        Location baseLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Base location centered on the pot
+        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         double leafScale = config != null ? config.getLeafScale() : 1.0;
-        Material stemMaterial = config != null && config.getStemMaterial() != null ? 
-            config.getStemMaterial() : Material.BAMBOO;
         Color strainColor = config != null && config.getLeafColorPrimary() != null ? 
             config.getLeafColorPrimary() : getStrainColor(plant);
+        boolean glowing = config != null && config.isGlowing();
         
-        // Main stem (central armor stand)
+        // Main stem (using a thin stick-like appearance)
         ArmorStand stem = createBaseArmorStand(world, baseLoc);
-        stem.setHelmet(new ItemStack(stemMaterial));
-        stem.setSmall(false);
-        
-        // Add glow if enabled
-        if (config != null && config.isGlowing()) {
-            stem.setGlowing(true);
-        }
-        
-        stem.teleport(baseLoc.add(0, -0.9 * heightScale, 0));
+        stem.setHelmet(new ItemStack(Material.STICK));
+        stem.setSmall(true); // Use small armor stand for better proportions
+        if (glowing) stem.setGlowing(true);
+        stem.teleport(baseLoc.clone().add(0, 0.1 * heightScale, 0));
         ids.add(stem.getUniqueId());
         
-        // Lower leaves (spreading out)
-        for (int i = 0; i < 4; i++) {
-            double angle = (Math.PI / 2) * i;
-            double offsetX = Math.cos(angle) * 0.15 * leafScale;
-            double offsetZ = Math.sin(angle) * 0.15 * leafScale;
+        // Lower fan leaves (spread out around the stem) - cannabis signature shape
+        for (int i = 0; i < 5; i++) {
+            double angle = (Math.PI * 2 / 5) * i;
+            double offsetX = Math.cos(angle) * 0.12 * leafScale;
+            double offsetZ = Math.sin(angle) * 0.12 * leafScale;
             
-            Location leafLoc = baseLoc.clone().add(offsetX, 0.2 * heightScale, offsetZ);
+            Location leafLoc = baseLoc.clone().add(offsetX, 0.25 * heightScale, offsetZ);
             ArmorStand leaf = createBaseArmorStand(world, leafLoc);
             leaf.setHelmet(createColoredLeaf(strainColor, false, config));
             leaf.setSmall(true);
             
-            // Angle leaves outward
+            // Angle leaves outward like cannabis fan leaves
             EulerAngle headPose = new EulerAngle(
-                Math.toRadians(30),  // Tilt down slightly
+                Math.toRadians(35),  // Tilt down/outward
                 angle,               // Rotate around
-                Math.toRadians(15)   // Slight roll
+                Math.toRadians(10)   // Slight roll
             );
             leaf.setHeadPose(headPose);
             
             ids.add(leaf.getUniqueId());
         }
         
-        // Upper leaves (more vertical)
-        for (int i = 0; i < 4; i++) {
-            double angle = (Math.PI / 4) + (Math.PI / 2) * i;
-            double offsetX = Math.cos(angle) * 0.1 * leafScale;
-            double offsetZ = Math.sin(angle) * 0.1 * leafScale;
+        // Upper growing leaves (smaller, more vertical) 
+        for (int i = 0; i < 3; i++) {
+            double angle = (Math.PI / 3) + (Math.PI * 2 / 3) * i;
+            double offsetX = Math.cos(angle) * 0.06 * leafScale;
+            double offsetZ = Math.sin(angle) * 0.06 * leafScale;
             
-            Location leafLoc = baseLoc.clone().add(offsetX, 0.5 * heightScale, offsetZ);
+            Location leafLoc = baseLoc.clone().add(offsetX, 0.45 * heightScale, offsetZ);
             ArmorStand leaf = createBaseArmorStand(world, leafLoc);
             leaf.setHelmet(createColoredLeaf(strainColor, true, config));
             leaf.setSmall(true);
             
             EulerAngle headPose = new EulerAngle(
-                Math.toRadians(15),
+                Math.toRadians(10),
                 angle,
                 0
             );
@@ -287,7 +274,7 @@ public class PlantVisualizationManager {
 
     /**
      * Creates the flowering/mature stage visual (Stage 3).
-     * Full plant with buds ready for harvest.
+     * Full plant with buds ready for harvest - realistic cannabis plant appearance.
      * Uses custom visual config for unique strain appearances.
      */
     private List<UUID> createFloweringVisual(Plant plant, Location loc, StrainVisualConfig config) {
@@ -295,7 +282,8 @@ public class PlantVisualizationManager {
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        Location baseLoc = loc.clone().add(0.5, 0.0, 0.5);
+        // Base location centered on the pot, starting lower
+        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
         StarRating rating = plant.calculateFinalBudRating(null);
         
         // Get visual settings from config
@@ -303,28 +291,26 @@ public class PlantVisualizationManager {
         double leafScale = config != null ? config.getLeafScale() : 1.0;
         double budScale = config != null ? config.getBudScale() : 1.0;
         
-        Material stemMaterial = config != null && config.getStemMaterial() != null ? 
-            config.getStemMaterial() : Material.BAMBOO;
         Color strainColor = config != null && config.getLeafColorPrimary() != null ? 
             config.getLeafColorPrimary() : getStrainColor(plant);
         BudType budType = config != null ? config.getBudType() : BudType.NORMAL;
         boolean glowing = config != null && config.isGlowing();
         
-        // Main stem (taller for mature plant)
+        // Main stem (use stick for a thin stem appearance)
         ArmorStand stem = createBaseArmorStand(world, baseLoc);
-        stem.setHelmet(new ItemStack(stemMaterial));
-        stem.setSmall(false);
+        stem.setHelmet(new ItemStack(Material.STICK));
+        stem.setSmall(true);
         if (glowing) stem.setGlowing(true);
-        stem.teleport(baseLoc.add(0, -0.7 * heightScale, 0));
+        stem.teleport(baseLoc.clone().add(0, 0.1 * heightScale, 0));
         ids.add(stem.getUniqueId());
         
-        // Large fan leaves at bottom
-        for (int i = 0; i < 6; i++) {
-            double angle = (Math.PI / 3) * i;
-            double offsetX = Math.cos(angle) * 0.2 * leafScale;
-            double offsetZ = Math.sin(angle) * 0.2 * leafScale;
+        // Large fan leaves at bottom (cannabis signature 5-7 finger leaves)
+        for (int i = 0; i < 5; i++) {
+            double angle = (Math.PI * 2 / 5) * i;
+            double offsetX = Math.cos(angle) * 0.15 * leafScale;
+            double offsetZ = Math.sin(angle) * 0.15 * leafScale;
             
-            Location leafLoc = baseLoc.clone().add(offsetX, 0.1 * heightScale, offsetZ);
+            Location leafLoc = baseLoc.clone().add(offsetX, 0.15 * heightScale, offsetZ);
             ArmorStand leaf = createBaseArmorStand(world, leafLoc);
             leaf.setHelmet(createColoredLeaf(strainColor, false, config));
             leaf.setSmall(true);
@@ -339,36 +325,42 @@ public class PlantVisualizationManager {
             ids.add(leaf.getUniqueId());
         }
         
-        // Mid-level leaves
-        for (int i = 0; i < 5; i++) {
-            double angle = (Math.PI / 5) * i * 2;
-            double offsetX = Math.cos(angle) * 0.15 * leafScale;
-            double offsetZ = Math.sin(angle) * 0.15 * leafScale;
+        // Mid-level sugar leaves (smaller leaves near buds)
+        for (int i = 0; i < 4; i++) {
+            double angle = (Math.PI / 4) + (Math.PI / 2) * i;
+            double offsetX = Math.cos(angle) * 0.08 * leafScale;
+            double offsetZ = Math.sin(angle) * 0.08 * leafScale;
             
-            Location leafLoc = baseLoc.clone().add(offsetX, 0.45 * heightScale, offsetZ);
+            Location leafLoc = baseLoc.clone().add(offsetX, 0.35 * heightScale, offsetZ);
             ArmorStand leaf = createBaseArmorStand(world, leafLoc);
             leaf.setHelmet(createColoredLeaf(strainColor, true, config));
             leaf.setSmall(true);
             
+            EulerAngle headPose = new EulerAngle(
+                Math.toRadians(25),
+                angle,
+                0
+            );
+            leaf.setHeadPose(headPose);
+            
             ids.add(leaf.getUniqueId());
         }
         
-        // BUDS! (The prize) - Now using custom bud types!
-        // Main cola (top bud)
-        Location colaLoc = baseLoc.clone().add(0, 0.8 * heightScale, 0);
+        // BUDS - main cola (top bud) at a reasonable height
+        Location colaLoc = baseLoc.clone().add(0, 0.55 * heightScale, 0);
         ArmorStand mainCola = createBaseArmorStand(world, colaLoc);
         mainCola.setHelmet(createCustomBudItem(rating, budType, config, true));
         mainCola.setSmall(true);
         if (glowing) mainCola.setGlowing(true);
         ids.add(mainCola.getUniqueId());
         
-        // Side buds
-        int budCount = rating != null ? Math.min(rating.getStars() + 2, 6) : 3;
+        // Side buds (smaller, distributed around the main cola) - cannabis colas
+        int budCount = rating != null ? Math.min(rating.getStars() + 1, 4) : 2;
         for (int i = 0; i < budCount; i++) {
-            double angle = (Math.PI * 2 / budCount) * i;
-            double offsetX = Math.cos(angle) * 0.18 * budScale;
-            double offsetZ = Math.sin(angle) * 0.18 * budScale;
-            double height = (0.55 + (i % 2) * 0.15) * heightScale;
+            double angle = (Math.PI * 2 / budCount) * i + Math.PI / budCount;
+            double offsetX = Math.cos(angle) * 0.1 * budScale;
+            double offsetZ = Math.sin(angle) * 0.1 * budScale;
+            double height = (0.38 + (i % 2) * 0.08) * heightScale;
             
             Location budLoc = baseLoc.clone().add(offsetX, height, offsetZ);
             ArmorStand bud = createBaseArmorStand(world, budLoc);
@@ -378,7 +370,7 @@ public class PlantVisualizationManager {
             
             // Angle buds slightly outward
             EulerAngle pose = new EulerAngle(
-                Math.toRadians(20),
+                Math.toRadians(15),
                 angle,
                 0
             );
