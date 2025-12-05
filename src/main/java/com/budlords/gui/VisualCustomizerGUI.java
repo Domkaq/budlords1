@@ -38,6 +38,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
     private final Map<UUID, Integer> budTypePage;
     
     private static final int ITEMS_PER_PAGE = 14;
+    private static final int GUI_SIZE = 54;
 
     public VisualCustomizerGUI(BudLords plugin, StrainCreatorGUI strainCreatorGUI) {
         this.plugin = plugin;
@@ -59,7 +60,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         themePage.put(player.getUniqueId(), 0);
         budTypePage.put(player.getUniqueId(), 0);
         
-        Inventory inv = Bukkit.createInventory(this, 54, "§d§l✦ Visual Customizer ✦");
+        Inventory inv = Bukkit.createInventory(this, GUI_SIZE, "§d§l✦ Visual Customizer ✦");
         updateInventory(inv, player);
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.5f, 1.5f);
@@ -298,7 +299,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         
         // Ignore clicks in player inventory
         int slot = event.getRawSlot();
-        if (slot >= 54 || slot < 0) {
+        if (slot >= GUI_SIZE || slot < 0) {
             return; // Click was outside the GUI
         }
 

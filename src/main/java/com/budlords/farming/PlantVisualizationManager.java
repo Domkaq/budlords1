@@ -60,6 +60,10 @@ public class PlantVisualizationManager {
     private static final int MODEL_LEAF_SMALL = 3;
     private static final int MODEL_LEAF_LARGE = 4;
     private static final int MODEL_BUD = 5;
+    
+    // Y offset to position plants inside the pot rather than floating above
+    // Plant location is 1 block above pot, so we offset down to appear inside pot
+    private static final double POT_Y_OFFSET = -0.9;
 
     public PlantVisualizationManager(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
@@ -149,7 +153,7 @@ public class PlantVisualizationManager {
         
         // Base location - centered on the pot block (one below the tracked plant location)
         // Plant location is 1 block above pot, so we adjust down to be inside the pot
-        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
+        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
         
         // Soil/dirt layer - represents the growing medium inside pot
         ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.1, 0));
@@ -197,7 +201,7 @@ public class PlantVisualizationManager {
         boolean glowing = config != null && config.isGlowing();
         
         // Base location - centered inside the pot
-        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
+        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
         
         // Soil base for realism inside pot
         ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.1, 0));
@@ -273,7 +277,7 @@ public class PlantVisualizationManager {
         if (world == null) return ids;
         
         // Base location centered inside the pot
-        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
+        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         double leafScale = config != null ? config.getLeafScale() : 1.0;
@@ -430,7 +434,7 @@ public class PlantVisualizationManager {
         if (world == null) return ids;
         
         // Base location centered inside the pot
-        Location baseLoc = loc.clone().add(0.5, -0.9, 0.5);
+        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
         StarRating rating = plant.calculateFinalBudRating(null);
         int qualityLevel = rating != null ? rating.getStars() : 2;
         
