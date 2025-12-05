@@ -30,6 +30,9 @@ public class Strain {
     // Flag for special crossbred strains
     private boolean isCrossbred = false;
     private boolean isAdminCreated = false;
+    
+    // Visual customization for 3D plant appearance
+    private StrainVisualConfig visualConfig;
 
     public Strain(String id, String name, Rarity rarity, int potency, int yield, int packagingQuality) {
         this.id = id;
@@ -40,6 +43,7 @@ public class Strain {
         this.packagingQuality = packagingQuality;
         this.iconMaterial = Material.GREEN_DYE;
         this.effects = new ArrayList<>();
+        this.visualConfig = new StrainVisualConfig(); // Default visual config
     }
 
     public String getId() {
@@ -110,6 +114,25 @@ public class Strain {
     
     public void setAdminCreated(boolean adminCreated) {
         this.isAdminCreated = adminCreated;
+    }
+    
+    // ===== VISUAL CONFIG =====
+    
+    /**
+     * Gets the visual configuration for this strain.
+     */
+    public StrainVisualConfig getVisualConfig() {
+        if (visualConfig == null) {
+            visualConfig = new StrainVisualConfig();
+        }
+        return visualConfig;
+    }
+    
+    /**
+     * Sets the visual configuration for this strain.
+     */
+    public void setVisualConfig(StrainVisualConfig config) {
+        this.visualConfig = config;
     }
     
     /**
