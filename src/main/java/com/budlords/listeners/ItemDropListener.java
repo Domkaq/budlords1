@@ -21,7 +21,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -205,17 +204,6 @@ public class ItemDropListener implements Listener {
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         ItemStack offHand = player.getInventory().getItemInOffHand();
 
-        // Prevent placing grinder on ground (it's a CAULDRON which is placeable)
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && JointItems.isGrinder(mainHand)) {
-            // Only cancel if they're trying to place it (clicking on a solid block without sneaking)
-            if (event.getClickedBlock() != null && event.getClickedBlock().getType().isSolid() && 
-                !strainManager.isBudItem(offHand)) {
-                event.setCancelled(true);
-                player.sendMessage("§cYou can't place a grinder! Use it with buds to grind them.");
-                return;
-            }
-        }
-
         // Check for grinder + buds interaction
         if (JointItems.isGrinder(mainHand) && strainManager.isBudItem(offHand)) {
             event.setCancelled(true);
@@ -237,6 +225,7 @@ public class ItemDropListener implements Listener {
     
     /**
      * Prevent grinder from being placed as a block.
+     * The BlockPlaceEvent is the most reliable way to prevent block placement.
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {

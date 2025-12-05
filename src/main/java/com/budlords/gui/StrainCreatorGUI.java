@@ -26,6 +26,9 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
     private final StrainManager strainManager;
     private final Map<UUID, StrainBuilder> activeBuilders;
     private EffectSelectorGUI effectSelectorGUI;
+    
+    // Maximum number of effects to display in lore (to prevent overflow)
+    private static final int MAX_DISPLAYED_EFFECTS = 10;
 
     public StrainCreatorGUI(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
@@ -195,13 +198,13 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         effectsLore.add("§6Admin tool - §e§lUNLIMITED EFFECTS!");
         if (!builder.effects.isEmpty()) {
             effectsLore.add("");
-            // Only show first 10 effects to prevent lore overflow
-            int displayCount = Math.min(builder.effects.size(), 10);
+            // Only show first MAX_DISPLAYED_EFFECTS effects to prevent lore overflow
+            int displayCount = Math.min(builder.effects.size(), MAX_DISPLAYED_EFFECTS);
             for (int i = 0; i < displayCount; i++) {
                 effectsLore.add("  " + builder.effects.get(i).getCompactDisplay());
             }
-            if (builder.effects.size() > 10) {
-                effectsLore.add("  §7... and " + (builder.effects.size() - 10) + " more");
+            if (builder.effects.size() > MAX_DISPLAYED_EFFECTS) {
+                effectsLore.add("  §7... and " + (builder.effects.size() - MAX_DISPLAYED_EFFECTS) + " more");
             }
         }
         effectsLore.add("");
