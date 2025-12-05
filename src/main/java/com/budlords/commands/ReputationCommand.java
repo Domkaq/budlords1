@@ -55,7 +55,7 @@ public class ReputationCommand implements CommandExecutor {
                 case BLACKMARKET_JOE -> "§5 BlackMarket Joe";
                 case VILLAGE_VENDOR -> "§e Village Vendor";
                 case CONFIGURABLE_MOB -> "§b Custom Trader";
-                case NONE -> ""; // Already filtered above, but required for exhaustive switch
+                default -> ""; // Handle any future enum values gracefully
             };
             
             player.sendMessage("§7" + buyerName + "§7:");
