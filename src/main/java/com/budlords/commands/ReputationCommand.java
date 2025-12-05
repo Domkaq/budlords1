@@ -41,6 +41,11 @@ public class ReputationCommand implements CommandExecutor {
         
         // Show reputation with each buyer type
         for (NPCManager.NPCType type : NPCManager.NPCType.values()) {
+            // Skip NONE as it's not an actual buyer type
+            if (type == NPCManager.NPCType.NONE) {
+                continue;
+            }
+            
             int rep = repManager.getReputation(player.getUniqueId(), type.name());
             String display = repManager.getReputationDisplay(rep);
             String bonus = repManager.getReputationBonusText(rep);
@@ -49,6 +54,8 @@ public class ReputationCommand implements CommandExecutor {
                 case MARKET_JOE -> "§a Market Joe";
                 case BLACKMARKET_JOE -> "§5 BlackMarket Joe";
                 case VILLAGE_VENDOR -> "§e Village Vendor";
+                case CONFIGURABLE_MOB -> "§b Custom Trader";
+                case NONE -> ""; // Already filtered above, but required for exhaustive switch
             };
             
             player.sendMessage("§7" + buyerName + "§7:");
