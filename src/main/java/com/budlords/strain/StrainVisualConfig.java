@@ -143,13 +143,13 @@ public class StrainVisualConfig {
         CHERRY_BLOSSOM("Cherry Blossom", "Beautiful pink plant",
             Color.fromRGB(255, 192, 203), Material.CHERRY_LEAVES, BudType.HEART, Particle.CHERRY_LEAVES),
         RAINBOW("Rainbow", "Colorful rainbow plant",
-            Color.fromRGB(255, 0, 0), Material.RED_WOOL, BudType.BEACON, Particle.TOTEM_OF_UNDYING),
+            Color.fromRGB(255, 0, 0), Material.RED_WOOL, BudType.BEACON, Particle.TOTEM),
         ANCIENT_RELIC("Ancient Relic", "Ancient powerful plant",
             Color.fromRGB(101, 67, 33), Material.ANCIENT_DEBRIS, BudType.ANCIENT, Particle.SOUL),
         SLIME_TIME("Slime Time", "Bouncy slime plant",
-            Color.fromRGB(124, 252, 0), Material.SLIME_BLOCK, BudType.SLIME, Particle.ITEM_SLIME),
+            Color.fromRGB(124, 252, 0), Material.SLIME_BLOCK, BudType.SLIME, Particle.SLIME),
         CREEPER_BOOM("Creeper Boom", "Explosive creeper plant",
-            Color.fromRGB(0, 128, 0), Material.TNT, BudType.CREEPER, Particle.EXPLOSION_EMITTER);
+            Color.fromRGB(0, 128, 0), Material.TNT, BudType.CREEPER, Particle.EXPLOSION_LARGE);
         
         private final String displayName;
         private final String description;
