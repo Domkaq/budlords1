@@ -74,6 +74,9 @@ public class BudLords extends JavaPlugin {
     
     // v3.0.0 New Feature Managers
     private com.budlords.economy.MarketDemandManager marketDemandManager;
+    private com.budlords.economy.ReputationManager reputationManager;
+    private com.budlords.economy.HagglingManager hagglingManager;
+    private com.budlords.economy.BulkOrderManager bulkOrderManager;
 
     @Override
     public void onEnable() {
@@ -110,6 +113,11 @@ public class BudLords extends JavaPlugin {
             // v3.0.0 - Dynamic market system
             this.marketDemandManager = new com.budlords.economy.MarketDemandManager(this);
             
+            // v3.0.0 - Enhanced selling system
+            this.reputationManager = new com.budlords.economy.ReputationManager(this);
+            this.hagglingManager = new com.budlords.economy.HagglingManager(this);
+            this.bulkOrderManager = new com.budlords.economy.BulkOrderManager(this);
+            
             // v2.0.0 New Feature Managers
             this.seasonManager = new SeasonManager(this);
             this.weatherManager = new WeatherManager(this, farmingManager);
@@ -141,6 +149,8 @@ public class BudLords extends JavaPlugin {
             getLogger().info("✦ Enhanced Ambient Effects enabled!");
             getLogger().info("✦ Strain Special Effects System enabled with 139 unique effects!");
             getLogger().info("✦ Dynamic Market System enabled!");
+            getLogger().info("✦ Reputation System enabled!");
+            getLogger().info("✦ Bulk Order System enabled!");
             getLogger().info("");
             getLogger().info("§6§l=== BudLords v3.0.0 MAJOR UPDATE ===");
             getLogger().info("");
@@ -149,7 +159,7 @@ public class BudLords extends JavaPlugin {
             getLogger().info("  • Grinder can no longer be placed on ground");
             getLogger().info("  • Lamps now buff ALL nearby plants in radius!");
             getLogger().info("  • Admin strains now have UNLIMITED effects!");
-            getLogger().info("  • Fixed water bucket plant detection");
+            getLogger().info("  • Fixed watering can mechanic (no more water bucket conversion!)");
             getLogger().info("  • Fixed rank and prestige system integration");
             getLogger().info("");
             getLogger().info("§a✦ NEW CONTENT:");
@@ -159,10 +169,17 @@ public class BudLords extends JavaPlugin {
             getLogger().info("  • Market Events: Buyer Rush, Festival, Crash, etc.");
             getLogger().info("  • Daily Rewards with streak bonuses!");
             getLogger().info("");
+            getLogger().info("§a✦ ENHANCED SELLING SYSTEM:");
+            getLogger().info("  • Buyer Reputation System (Suspicious -> Legendary)");
+            getLogger().info("  • Tips from satisfied customers!");
+            getLogger().info("  • Bulk Orders with bonus payouts!");
+            getLogger().info("  • 10 Customer Types with different preferences!");
+            getLogger().info("  • /reputation & /orders commands");
+            getLogger().info("");
             getLogger().info("§a✦ ECONOMY IMPROVEMENTS:");
             getLogger().info("  • Dynamic pricing based on supply/demand");
             getLogger().info("  • Market events affect all prices");
-            getLogger().info("  • /market command to check conditions");
+            getLogger().info("  • Reputation bonuses (up to +25% prices)");
             getLogger().info("  • Cooperative farming bonuses");
             getLogger().info("");
             getLogger().info("§6§l=====================================");
@@ -217,6 +234,15 @@ public class BudLords extends JavaPlugin {
             // v3.0.0 shutdown
             if (marketDemandManager != null) {
                 marketDemandManager.shutdown();
+            }
+            if (reputationManager != null) {
+                reputationManager.shutdown();
+            }
+            if (hagglingManager != null) {
+                hagglingManager.shutdown();
+            }
+            if (bulkOrderManager != null) {
+                bulkOrderManager.shutdown();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -294,6 +320,13 @@ public class BudLords extends JavaPlugin {
         // v3.0.0 - Market status command
         MarketCommand marketCommand = new MarketCommand(this);
         Objects.requireNonNull(getCommand("market")).setExecutor(marketCommand);
+        
+        // v3.0.0 - Enhanced selling commands
+        OrdersCommand ordersCommand = new OrdersCommand(this);
+        Objects.requireNonNull(getCommand("orders")).setExecutor(ordersCommand);
+        
+        ReputationCommand reputationCommand = new ReputationCommand(this);
+        Objects.requireNonNull(getCommand("reputation")).setExecutor(reputationCommand);
         
         // Register admin debug command
         Objects.requireNonNull(getCommand("debug")).setExecutor(debugCommand);
@@ -433,5 +466,17 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.economy.MarketDemandManager getMarketDemandManager() {
         return marketDemandManager;
+    }
+    
+    public com.budlords.economy.ReputationManager getReputationManager() {
+        return reputationManager;
+    }
+    
+    public com.budlords.economy.HagglingManager getHagglingManager() {
+        return hagglingManager;
+    }
+    
+    public com.budlords.economy.BulkOrderManager getBulkOrderManager() {
+        return bulkOrderManager;
     }
 }

@@ -471,9 +471,45 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     }
 
     private void completeSale(Player player, SaleSession session, double total) {
-        // Process the sale
+        UUID playerId = player.getUniqueId();
+        String buyerTypeName = session.buyerType.name();
+        
+        // Apply reputation bonus
+        double reputationMultiplier = 1.0;
+        if (plugin.getReputationManager() != null) {
+            reputationMultiplier = plugin.getReputationManager().getReputationMultiplier(playerId, buyerTypeName);
+            total *= reputationMultiplier;
+        }
+        
+        // Check for bulk order fulfillment bonus
+        double bulkOrderBonus = 1.0;
+        if (plugin.getBulkOrderManager() != null) {
+            String strainId = getFirstStrainId(session);
+            if (strainId != null) {
+                bulkOrderBonus = plugin.getBulkOrderManager().checkOrderFulfillment(playerId, strainId, countItems(session));
+                total *= bulkOrderBonus;
+            }
+        }
+        
+        // Process the base sale
         economyManager.addBalance(player, total);
         economyManager.recordEarnings(player, total);
+        
+        // Calculate and apply tip
+        double tip = 0;
+        if (plugin.getReputationManager() != null) {
+            tip = plugin.getReputationManager().calculateTip(playerId, buyerTypeName, total);
+            if (tip > 0) {
+                economyManager.addBalance(player, tip);
+                economyManager.recordEarnings(player, tip);
+            }
+        }
+        
+        // Update reputation
+        if (plugin.getReputationManager() != null) {
+            int repGain = plugin.getReputationManager().calculateReputationGain(total, true);
+            plugin.getReputationManager().addReputation(playerId, buyerTypeName, repGain);
+        }
         
         // Count sold items for stats
         int itemsSold = countItems(session);
@@ -482,20 +518,19 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         if (plugin.getStatsManager() != null) {
             PlayerStats stats = plugin.getStatsManager().getStats(player);
             stats.incrementSuccessfulSales();
-            stats.recordSale(total);
+            stats.recordSale(total + tip);
         }
         
         // Update challenges
         if (plugin.getChallengeManager() != null) {
             plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SELL_PRODUCTS, itemsSold);
             plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SUCCESSFUL_TRADES, 1);
-            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.EARN_MONEY, (int) total);
+            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.EARN_MONEY, (int) (total + tip));
         }
         
         // Award Trading skill XP
         if (plugin.getSkillManager() != null) {
             com.budlords.skills.SkillManager skillManager = plugin.getSkillManager();
-            java.util.UUID uuid = player.getUniqueId();
             
             // Base 10 XP per trade, plus bonus based on sale value
             int tradingXP = 10 + (int) (total / 100); // +1 XP per $100 earned
@@ -506,7 +541,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 tradingXP += 5;
             }
             
-            skillManager.addTreeXP(uuid, com.budlords.skills.Skill.SkillTree.TRADING, tradingXP);
+            // Bonus for bulk order completion
+            if (bulkOrderBonus > 1.0) {
+                tradingXP += 10;
+            }
+            
+            skillManager.addTreeXP(playerId, com.budlords.skills.Skill.SkillTree.TRADING, tradingXP);
         }
         
         // Sync achievements with stats
@@ -571,11 +611,47 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.2f);
         player.spawnParticle(Particle.VILLAGER_HAPPY, player.getLocation().add(0, 1, 0), 15, 0.5, 0.5, 0.5, 0);
         
+        // Get reputation comment
+        String buyerComment = "";
+        if (plugin.getReputationManager() != null) {
+            int rep = plugin.getReputationManager().getReputation(playerId, buyerTypeName);
+            buyerComment = plugin.getReputationManager().getReputationComment(rep);
+        }
+        
         player.sendMessage("");
         player.sendMessage("§a§l✓ SALE COMPLETE!");
         player.sendMessage("§7Sold §e" + itemsSold + " §7item(s) for §a" + economyManager.formatMoney(total));
+        if (tip > 0) {
+            player.sendMessage("§6§l★ TIP: §e+" + economyManager.formatMoney(tip) + " §7(Buyer was impressed!)");
+        }
+        if (bulkOrderBonus > 1.0) {
+            player.sendMessage("§d§l★ BULK BONUS: §e+" + String.format("%.0f%%", (bulkOrderBonus - 1) * 100));
+        }
+        if (reputationMultiplier > 1.0) {
+            player.sendMessage("§a§l★ REP BONUS: §e+" + String.format("%.0f%%", (reputationMultiplier - 1) * 100));
+        }
         player.sendMessage("§7New balance: §e" + economyManager.formatMoney(economyManager.getBalance(player)));
+        if (!buyerComment.isEmpty()) {
+            player.sendMessage("");
+            player.sendMessage("§7Buyer says: " + buyerComment);
+        }
         player.sendMessage("");
+    }
+    
+    /**
+     * Gets the first strain ID from items in the session.
+     */
+    private String getFirstStrainId(SaleSession session) {
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            if (packagingManager.isPackagedProduct(item)) {
+                return packagingManager.getStrainIdFromPackage(item);
+            }
+            if (JointItems.isJoint(item)) {
+                return JointItems.getJointStrainId(item);
+            }
+        }
+        return null;
     }
     
     /**

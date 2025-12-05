@@ -13,9 +13,45 @@ A comprehensive weed farming RPG + black market economy system for Minecraft Pap
 - **Fixed Grinder Placement** - Grinders can no longer be placed as blocks on the ground
 - **Fixed Lamp System** - Lamps now buff ALL nearby plants within radius (based on star rating)
 - **Fixed Effect Limits** - Admin-created strains now have UNLIMITED effects!
-- **Fixed Water Bucket** - Water bucket now detects plants in all directions with feedback
+- **Fixed Watering Can** - No longer converts to water bucket when filling!
+- **Fixed Water Bucket** - Detects plants in all directions with feedback
 - **Improved Rank System** - Better tracking and display of player ranks
 - **Improved Prestige System** - Better integration with economy and bonuses
+
+### 💰 Enhanced Selling System (NEW!)
+
+#### Buyer Reputation System
+- Build reputation with different buyers (Market Joe, BlackMarket Joe, Village Vendor)
+- 6 reputation levels: **Suspicious** → **Neutral** → **Friendly** → **Trusted** → **VIP** → **★LEGENDARY★**
+- Higher reputation = better prices (up to +25% at Legendary!)
+- Reputation unlocks customer tips (up to 50% chance at Legendary!)
+- Use `/reputation` to check your standing
+
+#### Bulk Orders
+- Buyers place special orders for specific strains with bonus payouts
+- 5 order tiers: Small (+15-25%) → Medium (+25-40%) → Large (+40-60%) → Massive (+60-100%) → **Legendary (+100-200%)**
+- Orders refresh every 30 minutes
+- Complete orders for massive bonus payouts!
+- Use `/orders` to view current order
+
+#### Customer Tips
+- Satisfied customers may leave tips based on your reputation!
+- Tips range from 2-25% of sale value
+- Higher reputation = higher tip chance and amount
+- Legendary status: 50% chance for 15-25% tips!
+
+#### 10 Customer Types
+Different customers have different preferences:
+- **Casual User** - Balanced prices
+- **Connoisseur** - Pays +50% more for rare strains!
+- **Bulk Buyer** - Wants volume discounts
+- **Rush Customer** - Pays +30% for quick deals
+- **Skeptic** - May reject low quality
+- **Party Animal** - Loves fun strains
+- **Medical User** - Prefers calming effects
+- **Mystery Buyer** - Random prices (risky!)
+- **VIP Client** - +50% for discretion
+- **Collector** - +150% for rare strains!
 
 ### ✨ 50+ NEW Effects! (Now 139 Total!)
 

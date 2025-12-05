@@ -90,6 +90,16 @@ commands:
     usage: /<command>
     aliases: [marketstatus, prices]
     permission: budlords.use
+  orders:
+    description: View and manage bulk orders
+    usage: /<command> [new]
+    aliases: [bulkorders, order]
+    permission: budlords.use
+  reputation:
+    description: View your reputation with buyers
+    usage: /<command>
+    aliases: [rep, standing]
+    permission: budlords.use
   # Admin Debug Command
   debug:
     description: Admin debug tools for testing BudLords
