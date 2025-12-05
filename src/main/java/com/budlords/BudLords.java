@@ -78,6 +78,9 @@ public class BudLords extends JavaPlugin {
     private com.budlords.economy.ReputationManager reputationManager;
     private com.budlords.economy.HagglingManager hagglingManager;
     private com.budlords.economy.BulkOrderManager bulkOrderManager;
+    
+    // v3.1.0 - 3D Plant Visualization
+    private com.budlords.farming.PlantVisualizationManager plantVisualizationManager;
 
     @Override
     public void onEnable() {
@@ -129,6 +132,9 @@ public class BudLords extends JavaPlugin {
             this.achievementManager = new AchievementManager(this, economyManager, statsManager);
             this.skillManager = new SkillManager(this);
             this.collectionManager = new CollectionManager(this, strainManager);
+            
+            // v3.1.0 - 3D Plant Visualization with armor stands
+            this.plantVisualizationManager = new com.budlords.farming.PlantVisualizationManager(this, strainManager);
             
             // Register commands
             registerCommands();
@@ -247,6 +253,10 @@ public class BudLords extends JavaPlugin {
             }
             if (bulkOrderManager != null) {
                 bulkOrderManager.shutdown();
+            }
+            // v3.1.0 shutdown - cleanup armor stands
+            if (plantVisualizationManager != null) {
+                plantVisualizationManager.shutdown();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -486,5 +496,9 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.gui.BuyerProfileGUI getBuyerProfileGUI() {
         return buyerProfileGUI;
+    }
+    
+    public com.budlords.farming.PlantVisualizationManager getPlantVisualizationManager() {
+        return plantVisualizationManager;
     }
 }

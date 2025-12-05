@@ -28,6 +28,11 @@ farming:
   # Cooldown in seconds before watering can give quality bonus again
   # Prevents spamming watering to max quality
   watering-bonus-cooldown-seconds: 60
+  # Enable realistic 3D plant visualization using armor stands
+  # Creates detailed marijuana plant models that grow through 4 stages
+  # Stage 0: Seed, Stage 1: Sprout, Stage 2: Vegetative, Stage 3: Flowering
+  # Disable this for performance if you have many plants
+  3d-visualization: true
 
 # Star Quality System (★ 1-5)
 quality:

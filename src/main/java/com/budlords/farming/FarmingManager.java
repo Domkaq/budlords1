@@ -348,6 +348,15 @@ public class FarmingManager {
     }
 
     private void updatePlantVisual(Plant plant) {
+        // Check if 3D visualization is enabled
+        PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();
+        if (vizManager != null && plugin.getConfig().getBoolean("farming.3d-visualization", true)) {
+            // Use new armor stand-based 3D visualization
+            vizManager.updatePlantVisual(plant);
+            return;
+        }
+        
+        // Fallback to original wheat block visualization
         Location loc = plant.getLocation();
         Block block = loc.getBlock();
         
@@ -746,6 +755,12 @@ public class FarmingManager {
                             location.getBlockY() + "," + 
                             location.getBlockZ();
         plants.remove(locationKey);
+        
+        // Clean up 3D visualization if enabled
+        PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();
+        if (vizManager != null) {
+            vizManager.removeVisualization(location);
+        }
     }
 
     public int getPlantCount() {
