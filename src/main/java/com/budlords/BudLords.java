@@ -53,6 +53,7 @@ public class BudLords extends JavaPlugin {
     private RollingShopGUI rollingShopGUI;
     private JointRollingManager jointRollingManager;
     private DroppedBudTracker droppedBudTracker;
+    private com.budlords.gui.BuyerProfileGUI buyerProfileGUI;
     
     // New features
     private StatsManager statsManager;
@@ -117,6 +118,9 @@ public class BudLords extends JavaPlugin {
             this.reputationManager = new com.budlords.economy.ReputationManager(this);
             this.hagglingManager = new com.budlords.economy.HagglingManager(this);
             this.bulkOrderManager = new com.budlords.economy.BulkOrderManager(this);
+            
+            // v3.0.0 - Buyer profile GUI (phone system)
+            this.buyerProfileGUI = new com.budlords.gui.BuyerProfileGUI(this, economyManager);
             
             // v2.0.0 New Feature Managers
             this.seasonManager = new SeasonManager(this);
@@ -335,7 +339,7 @@ public class BudLords extends JavaPlugin {
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new FarmingListener(this, farmingManager, strainManager), this);
-        getServer().getPluginManager().registerEvents(new NPCListener(this, npcManager, economyManager, rankManager, packagingManager, marketShopGUI, blackMarketShopGUI, mobSaleGUI, strainManager), this);
+        getServer().getPluginManager().registerEvents(new NPCListener(this, npcManager, economyManager, rankManager, packagingManager, marketShopGUI, blackMarketShopGUI, mobSaleGUI, strainManager, buyerProfileGUI), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager), this);
         getServer().getPluginManager().registerEvents(new ItemDropListener(this, strainManager, packagingManager, droppedBudTracker, jointRollingManager), this);
         
@@ -478,5 +482,9 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.economy.BulkOrderManager getBulkOrderManager() {
         return bulkOrderManager;
+    }
+    
+    public com.budlords.gui.BuyerProfileGUI getBuyerProfileGUI() {
+        return buyerProfileGUI;
     }
 }

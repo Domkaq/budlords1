@@ -3,6 +3,7 @@ package com.budlords.gui;
 import com.budlords.BudLords;
 import com.budlords.diseases.PlantDisease;
 import com.budlords.economy.EconomyManager;
+import com.budlords.items.PhoneItems;
 import com.budlords.quality.QualityItemManager;
 import com.budlords.quality.StarRating;
 import org.bukkit.Bukkit;
@@ -38,6 +39,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
     private static final double POT_BASE_PRICE = 50.0;
     private static final double WATERING_CAN_BASE_PRICE = 30.0;
     private static final double SCISSORS_BASE_PRICE = 75.0;
+    private static final double PHONE_PRICE = 150.0;
 
     public MarketShopGUI(BudLords plugin, EconomyManager economyManager, QualityItemManager qualityItemManager) {
         this.plugin = plugin;
@@ -176,6 +178,26 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 "§7Hold packaged buds and",
                 "§7right-click me!"
             )));
+        
+        // Phone - special item for viewing buyer profiles
+        inv.setItem(38, createShopItem(Material.ECHO_SHARD, 
+            "§b§l📱 Dealer Phone",
+            PHONE_PRICE,
+            Arrays.asList(
+                "",
+                "§7Your essential business tool!",
+                "",
+                "§e§lUsage:",
+                "§7• Right-click on buyers to view",
+                "§7  their profile & your reputation",
+                "§7• Right-click air to see contacts",
+                "",
+                "§7Price: §e" + economyManager.formatMoney(PHONE_PRICE),
+                "",
+                canAfford(player, PHONE_PRICE) ? "§a▶ Click to buy" : "§c✗ Not enough money"
+            ),
+            "phone"
+        ));
         
         // Rolling Shop button
         inv.setItem(43, createShopItem(Material.STICK, 
@@ -370,6 +392,10 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 plugin.getLogger().warning("Failed to find cure: " + cureName);
                 return;
             }
+        } else if (itemId.equals("phone")) {
+            // Handle phone purchase
+            purchasedItem = PhoneItems.createPhone(1);
+            itemName = "Dealer Phone";
         }
 
         if (purchasedItem == null) return;

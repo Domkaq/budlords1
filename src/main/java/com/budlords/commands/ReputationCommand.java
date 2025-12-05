@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 /**
  * Command to view reputation with different buyers.
  * Part of BudLords v3.0.0 enhanced selling system.
+ * Now redirects to the Phone-based Buyer Profile GUI.
  */
 public class ReputationCommand implements CommandExecutor {
 
@@ -27,6 +28,13 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
         
+        // Open the Buyer Profile GUI (phone contacts list)
+        if (plugin.getBuyerProfileGUI() != null) {
+            plugin.getBuyerProfileGUI().openContactsList(player);
+            return true;
+        }
+        
+        // Fallback to old text-based display if GUI not available
         ReputationManager repManager = plugin.getReputationManager();
         if (repManager == null) {
             player.sendMessage("§cReputation system is not available!");
@@ -69,6 +77,7 @@ public class ReputationCommand implements CommandExecutor {
         player.sendMessage("§aTrusted §7(150) | §d§lVIP §7(300) | §6§l★LEGENDARY★ §7(500)");
         player.sendMessage("");
         player.sendMessage("§7Higher reputation = better prices & tips!");
+        player.sendMessage("§7§oBuy a §b§oDealer Phone §7§oto view buyer profiles!");
         player.sendMessage("");
         player.sendMessage("§6§l═══════════════════════════════════");
         player.sendMessage("");
