@@ -258,16 +258,17 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             
             double value = 0;
             Strain strain = null;
+            String strainId = null;
             
             if (packagingManager.isPackagedProduct(item)) {
                 value = packagingManager.getValueFromPackage(item);
                 
                 // Get strain for rarity bonus
-                String strainId = packagingManager.getStrainIdFromPackage(item);
+                strainId = packagingManager.getStrainIdFromPackage(item);
                 strain = strainManager.getStrain(strainId);
             } else if (JointItems.isJoint(item)) {
                 // Calculate joint value
-                String strainId = JointItems.getJointStrainId(item);
+                strainId = JointItems.getJointStrainId(item);
                 strain = strainManager.getStrain(strainId);
                 int potency = JointItems.getJointPotency(item);
                 StarRating rating = JointItems.getJointRating(item);
@@ -297,6 +298,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                     case RARE -> 1.3;
                     case LEGENDARY -> 1.5;
                 };
+            }
+            
+            // Apply dynamic market demand multiplier
+            if (strainId != null && plugin.getMarketDemandManager() != null) {
+                double demandMultiplier = plugin.getMarketDemandManager().getDemandMultiplier(strainId);
+                value *= demandMultiplier;
             }
             
             total += value * multiplier * item.getAmount();

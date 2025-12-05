@@ -85,6 +85,11 @@ commands:
     usage: /<command>
     aliases: [dailyreward, streak]
     permission: budlords.use
+  market:
+    description: View current market conditions and prices
+    usage: /<command>
+    aliases: [marketstatus, prices]
+    permission: budlords.use
   # Admin Debug Command
   debug:
     description: Admin debug tools for testing BudLords
@@ -104,6 +109,9 @@ permissions:
     default: true
   budlords.package:
     description: Package weed
+    default: true
+  budlords.market.news:
+    description: Receive market event notifications
     default: true
   budlords.admin:
     description: Admin commands

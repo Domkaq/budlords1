@@ -71,6 +71,9 @@ public class BudLords extends JavaPlugin {
     private AchievementManager achievementManager;
     private SkillManager skillManager;
     private CollectionManager collectionManager;
+    
+    // v3.0.0 New Feature Managers
+    private com.budlords.economy.MarketDemandManager marketDemandManager;
 
     @Override
     public void onEnable() {
@@ -104,6 +107,9 @@ public class BudLords extends JavaPlugin {
             this.jointEffectsManager = new com.budlords.joint.JointEffectsManager(this);
             this.strainEffectsManager = new com.budlords.effects.StrainEffectsManager(this);
             
+            // v3.0.0 - Dynamic market system
+            this.marketDemandManager = new com.budlords.economy.MarketDemandManager(this);
+            
             // v2.0.0 New Feature Managers
             this.seasonManager = new SeasonManager(this);
             this.weatherManager = new WeatherManager(this, farmingManager);
@@ -133,7 +139,8 @@ public class BudLords extends JavaPlugin {
             getLogger().info("✦ Random Events enabled!");
             getLogger().info("✦ Crossbreeding Lab enabled!");
             getLogger().info("✦ Enhanced Ambient Effects enabled!");
-            getLogger().info("✦ Strain Special Effects System enabled with 160+ unique effects!");
+            getLogger().info("✦ Strain Special Effects System enabled with 139 unique effects!");
+            getLogger().info("✦ Dynamic Market System enabled!");
             getLogger().info("");
             getLogger().info("§6§l=== BudLords v3.0.0 MAJOR UPDATE ===");
             getLogger().info("");
@@ -142,18 +149,21 @@ public class BudLords extends JavaPlugin {
             getLogger().info("  • Grinder can no longer be placed on ground");
             getLogger().info("  • Lamps now buff ALL nearby plants in radius!");
             getLogger().info("  • Admin strains now have UNLIMITED effects!");
+            getLogger().info("  • Fixed water bucket plant detection");
             getLogger().info("  • Fixed rank and prestige system integration");
             getLogger().info("");
             getLogger().info("§a✦ NEW CONTENT:");
-            getLogger().info("  • 50+ New Strain Effects added! (160+ total)");
+            getLogger().info("  • 50+ New Strain Effects! (139 total)");
             getLogger().info("  • 15+ New Strains with unique effect combos!");
-            getLogger().info("  • New effect categories: Combat, Nature, Mystical");
-            getLogger().info("  • New legendary transformations and abilities!");
+            getLogger().info("  • Dynamic Market System with price fluctuations!");
+            getLogger().info("  • Market Events: Buyer Rush, Festival, Crash, etc.");
+            getLogger().info("  • Daily Rewards with streak bonuses!");
             getLogger().info("");
-            getLogger().info("§a✦ GAMEPLAY IMPROVEMENTS:");
-            getLogger().info("  • Lamp radius based on star quality (★1-5 blocks)");
-            getLogger().info("  • Better multiplayer support");
-            getLogger().info("  • Enhanced visual feedback");
+            getLogger().info("§a✦ ECONOMY IMPROVEMENTS:");
+            getLogger().info("  • Dynamic pricing based on supply/demand");
+            getLogger().info("  • Market events affect all prices");
+            getLogger().info("  • /market command to check conditions");
+            getLogger().info("  • Cooperative farming bonuses");
             getLogger().info("");
             getLogger().info("§6§l=====================================");
             
@@ -203,6 +213,10 @@ public class BudLords extends JavaPlugin {
             }
             if (collectionManager != null) {
                 collectionManager.saveCollections();
+            }
+            // v3.0.0 shutdown
+            if (marketDemandManager != null) {
+                marketDemandManager.shutdown();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -276,6 +290,10 @@ public class BudLords extends JavaPlugin {
         // v3.0.0 - Daily rewards command
         DailyCommand dailyCommand = new DailyCommand(this, economyManager, statsManager);
         Objects.requireNonNull(getCommand("daily")).setExecutor(dailyCommand);
+        
+        // v3.0.0 - Market status command
+        MarketCommand marketCommand = new MarketCommand(this);
+        Objects.requireNonNull(getCommand("market")).setExecutor(marketCommand);
         
         // Register admin debug command
         Objects.requireNonNull(getCommand("debug")).setExecutor(debugCommand);
@@ -411,5 +429,9 @@ public class BudLords extends JavaPlugin {
     
     public CollectionManager getCollectionManager() {
         return collectionManager;
+    }
+    
+    public com.budlords.economy.MarketDemandManager getMarketDemandManager() {
+        return marketDemandManager;
     }
 }

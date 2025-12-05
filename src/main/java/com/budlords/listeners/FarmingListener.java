@@ -485,12 +485,31 @@ public class FarmingListener implements Listener {
     }
     
     private void handleWatering(PlayerInteractEvent event, Player player, Block clickedBlock) {
+        // Try to find plant at clicked location
         Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        
+        // Check block above (for pot-based plants where player clicks on pot)
         if (plant == null) {
             plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
         }
         
+        // Check block below (player may have clicked above the plant)
         if (plant == null) {
+            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.DOWN).getLocation());
+        }
+        
+        // Also check adjacent blocks horizontally
+        if (plant == null) {
+            BlockFace[] horizontalFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+            for (BlockFace face : horizontalFaces) {
+                plant = farmingManager.getPlantAt(clickedBlock.getRelative(face).getLocation());
+                if (plant != null) break;
+            }
+        }
+        
+        if (plant == null) {
+            // Provide feedback when no plant is found
+            player.sendMessage("§7No plant found nearby. Click directly on a plant or pot to water it.");
             return;
         }
         

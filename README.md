@@ -13,10 +13,11 @@ A comprehensive weed farming RPG + black market economy system for Minecraft Pap
 - **Fixed Grinder Placement** - Grinders can no longer be placed as blocks on the ground
 - **Fixed Lamp System** - Lamps now buff ALL nearby plants within radius (based on star rating)
 - **Fixed Effect Limits** - Admin-created strains now have UNLIMITED effects!
+- **Fixed Water Bucket** - Water bucket now detects plants in all directions with feedback
 - **Improved Rank System** - Better tracking and display of player ranks
 - **Improved Prestige System** - Better integration with economy and bonuses
 
-### ✨ 50+ NEW Effects! (Now 160+ Total!)
+### ✨ 50+ NEW Effects! (Now 139 Total!)
 
 #### New Transformation Effects
 - **Werewolf Form** - Transform under the full moon with wolf-like strength!
@@ -134,6 +135,20 @@ A comprehensive weed farming RPG + black market economy system for Minecraft Pap
   - 100 days: $50,000 bonus
 - 32-hour grace period to maintain streak
 - Prestige multiplier applied to rewards
+
+### 📈 Dynamic Market System (NEW!)
+- Prices fluctuate based on supply and demand!
+- Use `/market` to check current market conditions
+- **Market Events** (random 15-45 minute events):
+  - 🟢 **Buyer Rush** - +30% all prices
+  - 🔴 **Police Crackdown** - -20% all prices
+  - 🟣 **Festival Season** - +50% all prices
+  - 🟠 **Supply Shortage** - +40% rare strains
+  - 🔴 **Market Crash** - -30% all prices
+  - 🟣 **Premium Demand** - +25% legendary strains
+- Individual strain demand affects pricing
+- Server-wide notifications when events occur
+- Smart selling: wait for high demand events!
 
 ### 👥 Cooperative Farming Bonus
 - Farm together for faster growth!
