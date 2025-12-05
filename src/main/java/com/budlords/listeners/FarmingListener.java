@@ -551,7 +551,7 @@ public class FarmingListener implements Listener {
             return;
         }
         
-        if (plant == null) plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        // plant may still be null if WHEAT block but no tracking (shouldn't happen)
         if (plant == null) return;
         
         event.setCancelled(true);
@@ -621,7 +621,7 @@ public class FarmingListener implements Listener {
         // Check if breaking a plant (WHEAT for legacy, or any block with plant tracking for 3D)
         Plant plant = farmingManager.getPlantAt(block.getLocation());
         if (block.getType() == Material.WHEAT || plant != null) {
-            if (plant == null) plant = farmingManager.getPlantAt(block.getLocation());
+            // plant may still be null if WHEAT block but no tracking (shouldn't happen)
             if (plant != null) {
                 event.setCancelled(true);
                 event.setDropItems(false);
@@ -711,7 +711,7 @@ public class FarmingListener implements Listener {
                     block.setType(Material.AIR);
                     player.sendMessage("§eHarvested early - returned seed.");
                 }
-                return;
+                return; // Return after handling plant break to prevent duplicate handling
             }
         }
         
@@ -721,7 +721,7 @@ public class FarmingListener implements Listener {
             // Check for both WHEAT (legacy) and tracked plant (3D visualization)
             Plant plantAbove = farmingManager.getPlantAt(above.getLocation());
             if (above.getType() == Material.WHEAT || plantAbove != null) {
-                if (plantAbove == null) plantAbove = farmingManager.getPlantAt(above.getLocation());
+                // plantAbove may still be null if WHEAT block but no tracking
                 if (plantAbove != null) {
                     // Remove the plant
                     farmingManager.removePlant(above.getLocation());
