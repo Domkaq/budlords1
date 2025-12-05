@@ -1,36 +1,138 @@
 # BudLords - Minecraft Weed Economy Plugin
 
-## 🎉 VERSION 2.0.1 - BUG FIX & CONTENT UPDATE! 🎉
+## 🎉 VERSION 3.0.0 - MASSIVE CONTENT UPDATE! 🎉
 
 A comprehensive weed farming RPG + black market economy system for Minecraft Paper/Spigot 1.20.4.
 
 ---
 
-## 🆕 v2.0.1 NEW FEATURES & FIXES
+## 🆕 v3.0.0 MAJOR UPDATE
 
 ### 🛠️ Bug Fixes
-- **Fixed Strain Creator naming** - Name input now properly saves and returns to GUI
-- **Fixed Effect Selector** - "No active strain builder session" error resolved
-- **Fixed Rank Updates** - `/bal` now correctly shows updated rank after earning money
-- **Fixed Package Command** - Now requires operator permission (`budlords.admin`)
-- **Improved Session Management** - Better handling of GUI transitions
+- **Fixed Rolling Shop Menu** - Grinder menu no longer misaligned (moved to dedicated row)
+- **Fixed Grinder Placement** - Grinders can no longer be placed as blocks on the ground
+- **Fixed Lamp System** - Lamps now buff ALL nearby plants within radius (based on star rating)
+- **Fixed Effect Limits** - Admin-created strains now have UNLIMITED effects!
+- **Improved Rank System** - Better tracking and display of player ranks
+- **Improved Prestige System** - Better integration with economy and bonuses
 
-### 🌿 15+ New Weed Strains!
+### ✨ 50+ NEW Effects! (Now 160+ Total!)
+
+#### New Transformation Effects
+- **Werewolf Form** - Transform under the full moon with wolf-like strength!
+- **Elemental Form** - Become pure elemental energy
+- **Quantum State** - Exist in multiple states with flickering visibility
+- **Crystalline Body** - Your body turns to crystal armor
+- **Smoke Form** - Become living smoke
+
+#### New Visual Effects
+- **Plasma Aura** - Crackling plasma surrounds you
+- **Void Eyes** - Dark void particles from eyes
+- **Golden Glow** - Radiate warm golden light
+- **Blood Trail** - Leave a crimson path
+- **Mirror Image** - Create illusory copies
+
+#### New Movement Effects
+- **Gravity Well** - Control local gravity
+- **Phase Shift** - Phase through matter hints
+- **Sonic Boom** - Explosive speed burst
+- **Magnetic Pull** - Attract nearby items
+- **Telekinetic Lift** - Float objects around you
+
+#### New Perception Effects
+- **Death Sense** - Sense low health entities
+- **Treasure Hunter** - Sparkles near valuables
+- **Danger Sense** - Warning when hostiles nearby
+- **Aura Reading** - See players' auras
+
+#### New Gameplay Effects
+- **Lucky Drops** - Increased drop rates
+- **Merchant Blessing** - Better trade prices
+- **Harvest Moon** - Moonlit farming bonus
+- **Seed Multiplier** - Chance for extra seeds
+- **Quality Boost** - Better quality to all items
+
+#### New Combat Effects
+- **Lightning Fist** - Punch with lightning
+- **Shadow Strike** - Bonus damage from stealth
+- **Life Drain** - Steal health on hit
+- **Shield Bash** - Reflect damage
+- **Critical Fury** - Higher critical hit rate
+
+#### New Fun Effects
+- **Party Mode** - Turn everything into a party!
+- **Laugh Track** - Random laugh sounds
+- **Pet Magnet** - Animals follow you
+- **Sparkle Step** - Every step sparkles
+- **Ghost Friend** - Ghostly particle companion
+
+#### New Nature Effects
+- **Photosynthesis** - Heal in sunlight
+- **Root Connection** - Connect with plants
+- **Storm Rider** - Boost during rain
+- **Volcanic Heat** - Radiate volcanic energy
+- **Arctic Chill** - Freeze nearby mobs
+
+#### New Mystical Effects
+- **Oracle Vision** - Glimpse the future
+- **Ancestor Spirits** - Call ancient spirits
+- **Chakra Alignment** - Align your chakras
+- **Karma Balance** - Good luck after bad events
+- **Ether Sight** - See invisible entities
+
+#### New Legendary Effects
+- **Titan Form** - Become a titan of power!
+- **Singularity** - Create a singularity!
+- **Cosmic Rebirth** - Be reborn from the cosmos
+- **Multiverse Echo** - Echo across realities
+- **Entropy Master** - Control chaos itself!
+
+### 🌿 15+ New Strains!
+
+#### Common Strains
+- **Lemon Haze** - Citrus glow with sparkle steps
+- **AK Buddy** - Hopping companion strain
+
+#### Uncommon Strains
+- **Tropical Thunder** - Storm rider with sonic booms
+- **Crystal Kush** - Crystalline body and frost aura
+- **Midnight Shadow** - Ninja stealth and shadow strikes
+- **Golden Harvest** - Farming bonuses and seed multiplication
+
+#### Rare Strains
+- **Plasma Fire** - Electric plasma with lightning punches
+- **Quantum Leap** - Phase through reality
+- **Blood Moon** - Werewolf transformation with life drain
+- **Spirit Walker** - Connect with ancestral spirits
+- **Merchant's Dream** - Trading bonuses and treasure finding
+
+#### Legendary Strains
+- **Titanic Fury** - Transform into a powerful titan
+- **Singularity Prime** - Control gravity and create black holes
+- **Cosmic Rebirth** - Ultimate rebirth and divine protection
+- **Entropy Master** - Master of chaos and karma
+- **Multiverse Echo** - Create multiple phantom copies
+
+### 💡 Improved Lamp System
+- Lamp effect radius now based on star rating: ★1=1 block to ★5=5 blocks
+- Single lamp buffs ALL plants within its radius
+- Better visual feedback when installing lamps
+- Shows affected plant count when placed
+
+### 🔓 Unlimited Effects for Admins
+- Strain Creator now allows unlimited effects for admin-created strains
+- Effect Selector shows "UNLIMITED" status
+- No more effect count restrictions in admin tools
+
+---
+
+## 🆕 v2.0.1 Previous Features
+
+### 🌿 15+ Weed Strains (Included in v2.0.1)
 - **Common**: Sour Diesel, Blue Dream, Green Crack
 - **Uncommon**: Girl Scout Cookies, Gorilla Glue, Jack Herer, Granddaddy Purple
 - **Rare**: Wedding Cake, Amnesia Haze, Skywalker OG, Trainwreck
 - **Legendary**: Pineapple Express, God's Favorite, Void Walker, Dragon's Breath
-
-### ✨ 35+ New Effects! (Now 100+ Total!)
-- **Visual**: Neon Glow, Crystal Shimmer, Smoke Screen, Electric Surge
-- **Movement**: Feather Fall, Blink Step, Water Walk
-- **Perception**: Predator Sense, Sonic Hearing, X-Ray Vision
-- **Gameplay**: Double Harvest, Money Magnet, Seed Finder, XP Boost
-- **Combat**: Poison Touch, Fire Punch, Ice Armor, Rage Mode
-- **Fun**: Rainbow Trail, Firework Explosion, Slime Bounce, Snowman
-- **Nature**: Plant Growth, Animal Friend, Rain Dancer, Earthquake
-- **Mystical**: Soul Sight, Fortune Teller, Elemental Chaos, Dimensional Rift
-- **Legendary**: Time Freeze, Infinity Power, Godmode Aura, Universe Control
 
 ### 💧 Improved Watering Can System
 - Higher star watering cans now provide **quality bonuses** when watering
