@@ -11,7 +11,9 @@ import org.bukkit.entity.Player;
 /**
  * Command to view reputation with different buyers.
  * Part of BudLords v3.0.0 enhanced selling system.
- * Now redirects to the Phone-based Buyer Profile GUI.
+ * 
+ * Regular players should use the Dealer Phone GUI to view reputation.
+ * This command is only accessible to operators.
  */
 public class ReputationCommand implements CommandExecutor {
 
@@ -28,13 +30,25 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
         
-        // Open the Buyer Profile GUI (phone contacts list)
+        // Check if player is operator - regular players must use phone
+        if (!player.isOp() && !player.hasPermission("budlords.admin")) {
+            player.sendMessage("");
+            player.sendMessage("§c§l✗ Access Denied!");
+            player.sendMessage("§7This command is for operators only.");
+            player.sendMessage("");
+            player.sendMessage("§7Use your §bDealer Phone §7to view reputation!");
+            player.sendMessage("§7Get a phone from §aMarket Joe§7's shop.");
+            player.sendMessage("");
+            return true;
+        }
+        
+        // Operators can use the GUI too
         if (plugin.getBuyerProfileGUI() != null) {
             plugin.getBuyerProfileGUI().openContactsList(player);
             return true;
         }
         
-        // Fallback to old text-based display if GUI not available
+        // Fallback to text-based display if GUI not available
         ReputationManager repManager = plugin.getReputationManager();
         if (repManager == null) {
             player.sendMessage("§cReputation system is not available!");
@@ -43,7 +57,7 @@ public class ReputationCommand implements CommandExecutor {
         
         player.sendMessage("");
         player.sendMessage("§6§l═══════════════════════════════════");
-        player.sendMessage("§e§l         YOUR REPUTATION");
+        player.sendMessage("§e§l         YOUR REPUTATION §7(Admin View)");
         player.sendMessage("§6§l═══════════════════════════════════");
         player.sendMessage("");
         
@@ -77,7 +91,6 @@ public class ReputationCommand implements CommandExecutor {
         player.sendMessage("§aTrusted §7(150) | §d§lVIP §7(300) | §6§l★LEGENDARY★ §7(500)");
         player.sendMessage("");
         player.sendMessage("§7Higher reputation = better prices & tips!");
-        player.sendMessage("§7§oBuy a §b§oDealer Phone §7§oto view buyer profiles!");
         player.sendMessage("");
         player.sendMessage("§6§l═══════════════════════════════════");
         player.sendMessage("");

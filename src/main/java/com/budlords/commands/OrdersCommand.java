@@ -10,6 +10,9 @@ import org.bukkit.entity.Player;
 /**
  * Command to view and manage bulk orders.
  * Part of BudLords v3.0.0 enhanced selling system.
+ * 
+ * Regular players should use the Dealer Phone GUI to access orders.
+ * This command is only accessible to operators.
  */
 public class OrdersCommand implements CommandExecutor {
 
@@ -23,6 +26,18 @@ public class OrdersCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§cThis command can only be used by players!");
+            return true;
+        }
+        
+        // Check if player is operator - regular players must use phone
+        if (!player.isOp() && !player.hasPermission("budlords.admin")) {
+            player.sendMessage("");
+            player.sendMessage("§c§l✗ Access Denied!");
+            player.sendMessage("§7This command is for operators only.");
+            player.sendMessage("");
+            player.sendMessage("§7Use your §bDealer Phone §7to view orders!");
+            player.sendMessage("§7Get a phone from §aMarket Joe§7's shop.");
+            player.sendMessage("");
             return true;
         }
         
@@ -48,7 +63,7 @@ public class OrdersCommand implements CommandExecutor {
         
         player.sendMessage("");
         player.sendMessage("§6§l═══════════════════════════════════");
-        player.sendMessage("§e§l         BULK ORDERS");
+        player.sendMessage("§e§l         BULK ORDERS §7(Admin View)");
         player.sendMessage("§6§l═══════════════════════════════════");
         player.sendMessage("");
         
