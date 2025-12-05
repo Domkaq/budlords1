@@ -474,6 +474,35 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         UUID playerId = player.getUniqueId();
         String buyerTypeName = session.buyerType.name();
         
+        // Track the base price before any bonuses for display
+        double basePrice = total;
+        
+        // Apply skill PRICE_BONUS (e.g., Haggler +5%, Premium Prices +10%, Master Dealer +15%)
+        double skillPriceBonus = 1.0;
+        if (plugin.getSkillManager() != null) {
+            skillPriceBonus = plugin.getSkillManager().getBonusMultiplier(playerId, 
+                com.budlords.skills.Skill.BonusType.PRICE_BONUS);
+            total *= skillPriceBonus;
+        }
+        
+        // Apply black market skill bonus if selling to black market
+        double blackMarketSkillBonus = 1.0;
+        if (session.buyerType == NPCManager.NPCType.BLACKMARKET_JOE && plugin.getSkillManager() != null) {
+            blackMarketSkillBonus = plugin.getSkillManager().getBonusMultiplier(playerId, 
+                com.budlords.skills.Skill.BonusType.BLACK_MARKET_BONUS);
+            total *= blackMarketSkillBonus;
+        }
+        
+        // Apply prestige earnings bonus
+        double prestigeMultiplier = 1.0;
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null && stats.getPrestigeLevel() > 0) {
+                prestigeMultiplier = plugin.getPrestigeManager().getEarningsMultiplier(stats.getPrestigeLevel());
+                total *= prestigeMultiplier;
+            }
+        }
+        
         // Apply reputation bonus
         double reputationMultiplier = 1.0;
         if (plugin.getReputationManager() != null) {
@@ -623,6 +652,15 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         player.sendMessage("§7Sold §e" + itemsSold + " §7item(s) for §a" + economyManager.formatMoney(total));
         if (tip > 0) {
             player.sendMessage("§6§l★ TIP: §e+" + economyManager.formatMoney(tip) + " §7(Buyer was impressed!)");
+        }
+        if (skillPriceBonus > 1.0) {
+            player.sendMessage("§b§l★ SKILL BONUS: §e+" + String.format("%.0f%%", (skillPriceBonus - 1) * 100) + " §7(Sale Prices)");
+        }
+        if (blackMarketSkillBonus > 1.0) {
+            player.sendMessage("§8§l★ BLACK MARKET VIP: §e+" + String.format("%.0f%%", (blackMarketSkillBonus - 1) * 100));
+        }
+        if (prestigeMultiplier > 1.0) {
+            player.sendMessage("§5§l★ PRESTIGE BONUS: §e+" + String.format("%.0f%%", (prestigeMultiplier - 1) * 100));
         }
         if (bulkOrderBonus > 1.0) {
             player.sendMessage("§d§l★ BULK BONUS: §e+" + String.format("%.0f%%", (bulkOrderBonus - 1) * 100));

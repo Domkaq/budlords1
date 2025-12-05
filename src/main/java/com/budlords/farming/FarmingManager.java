@@ -591,11 +591,18 @@ public class FarmingManager {
         
         // Use quality-aware watering if a watering can was used
         if (wateringCanRating != null) {
-            plant.water(wateringCanRating);
-            String qualityBonus = wateringCanRating.getStars() > 1 ? 
-                " §a(+" + wateringCanRating.getStars() + " quality bonus!)" : "";
-            player.sendMessage("§aWatered the plant! §7Water level: §b" + 
-                String.format("%.0f%%", plant.getWaterLevel() * 100) + qualityBonus);
+            boolean gotBonus = plant.water(wateringCanRating);
+            if (gotBonus) {
+                String qualityBonus = " §a(+" + wateringCanRating.getStars() + " quality bonus!)";
+                player.sendMessage("§aWatered the plant! §7Water level: §b" + 
+                    String.format("%.0f%%", plant.getWaterLevel() * 100) + qualityBonus);
+            } else {
+                // On cooldown - still water but no quality bonus
+                long cooldownRemaining = plant.getWateringBonusCooldownRemaining();
+                player.sendMessage("§aWatered the plant! §7Water level: §b" + 
+                    String.format("%.0f%%", plant.getWaterLevel() * 100));
+                player.sendMessage("§7Quality bonus on cooldown (§e" + cooldownRemaining + "s§7 remaining)");
+            }
         } else {
             plant.water();
             player.sendMessage("§aWatered the plant! §7Water level: §b" + 

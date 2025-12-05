@@ -634,6 +634,29 @@ public class JointRollingManager implements InventoryHolder {
         cleanupSession(player);
         player.closeInventory();
     }
+    
+    /**
+     * Handles when a player closes the rolling GUI (either manually or due to death, etc.)
+     * This ensures the session is properly cleaned up so the player can roll again.
+     */
+    public void handleInventoryClose(Player player) {
+        if (activeSessions.containsKey(player.getUniqueId())) {
+            cleanupSession(player);
+        }
+    }
+    
+    /**
+     * Forces cleanup of a rolling session for a player (e.g., on death or disconnect).
+     * This method does not send messages or close inventory, just cleans up data.
+     */
+    public void forceCleanup(UUID playerId) {
+        activeSessions.remove(playerId);
+        BukkitTask task = activeTasks.remove(playerId);
+        if (task != null) {
+            task.cancel();
+        }
+        clickerPosition.remove(playerId);
+    }
 
     private void cleanupSession(Player player) {
         activeSessions.remove(player.getUniqueId());
