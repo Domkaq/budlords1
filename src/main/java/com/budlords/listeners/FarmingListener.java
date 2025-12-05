@@ -153,8 +153,8 @@ public class FarmingListener implements Listener {
             return;
         }
 
-        // Check if harvesting a plant (without scissors)
-        if (clickedBlock.getType() == Material.WHEAT) {
+        // Check if harvesting a plant (without scissors) - check for WHEAT (legacy) or AIR with plant tracking (3D)
+        if (clickedBlock.getType() == Material.WHEAT || farmingManager.getPlantAt(clickedBlock.getLocation()) != null) {
             handlePlantInteraction(event, player, clickedBlock);
         }
     }
@@ -545,11 +545,13 @@ public class FarmingListener implements Listener {
     }
     
     private void handleScissorsHarvest(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
-        if (clickedBlock.getType() != Material.WHEAT) {
+        // Check for WHEAT (legacy) or any block with plant tracking (3D visualization)
+        Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        if (plant == null && clickedBlock.getType() != Material.WHEAT) {
             return;
         }
         
-        Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
+        // plant may still be null if WHEAT block but no tracking (shouldn't happen)
         if (plant == null) return;
         
         event.setCancelled(true);
@@ -616,9 +618,10 @@ public class FarmingListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         
-        // Check if breaking a plant
-        if (block.getType() == Material.WHEAT) {
-            Plant plant = farmingManager.getPlantAt(block.getLocation());
+        // Check if breaking a plant (WHEAT for legacy, or any block with plant tracking for 3D)
+        Plant plant = farmingManager.getPlantAt(block.getLocation());
+        if (block.getType() == Material.WHEAT || plant != null) {
+            // plant may still be null if WHEAT block but no tracking (shouldn't happen)
             if (plant != null) {
                 event.setCancelled(true);
                 event.setDropItems(false);
@@ -708,42 +711,45 @@ public class FarmingListener implements Listener {
                     block.setType(Material.AIR);
                     player.sendMessage("§eHarvested early - returned seed.");
                 }
+                return; // Return after handling plant break to prevent duplicate handling
             }
         }
         
         // Check if breaking farmland with plant on top
         if (block.getType() == Material.FARMLAND || block.getType() == Material.FLOWER_POT) {
             Block above = block.getRelative(BlockFace.UP);
-            if (above.getType() == Material.WHEAT) {
-                Plant plant = farmingManager.getPlantAt(above.getLocation());
-                if (plant != null) {
+            // Check for both WHEAT (legacy) and tracked plant (3D visualization)
+            Plant plantAbove = farmingManager.getPlantAt(above.getLocation());
+            if (above.getType() == Material.WHEAT || plantAbove != null) {
+                // plantAbove may still be null if WHEAT block but no tracking
+                if (plantAbove != null) {
                     // Remove the plant
                     farmingManager.removePlant(above.getLocation());
                     above.setType(Material.AIR);
                     
                     // Return seed
-                    Strain strain = strainManager.getStrain(plant.getStrainId());
+                    Strain strain = strainManager.getStrain(plantAbove.getStrainId());
                     if (strain != null) {
-                        StarRating seedRating = plant.getSeedRating() != null ? 
-                            plant.getSeedRating() : StarRating.ONE_STAR;
+                        StarRating seedRating = plantAbove.getSeedRating() != null ? 
+                            plantAbove.getSeedRating() : StarRating.ONE_STAR;
                         ItemStack seed = strainManager.createSeedItem(strain, 1, seedRating);
                         event.getPlayer().getWorld().dropItemNaturally(above.getLocation(), seed);
                     }
                     
                     // Return pot if it's pot-based planting and breaking the pot
-                    if (block.getType() == Material.FLOWER_POT && plant.hasPot() && plant.getPotRating() != null) {
+                    if (block.getType() == Material.FLOWER_POT && plantAbove.hasPot() && plantAbove.getPotRating() != null) {
                         event.setCancelled(true);
                         block.setType(Material.AIR);
                         
-                        ItemStack pot = GrowingPot.createPotItem(plant.getPotRating(), 1);
+                        ItemStack pot = GrowingPot.createPotItem(plantAbove.getPotRating(), 1);
                         event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), pot);
                         
                         // Remove pot from tracking
                         farmingManager.removePot(block.getLocation());
                         
                         // Return lamp if present
-                        if (plant.getLampRating() != null) {
-                            ItemStack lamp = plugin.getQualityItemManager().createLamp(plant.getLampRating(), 1);
+                        if (plantAbove.getLampRating() != null) {
+                            ItemStack lamp = plugin.getQualityItemManager().createLamp(plantAbove.getLampRating(), 1);
                             event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), lamp);
                         }
                     }

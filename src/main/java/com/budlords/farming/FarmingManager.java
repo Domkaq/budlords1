@@ -559,8 +559,17 @@ public class FarmingManager {
         
         plants.put(plant.getLocationString(), plant);
 
-        // Set initial visual
-        targetBlock.setType(Material.WHEAT);
+        // Set initial visual - only set WHEAT block if 3D visualization is disabled
+        PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();
+        if (vizManager != null && plugin.getConfig().getBoolean("farming.3d-visualization", true)) {
+            // Use armor stand-based 3D visualization - set block to AIR
+            // The armor stands will provide the visual
+            targetBlock.setType(Material.AIR);
+            vizManager.updatePlantVisual(plant);
+        } else {
+            // Fallback: use wheat block for visual
+            targetBlock.setType(Material.WHEAT);
+        }
 
         // Send message with star rating info
         if (isPotPlanting) {
@@ -713,6 +722,12 @@ public class FarmingManager {
         // Remove plant
         plants.remove(locationKey);
         location.getBlock().setType(Material.AIR);
+        
+        // Clean up 3D visualization armor stands
+        PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();
+        if (vizManager != null) {
+            vizManager.removeVisualization(location);
+        }
 
         // Spawn enhanced harvest particles based on strain rarity
         spawnHarvestParticles(plant, location);

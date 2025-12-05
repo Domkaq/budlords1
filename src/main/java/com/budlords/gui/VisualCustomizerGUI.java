@@ -297,7 +297,53 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
 
         int slot = event.getRawSlot();
         boolean shift = event.isShiftClick();
-
+        
+        // Check which GUI we're in by looking at the title
+        String title = event.getView().getTitle();
+        
+        // Handle "All Bud Types" sub-GUI
+        if (title.contains("All Bud Types")) {
+            handleAllBudTypesClick(event, player, config, slot);
+            return;
+        }
+        
+        // Handle main Visual Customizer GUI
+        handleMainCustomizerClick(event, player, config, slot, shift);
+    }
+    
+    /**
+     * Handles clicks in the "All Bud Types" sub-GUI.
+     */
+    private void handleAllBudTypesClick(InventoryClickEvent event, Player player, StrainVisualConfig config, int slot) {
+        // Back button
+        if (slot == 49) {
+            open(player); // Return to main customizer
+            return;
+        }
+        
+        // Bud type selection slots
+        BudType[] allBuds = BudType.values();
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 
+                       28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43};
+        
+        for (int i = 0; i < slots.length && i < allBuds.length; i++) {
+            if (slot == slots[i]) {
+                BudType selectedBud = allBuds[i];
+                config.setBudType(selectedBud);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.5f, 1.3f);
+                player.sendMessage("§aBud type set to: §f" + selectedBud.getDisplayName());
+                
+                // Return to main customizer
+                open(player);
+                return;
+            }
+        }
+    }
+    
+    /**
+     * Handles clicks in the main Visual Customizer GUI.
+     */
+    private void handleMainCustomizerClick(InventoryClickEvent event, Player player, StrainVisualConfig config, int slot, boolean shift) {
         // Theme selection (slots 11-16, 19-26)
         int[] themeSlots = {11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 26};
         int page = themePage.getOrDefault(player.getUniqueId(), 0);
