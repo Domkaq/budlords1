@@ -542,59 +542,13 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         String buyerTypeName = session.buyerType.name();
         
         // ========== SALE SUCCESS CHECK ==========
-        // Calculate base success chance based on reputation
-        double baseSuccessChance = 0.5; // 50% base chance
+        // Use the same calculation as displayed in the GUI
+        double successChance = calculateSuccessChance(player, session);
+        
+        // Get reputation for failure message
         int reputation = 0;
         if (plugin.getReputationManager() != null) {
             reputation = plugin.getReputationManager().getReputation(playerId, buyerTypeName);
-        }
-        
-        // Reputation modifies success chance:
-        // Suspicious (-50): 30% chance
-        // Neutral (0): 50% chance
-        // Friendly (50): 65% chance
-        // Trusted (150): 80% chance
-        // VIP (300): 90% chance
-        // Legendary (500): 98% chance
-        double successChance;
-        if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_LEGENDARY) {
-            successChance = 0.98;
-        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_VIP) {
-            successChance = 0.90;
-        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_TRUSTED) {
-            successChance = 0.80;
-        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_FRIENDLY) {
-            successChance = 0.65;
-        } else if (reputation > com.budlords.economy.ReputationManager.REPUTATION_SUSPICIOUS) {
-            successChance = 0.50;
-        } else {
-            successChance = 0.30;
-        }
-        
-        // Apply skill bonus to success chance
-        if (plugin.getSkillManager() != null) {
-            double skillBonus = plugin.getSkillManager().getBonusMultiplier(playerId, 
-                com.budlords.skills.Skill.BonusType.TRADE_SUCCESS);
-            // Skill bonus adds to success chance (e.g., 1.1 means +10% to chance)
-            successChance = Math.min(0.99, successChance + (skillBonus - 1.0));
-        }
-        
-        // Apply prestige bonus to success chance
-        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
-            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
-            if (stats != null && stats.getPrestigeLevel() > 0) {
-                // +2% per prestige level (from config)
-                double prestigeBonus = stats.getPrestigeLevel() * 0.02;
-                successChance = Math.min(0.99, successChance + prestigeBonus);
-            }
-        }
-        
-        // Selling too many items at once reduces success chance
-        int itemCount = countItems(session);
-        if (itemCount > 10) {
-            // Penalty for large sales: -2% per item over 10
-            double penalty = (itemCount - 10) * 0.02;
-            successChance = Math.max(0.1, successChance - penalty);
         }
         
         // Roll for success
@@ -904,6 +858,9 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         }, 120);
     }
     
+    // Reputation penalty for failed sales
+    private static final int FAILED_SALE_REPUTATION_PENALTY = -5;
+    
     /**
      * Handles a failed sale attempt.
      * Returns items to player and applies reputation penalty.
@@ -918,10 +875,10 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         activeSessions.remove(player.getUniqueId());
         player.closeInventory();
         
-        // Apply reputation penalty
+        // Apply reputation penalty for failed sale
         if (plugin.getReputationManager() != null) {
-            int repPenalty = plugin.getReputationManager().calculateReputationGain(0, false);
-            plugin.getReputationManager().addReputation(player.getUniqueId(), session.buyerType.name(), repPenalty);
+            plugin.getReputationManager().addReputation(player.getUniqueId(), session.buyerType.name(), 
+                FAILED_SALE_REPUTATION_PENALTY);
         }
         
         // Update stats - count as failed sale
