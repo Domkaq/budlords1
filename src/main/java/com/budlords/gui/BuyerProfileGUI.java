@@ -69,37 +69,50 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
         inv.clear();
         ReputationManager repManager = plugin.getReputationManager();
 
-        // Border - phone style
-        ItemStack borderBlue = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, " ", null);
-        ItemStack borderCyan = createItem(Material.CYAN_STAINED_GLASS_PANE, " ", null);
+        // Professional phone-style border
+        ItemStack borderDark = createItem(Material.BLACK_STAINED_GLASS_PANE, " ", null);
+        ItemStack borderAccent = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, " ", null);
 
+        // Top border with phone notch style
         for (int i = 0; i < 9; i++) {
-            inv.setItem(i, i % 2 == 0 ? borderBlue : borderCyan);
-            inv.setItem(36 + i, i % 2 == 0 ? borderBlue : borderCyan);
+            inv.setItem(i, (i == 3 || i == 4 || i == 5) ? borderAccent : borderDark);
         }
+        // Bottom border
+        for (int i = 36; i < 45; i++) {
+            inv.setItem(i, borderDark);
+        }
+        // Side borders
         for (int i = 9; i < 36; i += 9) {
-            inv.setItem(i, borderBlue);
-            inv.setItem(i + 8, borderBlue);
+            inv.setItem(i, borderDark);
+            inv.setItem(i + 8, borderDark);
         }
 
-        // Header
+        // Phone header with status bar style
         ItemStack header = createItem(Material.ECHO_SHARD,
             "§b§l📱 Dealer Phone",
             Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━━━━━━━",
                 "",
-                "§7Your business contacts!",
+                "§7Your business network at",
+                "§7your fingertips!",
                 "",
-                "§7Click a contact to view",
-                "§7their profile and your reputation",
+                "§b☰ §fContacts §8| §7Orders §8| §7Stats",
                 "",
-                "§e★ Better reputation = better deals!"
+                "§8━━━━━━━━━━━━━━━━━━━━━━"
             ));
         inv.setItem(4, header);
 
-        // Contact cards for each buyer type
+        // ===== CONTACTS ROW =====
+        // Section header
+        inv.setItem(10, createItem(Material.PLAYER_HEAD, 
+            "§f§l☰ CONTACTS",
+            Arrays.asList("", "§7Your buyer network")));
+
+        // Contact cards for each buyer type - compact layout
         int slot = 11;
         for (NPCManager.NPCType type : NPCManager.NPCType.values()) {
             if (type == NPCManager.NPCType.NONE) continue;
+            if (slot > 16) break; // Limit to row
 
             int rep = repManager != null ? repManager.getReputation(player.getUniqueId(), type.name()) : 0;
             String repDisplay = repManager != null ? repManager.getReputationDisplay(rep) : "§7Unknown";
@@ -110,40 +123,142 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             String colorCode = getBuyerColor(type);
 
             List<String> lore = new ArrayList<>();
+            lore.add("§8━━━━━━━━━━━━━━━━");
             lore.add("");
             lore.add("§7Status: " + repDisplay);
-            lore.add("§7Points: §f" + rep);
-            lore.add("§7Bonus: " + repBonus);
+            lore.add("§7Rep: §f" + rep + " §8| " + repBonus);
             lore.add("");
-            lore.add(getBuyerDescription(type));
+            lore.add("§8" + getBuyerDescription(type).substring(2)); // Remove color code
             lore.add("");
-            lore.add("§e▶ Click to view full profile");
+            lore.add("§e▶ Tap to view profile");
             lore.add("§8ID: contact_" + type.name());
 
-            ItemStack contact = createItem(icon, colorCode + "§l" + displayName, lore);
+            ItemStack contact = createItem(icon, colorCode + displayName, lore);
             inv.setItem(slot, contact);
             
-            slot += 2; // Space between contacts
+            slot++;
         }
 
-        // Reputation legend
-        inv.setItem(31, createItem(Material.BOOK, 
-            "§e§lReputation Levels",
+        // ===== ORDERS ROW =====
+        inv.setItem(19, createItem(Material.PAPER, 
+            "§6§l📋 ORDERS",
+            Arrays.asList("", "§7View bulk orders")));
+
+        // Current order display
+        com.budlords.economy.BulkOrderManager orderManager = plugin.getBulkOrderManager();
+        com.budlords.economy.BulkOrderManager.BulkOrder activeOrder = 
+            orderManager != null ? orderManager.getActiveOrder(player.getUniqueId()) : null;
+        
+        if (activeOrder != null) {
+            inv.setItem(20, createItem(Material.FILLED_MAP,
+                "§e§l⚡ Active Order",
+                Arrays.asList(
+                    "§8━━━━━━━━━━━━━━━━",
+                    "",
+                    "§7Buyer: §f" + activeOrder.buyerName,
+                    "§7Wants: §e" + activeOrder.quantity + "x §f" + activeOrder.strainName,
+                    "",
+                    "§7Bonus: §a+" + String.format("%.0f%%", (activeOrder.priceMultiplier - 1) * 100),
+                    "§7Time: §e" + activeOrder.getTimeRemainingText(),
+                    "",
+                    "§7§oSell to any buyer to complete!"
+                )));
+            inv.setItem(21, createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null));
+        } else {
+            long cooldown = orderManager != null ? orderManager.getTimeUntilRefresh(player.getUniqueId()) : 0;
+            
+            List<String> orderLore = new ArrayList<>();
+            orderLore.add("§8━━━━━━━━━━━━━━━━");
+            orderLore.add("");
+            orderLore.add("§7No active order.");
+            orderLore.add("");
+            if (cooldown > 0) {
+                orderLore.add("§cNext order in: §e" + (cooldown / 60000) + "m");
+            } else {
+                orderLore.add("§a▶ Tap to get new order!");
+            }
+            orderLore.add("");
+            orderLore.add("§8ID: new_order");
+            
+            inv.setItem(20, createItem(
+                cooldown > 0 ? Material.CLOCK : Material.LIME_DYE,
+                cooldown > 0 ? "§7§lNo Active Order" : "§a§l+ Get New Order",
+                orderLore));
+            inv.setItem(21, createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null));
+        }
+
+        // Order info
+        inv.setItem(22, createItem(Material.BOOK, 
+            "§e§l? Bulk Orders",
             Arrays.asList(
                 "",
-                "§c Suspicious §7(-50) §8- Penalties!",
-                "§7 Neutral §7(0) §8- Normal prices",
-                "§e Friendly §7(50) §8- +5% prices",
-                "§a Trusted §7(150) §8- +10% prices",
-                "§d VIP §7(300) §8- +15% prices",
-                "§6 ★LEGENDARY★ §7(500) §8- +25% prices!",
+                "§7Complete buyer orders for",
+                "§7bonus prices on your sales!",
                 "",
-                "§7Higher rep = tips & bonuses!"
+                "§7• Get orders from contacts",
+                "§7• Sell requested items",
+                "§7• Earn bonus multipliers",
+                "",
+                "§6Higher rep = better orders!"
             )));
 
-        // Close button
-        inv.setItem(40, createItem(Material.BARRIER, "§c§l✗ Close Phone",
-            Arrays.asList("", "§7Click to close")));
+        // ===== STATS ROW =====
+        inv.setItem(28, createItem(Material.DIAMOND, 
+            "§b§l📊 STATS",
+            Arrays.asList("", "§7Your dealing stats")));
+
+        // Quick stats display
+        int totalRep = 0;
+        if (repManager != null) {
+            for (NPCManager.NPCType type : NPCManager.NPCType.values()) {
+                if (type != NPCManager.NPCType.NONE) {
+                    totalRep += repManager.getReputation(player.getUniqueId(), type.name());
+                }
+            }
+        }
+        
+        com.budlords.stats.PlayerStats stats = plugin.getStatsManager() != null ? 
+            plugin.getStatsManager().getStats(player) : null;
+        
+        inv.setItem(29, createItem(Material.EMERALD,
+            "§a§lSales Stats",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7Successful: §a" + (stats != null ? stats.getTotalSalesSuccess() : 0),
+                "§7Failed: §c" + (stats != null ? stats.getTotalSalesFailed() : 0),
+                "§7Success Rate: §e" + (stats != null ? String.format("%.1f%%", stats.getSuccessRate()) : "0%"),
+                "",
+                "§7Total Rep: §f" + totalRep
+            )));
+
+        inv.setItem(30, createItem(Material.GOLD_INGOT,
+            "§6§lEarnings",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7Total: §a" + plugin.getEconomyManager().formatMoney(
+                    stats != null ? stats.getTotalMoneyEarned() : 0),
+                "§7Best Sale: §e" + plugin.getEconomyManager().formatMoney(
+                    stats != null ? stats.getHighestSingleSale() : 0)
+            )));
+
+        // Reputation legend
+        inv.setItem(34, createItem(Material.NETHER_STAR, 
+            "§e§l★ Rep Levels",
+            Arrays.asList(
+                "",
+                "§c Suspicious §8(-50)",
+                "§7 Neutral §8(0)",
+                "§e Friendly §8(50) +5%",
+                "§a Trusted §8(150) +10%",
+                "§d VIP §8(300) +15%",
+                "§6 ★LEGEND★ §8(500) +25%"
+            )));
+
+        // Close button - phone home button style
+        inv.setItem(40, createItem(Material.GRAY_DYE, "§7§l⬤ Close",
+            Arrays.asList("", "§8Tap to close phone")));
     }
 
     private void updateBuyerProfile(Inventory inv, Player player, NPCManager.NPCType buyerType, Entity entity) {
@@ -502,25 +617,32 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
         String title = event.getView().getTitle();
         int slot = event.getRawSlot();
 
-        // Handle contacts list
+        // Handle contacts list (main phone screen)
         if (title.contains("Contacts")) {
             // Close button
             if (slot == 40) {
                 player.closeInventory();
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 0.5f);
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
                 return;
             }
 
-            // Contact card clicks
+            // Check for new order button
             if (meta.hasLore()) {
                 List<String> lore = meta.getLore();
                 if (lore != null) {
                     for (String line : lore) {
+                        // New order request
+                        if (line.equals("§8ID: new_order")) {
+                            handleNewOrderRequest(player, event.getInventory());
+                            return;
+                        }
+                        // Contact card clicks
                         if (line.startsWith("§8ID: contact_")) {
                             String typeName = line.substring(14);
                             try {
                                 NPCManager.NPCType type = NPCManager.NPCType.valueOf(typeName);
                                 openBuyerProfile(player, type, null);
+                                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
                                 return;
                             } catch (IllegalArgumentException e) {
                                 // Invalid type, ignore
@@ -535,6 +657,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             // Back to contacts
             if (slot == 47) {
                 openContactsList(player);
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
                 return;
             }
 
@@ -542,9 +665,34 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             if (slot == 51) {
                 player.closeInventory();
                 viewingSessions.remove(player.getUniqueId());
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 0.5f);
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 0.8f);
             }
         }
+    }
+    
+    /**
+     * Handles a request for a new bulk order from the phone.
+     */
+    private void handleNewOrderRequest(Player player, Inventory inv) {
+        com.budlords.economy.BulkOrderManager orderManager = plugin.getBulkOrderManager();
+        if (orderManager == null) {
+            player.sendMessage("§cOrders are not available!");
+            return;
+        }
+        
+        long cooldown = orderManager.getTimeUntilRefresh(player.getUniqueId());
+        if (cooldown > 0) {
+            player.sendMessage("§cYou must wait " + (cooldown / 60000) + " minutes before getting a new order!");
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+            return;
+        }
+        
+        // Generate new order
+        orderManager.generateOrder(player.getUniqueId());
+        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.2f);
+        
+        // Refresh the GUI
+        updateContactsList(inv, player);
     }
 
     @Override

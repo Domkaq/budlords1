@@ -63,7 +63,9 @@ public class PlantVisualizationManager {
     
     // Y offset to position plants inside the pot rather than floating above
     // Plant location is 1 block above pot, so we offset down to appear inside pot
-    private static final double POT_Y_OFFSET = -0.9;
+    // Small armor stands render helmets ~0.5 blocks above spawn point, so we need
+    // to go deeper to get the helmet inside the pot
+    private static final double POT_Y_OFFSET = -1.35;
 
     public PlantVisualizationManager(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
@@ -100,15 +102,9 @@ public class PlantVisualizationManager {
         
         plantArmorStands.put(locKey, armorStandIds);
         
-        // Set the block underneath to a flower pot if using pot system
-        Block block = loc.getBlock();
-        if (plant.hasPot() && block.getType() != Material.FLOWER_POT) {
-            // Place an actual flower pot block at the base
-            Block below = loc.getBlock().getRelative(org.bukkit.block.BlockFace.DOWN);
-            if (below.getType().isSolid()) {
-                block.setType(Material.FLOWER_POT);
-            }
-        }
+        // Note: The flower pot block is already placed at the block BELOW the plant location
+        // by the FarmingListener when the player initially places the pot.
+        // We don't need to set it here - the armor stands provide the visual.
     }
     
     /**

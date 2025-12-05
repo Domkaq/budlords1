@@ -183,6 +183,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
 
         // Calculate total value
         double totalValue = calculateTotalValue(session);
+        double successChance = calculateSuccessChance(player, session);
+        String chanceColor = getSuccessChanceColor(successChance);
         
         // Price display
         inv.setItem(13, createItem(Material.GOLD_INGOT, 
@@ -205,7 +207,9 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 "§7Click to sell §e" + countItems(session) + " §7item(s)",
                 "§7for §a" + economyManager.formatMoney(totalValue),
                 "",
-                "§a▶ Click to confirm"
+                "§7Success chance: " + chanceColor + String.format("%.0f%%", successChance * 100),
+                "",
+                successChance < 0.5 ? "§c⚠ Low chance! Build more reputation." : "§a▶ Click to confirm"
             ) : Arrays.asList(
                 "",
                 "§7Place items in the slots",
@@ -364,6 +368,69 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     }
     
     /**
+     * Calculates the success chance for a sale to display in the UI.
+     */
+    private double calculateSuccessChance(Player player, SaleSession session) {
+        UUID playerId = player.getUniqueId();
+        String buyerTypeName = session.buyerType.name();
+        
+        int reputation = 0;
+        if (plugin.getReputationManager() != null) {
+            reputation = plugin.getReputationManager().getReputation(playerId, buyerTypeName);
+        }
+        
+        double successChance;
+        if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_LEGENDARY) {
+            successChance = 0.98;
+        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_VIP) {
+            successChance = 0.90;
+        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_TRUSTED) {
+            successChance = 0.80;
+        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_FRIENDLY) {
+            successChance = 0.65;
+        } else if (reputation > com.budlords.economy.ReputationManager.REPUTATION_SUSPICIOUS) {
+            successChance = 0.50;
+        } else {
+            successChance = 0.30;
+        }
+        
+        // Apply skill bonus
+        if (plugin.getSkillManager() != null) {
+            double skillBonus = plugin.getSkillManager().getBonusMultiplier(playerId, 
+                com.budlords.skills.Skill.BonusType.TRADE_SUCCESS);
+            successChance = Math.min(0.99, successChance + (skillBonus - 1.0));
+        }
+        
+        // Apply prestige bonus
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null && stats.getPrestigeLevel() > 0) {
+                double prestigeBonus = stats.getPrestigeLevel() * 0.02;
+                successChance = Math.min(0.99, successChance + prestigeBonus);
+            }
+        }
+        
+        // Penalty for large sales
+        int itemCount = countItems(session);
+        if (itemCount > 10) {
+            double penalty = (itemCount - 10) * 0.02;
+            successChance = Math.max(0.1, successChance - penalty);
+        }
+        
+        return successChance;
+    }
+    
+    /**
+     * Gets the color code for a success chance value.
+     */
+    private String getSuccessChanceColor(double chance) {
+        if (chance >= 0.90) return "§a";
+        if (chance >= 0.70) return "§e";
+        if (chance >= 0.50) return "§6";
+        return "§c";
+    }
+    
+    /**
      * Checks if an item is sellable (packaged product or joint).
      */
     private boolean isSellableItem(ItemStack item) {
@@ -473,6 +540,71 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private void completeSale(Player player, SaleSession session, double total) {
         UUID playerId = player.getUniqueId();
         String buyerTypeName = session.buyerType.name();
+        
+        // ========== SALE SUCCESS CHECK ==========
+        // Calculate base success chance based on reputation
+        double baseSuccessChance = 0.5; // 50% base chance
+        int reputation = 0;
+        if (plugin.getReputationManager() != null) {
+            reputation = plugin.getReputationManager().getReputation(playerId, buyerTypeName);
+        }
+        
+        // Reputation modifies success chance:
+        // Suspicious (-50): 30% chance
+        // Neutral (0): 50% chance
+        // Friendly (50): 65% chance
+        // Trusted (150): 80% chance
+        // VIP (300): 90% chance
+        // Legendary (500): 98% chance
+        double successChance;
+        if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_LEGENDARY) {
+            successChance = 0.98;
+        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_VIP) {
+            successChance = 0.90;
+        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_TRUSTED) {
+            successChance = 0.80;
+        } else if (reputation >= com.budlords.economy.ReputationManager.REPUTATION_FRIENDLY) {
+            successChance = 0.65;
+        } else if (reputation > com.budlords.economy.ReputationManager.REPUTATION_SUSPICIOUS) {
+            successChance = 0.50;
+        } else {
+            successChance = 0.30;
+        }
+        
+        // Apply skill bonus to success chance
+        if (plugin.getSkillManager() != null) {
+            double skillBonus = plugin.getSkillManager().getBonusMultiplier(playerId, 
+                com.budlords.skills.Skill.BonusType.TRADE_SUCCESS);
+            // Skill bonus adds to success chance (e.g., 1.1 means +10% to chance)
+            successChance = Math.min(0.99, successChance + (skillBonus - 1.0));
+        }
+        
+        // Apply prestige bonus to success chance
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null && stats.getPrestigeLevel() > 0) {
+                // +2% per prestige level (from config)
+                double prestigeBonus = stats.getPrestigeLevel() * 0.02;
+                successChance = Math.min(0.99, successChance + prestigeBonus);
+            }
+        }
+        
+        // Selling too many items at once reduces success chance
+        int itemCount = countItems(session);
+        if (itemCount > 10) {
+            // Penalty for large sales: -2% per item over 10
+            double penalty = (itemCount - 10) * 0.02;
+            successChance = Math.max(0.1, successChance - penalty);
+        }
+        
+        // Roll for success
+        if (ThreadLocalRandom.current().nextDouble() > successChance) {
+            // SALE FAILED!
+            handleFailedSale(player, session, successChance, reputation);
+            return;
+        }
+        
+        // ========== SALE SUCCESS - Continue with normal processing ==========
         
         // Track the base price before any bonuses for display
         double basePrice = total;
@@ -770,6 +902,102 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             if (entity == null || !entity.isValid()) return;
             entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_VILLAGER_YES, 0.7f, 1.2f);
         }, 120);
+    }
+    
+    /**
+     * Handles a failed sale attempt.
+     * Returns items to player and applies reputation penalty.
+     */
+    private void handleFailedSale(Player player, SaleSession session, double successChance, int reputation) {
+        String buyerName = getBuyerName(session.buyerType);
+        
+        // Return all items
+        returnItems(player, session);
+        
+        // Close GUI
+        activeSessions.remove(player.getUniqueId());
+        player.closeInventory();
+        
+        // Apply reputation penalty
+        if (plugin.getReputationManager() != null) {
+            int repPenalty = plugin.getReputationManager().calculateReputationGain(0, false);
+            plugin.getReputationManager().addReputation(player.getUniqueId(), session.buyerType.name(), repPenalty);
+        }
+        
+        // Update stats - count as failed sale
+        if (plugin.getStatsManager() != null) {
+            PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null) {
+                stats.incrementFailedSales();
+            }
+        }
+        
+        // Apply entity cooldown (can't sell to this buyer for a while)
+        applyEntityCooldown(session.buyerId);
+        
+        // Effects
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.8f, 0.8f);
+        player.spawnParticle(Particle.ANGRY_VILLAGER, player.getLocation().add(0, 1.5, 0), 10, 0.5, 0.3, 0.5, 0);
+        
+        // Get failure message based on reputation
+        String failureReason;
+        if (reputation <= com.budlords.economy.ReputationManager.REPUTATION_SUSPICIOUS) {
+            failureReason = "doesn't trust you";
+        } else if (reputation < com.budlords.economy.ReputationManager.REPUTATION_FRIENDLY) {
+            failureReason = "isn't interested right now";
+        } else {
+            failureReason = "changed their mind";
+        }
+        
+        // Get buyer comment
+        String buyerComment = getBuyerRejectComment(reputation);
+        
+        player.sendMessage("");
+        player.sendMessage("§c§l✗ SALE FAILED!");
+        player.sendMessage("§7" + buyerName + " §c" + failureReason + "!");
+        player.sendMessage("§7Your items have been returned.");
+        player.sendMessage("");
+        player.sendMessage("§7Success chance was: §e" + String.format("%.0f%%", successChance * 100));
+        player.sendMessage("");
+        player.sendMessage("§7" + buyerName + " says: " + buyerComment);
+        player.sendMessage("");
+        player.sendMessage("§7§oTip: Improve your reputation by making successful smaller sales first!");
+        player.sendMessage("");
+    }
+    
+    /**
+     * Gets a rejection comment from the buyer based on reputation.
+     */
+    private String getBuyerRejectComment(int reputation) {
+        String[] comments;
+        
+        if (reputation <= com.budlords.economy.ReputationManager.REPUTATION_SUSPICIOUS) {
+            comments = new String[] {
+                "§c\"Get out of my face!\"",
+                "§c\"I don't deal with strangers.\"",
+                "§c\"Come back when you're more... established.\"",
+                "§c\"Nice try, cop.\"",
+                "§c\"I don't know you. Beat it.\""
+            };
+        } else if (reputation < com.budlords.economy.ReputationManager.REPUTATION_FRIENDLY) {
+            comments = new String[] {
+                "§e\"Not today.\"",
+                "§e\"Maybe next time.\"",
+                "§e\"I've got enough for now.\"",
+                "§e\"Price doesn't seem right...\"",
+                "§e\"Let me think about it.\""
+            };
+        } else {
+            comments = new String[] {
+                "§7\"Sorry, something came up.\"",
+                "§7\"Bad timing, friend.\"",
+                "§7\"I need to lay low for a bit.\"",
+                "§7\"Heat is on, can't risk it.\"",
+                "§7\"Come back later, okay?\""
+            };
+        }
+        
+        return comments[ThreadLocalRandom.current().nextInt(comments.length)];
     }
 
     private void returnItems(Player player, SaleSession session) {

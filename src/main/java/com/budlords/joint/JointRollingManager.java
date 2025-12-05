@@ -31,6 +31,7 @@ public class JointRollingManager implements InventoryHolder {
     private final Map<UUID, JointRollingSession> activeSessions;
     private final Map<UUID, BukkitTask> activeTasks;
     private final Map<UUID, Integer> clickerPosition;  // For timing minigames
+    private final Set<UUID> transitioning;  // Players transitioning between stages (don't cleanup on close)
 
     public JointRollingManager(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
@@ -38,6 +39,7 @@ public class JointRollingManager implements InventoryHolder {
         this.activeSessions = new ConcurrentHashMap<>();
         this.activeTasks = new ConcurrentHashMap<>();
         this.clickerPosition = new ConcurrentHashMap<>();
+        this.transitioning = ConcurrentHashMap.newKeySet();
     }
 
     /**
@@ -577,6 +579,9 @@ public class JointRollingManager implements InventoryHolder {
         if (allComplete) {
             completeSession(player, session);
         } else {
+            // Mark as transitioning so inventory close doesn't cleanup the session
+            transitioning.add(player.getUniqueId());
+            
             // Open next stage
             player.sendMessage("");
             player.sendMessage("§a✦ Stage Complete! Moving to: " + session.getCurrentStage().getDisplayName());
@@ -584,6 +589,7 @@ public class JointRollingManager implements InventoryHolder {
             
             // Brief delay before next stage
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                transitioning.remove(player.getUniqueId());
                 if (activeSessions.containsKey(player.getUniqueId())) {
                     openMinigameGUI(player, session);
                 }
@@ -640,6 +646,10 @@ public class JointRollingManager implements InventoryHolder {
      * This ensures the session is properly cleaned up so the player can roll again.
      */
     public void handleInventoryClose(Player player) {
+        // Don't cleanup if player is transitioning between stages
+        if (transitioning.contains(player.getUniqueId())) {
+            return;
+        }
         if (activeSessions.containsKey(player.getUniqueId())) {
             forceCleanup(player.getUniqueId());
         }
@@ -650,6 +660,7 @@ public class JointRollingManager implements InventoryHolder {
      * This method does not send messages or close inventory, just cleans up data.
      */
     public void forceCleanup(UUID playerId) {
+        transitioning.remove(playerId);
         activeSessions.remove(playerId);
         BukkitTask task = activeTasks.remove(playerId);
         if (task != null) {
