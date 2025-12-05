@@ -25,6 +25,9 @@ farming:
   pot-based-growing: true
   # Legacy farmland growing (for backward compatibility)
   allow-farmland-growing: true
+  # Cooldown in seconds before watering can give quality bonus again
+  # Prevents spamming watering to max quality
+  watering-bonus-cooldown-seconds: 60
 
 # Star Quality System (★ 1-5)
 quality:

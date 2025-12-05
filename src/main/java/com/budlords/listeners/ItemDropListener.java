@@ -344,8 +344,10 @@ public class ItemDropListener implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
         
-        // Check if it's the joint rolling GUI
-        if (event.getInventory().getHolder() instanceof JointRollingManager) {
+        // Check if it's the joint rolling GUI or if player has an active session
+        // The holder check may not work in all cases, so also check active session
+        if (event.getInventory().getHolder() instanceof JointRollingManager || 
+            jointRollingManager.hasActiveSession(player)) {
             jointRollingManager.handleInventoryClose(player);
         }
     }

@@ -579,6 +579,13 @@ public class FarmingManager {
     }
     
     /**
+     * Gets the configured watering bonus cooldown in milliseconds.
+     */
+    private long getWateringBonusCooldownMs() {
+        return plugin.getConfig().getLong("farming.watering-bonus-cooldown-seconds", 60) * 1000L;
+    }
+    
+    /**
      * Waters a plant at the given location with a specific watering can quality.
      * @param wateringCanRating The star rating of the watering can (null for standard water bucket)
      */
@@ -589,16 +596,18 @@ public class FarmingManager {
             return false;
         }
         
+        long cooldownMs = getWateringBonusCooldownMs();
+        
         // Use quality-aware watering if a watering can was used
         if (wateringCanRating != null) {
-            boolean gotBonus = plant.water(wateringCanRating);
+            boolean gotBonus = plant.water(wateringCanRating, cooldownMs);
             if (gotBonus) {
                 String qualityBonus = " §a(+" + wateringCanRating.getStars() + " quality bonus!)";
                 player.sendMessage("§aWatered the plant! §7Water level: §b" + 
                     String.format("%.0f%%", plant.getWaterLevel() * 100) + qualityBonus);
             } else {
                 // On cooldown - still water but no quality bonus
-                long cooldownRemaining = plant.getWateringBonusCooldownRemaining();
+                long cooldownRemaining = plant.getWateringBonusCooldownRemaining(cooldownMs);
                 player.sendMessage("§aWatered the plant! §7Water level: §b" + 
                     String.format("%.0f%%", plant.getWaterLevel() * 100));
                 player.sendMessage("§7Quality bonus on cooldown (§e" + cooldownRemaining + "s§7 remaining)");

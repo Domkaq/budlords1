@@ -641,7 +641,7 @@ public class JointRollingManager implements InventoryHolder {
      */
     public void handleInventoryClose(Player player) {
         if (activeSessions.containsKey(player.getUniqueId())) {
-            cleanupSession(player);
+            forceCleanup(player.getUniqueId());
         }
     }
     
@@ -659,12 +659,7 @@ public class JointRollingManager implements InventoryHolder {
     }
 
     private void cleanupSession(Player player) {
-        activeSessions.remove(player.getUniqueId());
-        BukkitTask task = activeTasks.remove(player.getUniqueId());
-        if (task != null) {
-            task.cancel();
-        }
-        clickerPosition.remove(player.getUniqueId());
+        forceCleanup(player.getUniqueId());
     }
 
     /**

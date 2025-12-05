@@ -28,7 +28,8 @@ public class Plant {
     
     // Cooldown tracking for watering quality bonus
     private long lastWateringBonusTime;
-    private static final long WATERING_BONUS_COOLDOWN_MS = 60000L; // 60 seconds cooldown for quality bonus
+    // Default cooldown - can be overridden by config via FarmingManager
+    private static final long DEFAULT_WATERING_BONUS_COOLDOWN_MS = 60000L;
 
     public Plant(String strainId, Location location, UUID ownerUuid) {
         this.id = UUID.randomUUID();
@@ -211,16 +212,17 @@ public class Plant {
      * Higher quality watering cans provide additional quality bonuses, but only
      * if the watering bonus cooldown has passed (prevents spam for free quality).
      * @param wateringCanRating The star rating of the watering can used
+     * @param cooldownMs The cooldown time in milliseconds (from config)
      * @return true if quality bonus was applied, false if still on cooldown
      */
-    public boolean water(StarRating wateringCanRating) {
+    public boolean water(StarRating wateringCanRating, long cooldownMs) {
         this.waterLevel = 1.0;
         
         // Higher star watering cans give quality bonus when watering
         // But only if the cooldown has passed to prevent spam
         if (wateringCanRating != null) {
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastWateringBonusTime >= WATERING_BONUS_COOLDOWN_MS) {
+            if (currentTime - lastWateringBonusTime >= cooldownMs) {
                 // Add quality bonus based on watering can quality
                 // 1-star: +1 quality, 5-star: +5 quality
                 int qualityBonus = wateringCanRating.getStars();
@@ -234,14 +236,15 @@ public class Plant {
     
     /**
      * Gets the remaining cooldown time for watering quality bonus in seconds.
+     * @param cooldownMs The cooldown time in milliseconds (from config)
      * @return remaining cooldown in seconds, or 0 if no cooldown active
      */
-    public long getWateringBonusCooldownRemaining() {
+    public long getWateringBonusCooldownRemaining(long cooldownMs) {
         long elapsed = System.currentTimeMillis() - lastWateringBonusTime;
-        if (elapsed >= WATERING_BONUS_COOLDOWN_MS) {
+        if (elapsed >= cooldownMs) {
             return 0;
         }
-        return (WATERING_BONUS_COOLDOWN_MS - elapsed) / 1000;
+        return (cooldownMs - elapsed) / 1000;
     }
 
     public double getNutrientLevel() {
