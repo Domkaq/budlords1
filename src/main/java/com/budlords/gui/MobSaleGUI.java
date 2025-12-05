@@ -894,7 +894,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         
         // Effects
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.8f, 0.8f);
-        player.spawnParticle(Particle.ANGRY_VILLAGER, player.getLocation().add(0, 1.5, 0), 10, 0.5, 0.3, 0.5, 0);
+        player.spawnParticle(Particle.VILLAGER_ANGRY, player.getLocation().add(0, 1.5, 0), 10, 0.5, 0.3, 0.5, 0);
         
         // Get failure message based on reputation
         String failureReason;
