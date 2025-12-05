@@ -486,7 +486,7 @@ Ranks based on total earnings:
 
 ## Installation
 
-1. Download `BudLords-1.0.0.jar`
+1. Download `BudLords-3.0.0.jar`
 2. Place in your server's `plugins/` folder
 3. Restart/reload the server
 4. Configure `plugins/BudLords/config.yml` as needed
@@ -509,6 +509,10 @@ Ranks based on total earnings:
 | `/achievements [category]` | View your achievements | `budlords.use` |
 | `/skills [tree]` | Open skill tree GUI | `budlords.use` |
 | `/collection [page]` | Open strain collection book | `budlords.use` |
+| `/reputation` | View your reputation with buyers | `budlords.use` |
+| `/orders` | View current bulk orders | `budlords.use` |
+| `/daily` | Claim daily reward | `budlords.use` |
+| `/market` | Check current market conditions | `budlords.use` |
 
 ### Admin Commands
 | Command | Description | Permission |
@@ -548,7 +552,7 @@ Requirements:
 mvn clean package
 ```
 
-The compiled JAR will be in `target/BudLords-2.0.0.jar`
+The compiled JAR will be in `target/BudLords-3.0.0.jar`
 
 ## Default Strains
 
