@@ -38,6 +38,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
     private final Map<UUID, Integer> budTypePage;
     
     private static final int ITEMS_PER_PAGE = 14;
+    private static final int GUI_SIZE = 54;
 
     public VisualCustomizerGUI(BudLords plugin, StrainCreatorGUI strainCreatorGUI) {
         this.plugin = plugin;
@@ -49,10 +50,17 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
 
     @SuppressWarnings("deprecation")
     public void open(Player player) {
+        // Verify there's an active builder before opening
+        StrainCreatorGUI.StrainBuilder builder = strainCreatorGUI.getActiveBuilders().get(player.getUniqueId());
+        if (builder == null) {
+            player.sendMessage("§cNo active strain builder session! Please use /straincreator first.");
+            return;
+        }
+        
         themePage.put(player.getUniqueId(), 0);
         budTypePage.put(player.getUniqueId(), 0);
         
-        Inventory inv = Bukkit.createInventory(this, 54, "§d§l✦ Visual Customizer ✦");
+        Inventory inv = Bukkit.createInventory(this, GUI_SIZE, "§d§l✦ Visual Customizer ✦");
         updateInventory(inv, player);
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.5f, 1.5f);
@@ -62,7 +70,12 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         inv.clear();
         
         StrainCreatorGUI.StrainBuilder builder = strainCreatorGUI.getActiveBuilders().get(player.getUniqueId());
-        if (builder == null) return;
+        if (builder == null) {
+            // If builder is lost, show error message items
+            inv.setItem(22, createItem(Material.BARRIER, "§c§lError: Session Lost",
+                Arrays.asList("", "§7Please close and use", "§7§e/straincreator §7again")));
+            return;
+        }
         
         StrainVisualConfig config = builder.visualConfig;
         if (config == null) {
@@ -281,10 +294,18 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         if (!(event.getInventory().getHolder() instanceof VisualCustomizerGUI)) return;
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
+        // Always cancel to prevent item manipulation
         event.setCancelled(true);
+        
+        // Ignore clicks in player inventory
+        int slot = event.getRawSlot();
+        if (slot >= GUI_SIZE || slot < 0) {
+            return; // Click was outside the GUI
+        }
 
         StrainCreatorGUI.StrainBuilder builder = strainCreatorGUI.getActiveBuilders().get(player.getUniqueId());
         if (builder == null) {
+            player.sendMessage("§cSession expired! Please use /straincreator again.");
             player.closeInventory();
             return;
         }
@@ -295,7 +316,6 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
             builder.visualConfig = config;
         }
 
-        int slot = event.getRawSlot();
         boolean shift = event.isShiftClick();
         
         // Check which GUI we're in by looking at the title
@@ -540,6 +560,17 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
             item.setItemMeta(meta);
         }
         return item;
+    }
+    
+    /**
+     * Handles inventory close to ensure builder is not prematurely removed.
+     * The StrainCreatorGUI will handle cleanup.
+     */
+    @org.bukkit.event.EventHandler
+    public void onInventoryClose(org.bukkit.event.inventory.InventoryCloseEvent event) {
+        if (!(event.getInventory().getHolder() instanceof VisualCustomizerGUI)) return;
+        // Don't do anything - let StrainCreatorGUI handle the builder cleanup
+        // This prevents premature removal of the builder when navigating between GUIs
     }
 
     @Override
