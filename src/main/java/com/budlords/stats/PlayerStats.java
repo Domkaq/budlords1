@@ -288,7 +288,8 @@ public class PlayerStats {
     }
 
     public void setLongestDailyStreak(int streak) {
-        this.longestDailyStreak = streak;
+        // Ensure longest streak is at least equal to current streak
+        this.longestDailyStreak = Math.max(streak, currentDailyStreak);
     }
 
     public long getLastDailyClaimTime() {
