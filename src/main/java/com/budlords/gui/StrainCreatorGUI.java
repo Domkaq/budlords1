@@ -191,12 +191,17 @@ public class StrainCreatorGUI implements InventoryHolder, Listener {
         effectsLore.add("§7Add special visual and gameplay");
         effectsLore.add("§7effects to your strain!");
         effectsLore.add("");
-        effectsLore.add("§7Selected: §e" + builder.effects.size() + "/" + Strain.MAX_EFFECTS_ADMIN);
-        effectsLore.add("§6Admin tool - unlimited effects!");
+        effectsLore.add("§7Selected: §e" + builder.effects.size() + " effects");
+        effectsLore.add("§6Admin tool - §e§lUNLIMITED EFFECTS!");
         if (!builder.effects.isEmpty()) {
             effectsLore.add("");
-            for (StrainEffect effect : builder.effects) {
-                effectsLore.add("  " + effect.getCompactDisplay());
+            // Only show first 10 effects to prevent lore overflow
+            int displayCount = Math.min(builder.effects.size(), 10);
+            for (int i = 0; i < displayCount; i++) {
+                effectsLore.add("  " + builder.effects.get(i).getCompactDisplay());
+            }
+            if (builder.effects.size() > 10) {
+                effectsLore.add("  §7... and " + (builder.effects.size() - 10) + " more");
             }
         }
         effectsLore.add("");

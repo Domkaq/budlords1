@@ -8,7 +8,9 @@ import com.budlords.quality.*;
 import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -266,57 +268,60 @@ public class FarmingListener implements Listener {
     }
     
     private void handleLampUsage(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
-        // Check if there's a plant at the clicked location or nearby
-        Plant plant = farmingManager.getPlantAt(clickedBlock.getLocation());
-        
-        if (plant == null) {
-            // Check block above (for pot-based plants)
-            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.UP).getLocation());
-        }
-        
-        if (plant == null) {
-            // Check blocks below (player may have clicked above the plant)
-            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.DOWN).getLocation());
-        }
-        
-        if (plant == null) {
-            // Check 2 blocks below (in case player clicked way above)
-            plant = farmingManager.getPlantAt(clickedBlock.getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getLocation());
-        }
-        
-        // Also check adjacent blocks horizontally
-        if (plant == null) {
-            BlockFace[] horizontalFaces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
-            for (BlockFace face : horizontalFaces) {
-                plant = farmingManager.getPlantAt(clickedBlock.getRelative(face).getLocation());
-                if (plant != null) break;
-                // Also check one block up in that direction
-                plant = farmingManager.getPlantAt(clickedBlock.getRelative(face).getRelative(BlockFace.UP).getLocation());
-                if (plant != null) break;
-            }
-        }
-        
-        if (plant == null) {
-            player.sendMessage("§cNo plant found nearby! Place the lamp closer to a growing plant.");
-            player.sendMessage("§7Tip: Click directly on the plant or a block adjacent to it.");
-            return;
-        }
-        
         event.setCancelled(true);
         
         StarRating lampRating = GrowLamp.getRatingFromItem(item);
         if (lampRating == null) lampRating = StarRating.ONE_STAR;
         
-        if (farmingManager.addLamp(player, plant.getLocation(), lampRating)) {
-            // Consume lamp item
-            if (player.getGameMode() != GameMode.CREATIVE) {
-                if (item.getAmount() == 1) {
-                    player.getInventory().setItemInMainHand(null);
-                } else {
-                    item.setAmount(item.getAmount() - 1);
-                }
+        // Calculate lamp effect radius based on star rating (1-5 blocks)
+        int lampRadius = lampRating.getStars();
+        
+        // Find all plants within the lamp's effect radius
+        Location centerLocation = clickedBlock.getLocation().add(0.5, 0.5, 0.5);
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(centerLocation, lampRadius);
+        
+        if (nearbyPlants.isEmpty()) {
+            // Also try to search around the clicked location in case it's far from plants
+            nearbyPlants = farmingManager.getNearbyPlants(clickedBlock.getRelative(BlockFace.UP).getLocation(), lampRadius);
+        }
+        
+        if (nearbyPlants.isEmpty()) {
+            nearbyPlants = farmingManager.getNearbyPlants(clickedBlock.getRelative(BlockFace.DOWN).getLocation(), lampRadius);
+        }
+        
+        if (nearbyPlants.isEmpty()) {
+            player.sendMessage("§cNo plants found nearby! Place the lamp closer to growing plants.");
+            player.sendMessage("§7Lamp range: §e" + lampRadius + " blocks §7based on star rating.");
+            return;
+        }
+        
+        // Apply lamp buff to ALL nearby plants
+        int affectedCount = 0;
+        for (Plant plant : nearbyPlants) {
+            // Apply the lamp rating to each plant
+            plant.setLampRating(lampRating);
+            affectedCount++;
+        }
+        
+        // Consume lamp item (only consume 1 lamp even if multiple plants affected)
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            if (item.getAmount() == 1) {
+                player.getInventory().setItemInMainHand(null);
+            } else {
+                item.setAmount(item.getAmount() - 1);
             }
         }
+        
+        // Show success message with affected plant count
+        player.sendMessage("§a✦ Installed " + lampRating.getDisplay() + " §aGrow Lamp!");
+        player.sendMessage("§7Affected plants: §e" + affectedCount);
+        player.sendMessage("§7Light bonus radius: §e" + lampRadius + " blocks");
+        
+        // Lamp glow particles for all affected area
+        Location particleLoc = centerLocation.clone().add(0, 1.0, 0);
+        centerLocation.getWorld().spawnParticle(Particle.GLOW, particleLoc, 20 + (lampRating.getStars() * 5), 
+            lampRadius * 0.5, 0.5, lampRadius * 0.5, 0.02);
+        centerLocation.getWorld().playSound(centerLocation, Sound.BLOCK_BEACON_ACTIVATE, 0.5f, 1.2f);
     }
 
     private void handleSeedPlanting(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {

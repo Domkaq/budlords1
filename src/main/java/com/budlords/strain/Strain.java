@@ -24,8 +24,8 @@ public class Strain {
     public static final int MAX_EFFECTS = 5;
     // Maximum effects for crossbred strains with mutation
     public static final int MAX_EFFECTS_CROSSBRED = 8;
-    // Absolute maximum for admin-created strains
-    public static final int MAX_EFFECTS_ADMIN = 15;
+    // Unlimited effects for admin-created strains (very high number to essentially be unlimited)
+    public static final int MAX_EFFECTS_ADMIN = Integer.MAX_VALUE;
     
     // Flag for special crossbred strains
     private boolean isCrossbred = false;
