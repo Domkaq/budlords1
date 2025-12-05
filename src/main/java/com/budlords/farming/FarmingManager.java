@@ -196,13 +196,15 @@ public class FarmingManager {
      * @param location The plant location
      * @return Multiplier for growth speed (1.0 to 1.5)
      */
+    private static final int COOPERATIVE_FARMING_RADIUS = 20; // blocks
+    
     private double getCooperativeFarmingBonus(Location location) {
         if (location.getWorld() == null) return 1.0;
         
-        // Count nearby players within 20 blocks
+        // Count nearby players within configured radius
         int nearbyPlayers = 0;
         for (Player player : location.getWorld().getPlayers()) {
-            if (player.getLocation().distance(location) <= 20) {
+            if (player.getLocation().distance(location) <= COOPERATIVE_FARMING_RADIUS) {
                 nearbyPlayers++;
             }
         }

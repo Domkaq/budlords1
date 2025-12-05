@@ -65,6 +65,7 @@ public class BudLordsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§7  /pay <player> <amount> §8- §fPay someone");
         sender.sendMessage("§7  /package <amount> §8- §fPackage buds for sale");
         sender.sendMessage("§7  /stats §8- §fView your statistics");
+        sender.sendMessage("§7  /daily §8- §fClaim daily reward & streak bonus");
         sender.sendMessage("§7  /challenges §8- §fView daily/weekly challenges");
         sender.sendMessage("§7  /crossbreed §8- §fOpen crossbreeding lab");
         sender.sendMessage("§7  /leaderboard §8- §fView leaderboards");

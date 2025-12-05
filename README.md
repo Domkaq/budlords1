@@ -124,6 +124,25 @@ A comprehensive weed farming RPG + black market economy system for Minecraft Pap
 - Effect Selector shows "UNLIMITED" status
 - No more effect count restrictions in admin tools
 
+### 🎁 Daily Reward System (NEW!)
+- Use `/daily` to claim your daily reward
+- Base reward of $100 with streak bonuses
+- Streak bonus: +5% per day (up to +100% at 20-day streak)
+- Milestone bonuses:
+  - 7 days: $500 bonus
+  - 30 days: $5,000 bonus
+  - 100 days: $50,000 bonus
+- 32-hour grace period to maintain streak
+- Prestige multiplier applied to rewards
+
+### 👥 Cooperative Farming Bonus
+- Farm together for faster growth!
+- Nearby players within 20 blocks boost growth:
+  - 1 player: +10%
+  - 2 players: +20%
+  - 3 players: +35%
+  - 4+ players: +50%
+
 ---
 
 ## 🆕 v2.0.1 Previous Features

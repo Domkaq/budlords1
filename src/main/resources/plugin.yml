@@ -2,7 +2,7 @@ name: BudLords
 version: '${project.version}'
 main: com.budlords.BudLords
 api-version: '1.20'
-description: A weed farming RPG + black market economy system for Minecraft - v2.0.1 Bug Fix & Content Update
+description: A weed farming RPG + black market economy system for Minecraft - v3.0.0 Major Update
 author: BudLords Team
 
 commands:
@@ -59,7 +59,7 @@ commands:
     usage: /<command> [category]
     aliases: [lb, top]
     permission: budlords.use
-  # v2.0.0 New Commands
+  # v2.0.0 Commands
   season:
     description: View current season and bonuses
     usage: /<command> [info|set]
@@ -78,6 +78,12 @@ commands:
     description: View your strain collection book
     usage: /<command> [page]
     aliases: [book, strainbook]
+    permission: budlords.use
+  # v3.0.0 Commands
+  daily:
+    description: Claim your daily reward
+    usage: /<command>
+    aliases: [dailyreward, streak]
     permission: budlords.use
   # Admin Debug Command
   debug:

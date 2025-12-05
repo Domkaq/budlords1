@@ -273,6 +273,10 @@ public class BudLords extends JavaPlugin {
         Objects.requireNonNull(getCommand("collection")).setExecutor(collectionCommand);
         Objects.requireNonNull(getCommand("collection")).setTabCompleter(collectionCommand);
         
+        // v3.0.0 - Daily rewards command
+        DailyCommand dailyCommand = new DailyCommand(this, economyManager, statsManager);
+        Objects.requireNonNull(getCommand("daily")).setExecutor(dailyCommand);
+        
         // Register admin debug command
         Objects.requireNonNull(getCommand("debug")).setExecutor(debugCommand);
         Objects.requireNonNull(getCommand("debug")).setTabCompleter(debugCommand);
