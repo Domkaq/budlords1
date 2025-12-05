@@ -280,6 +280,17 @@ public class PlayerStats {
         return longestDailyStreak;
     }
 
+    public void setCurrentDailyStreak(int streak) {
+        this.currentDailyStreak = streak;
+        if (currentDailyStreak > longestDailyStreak) {
+            longestDailyStreak = currentDailyStreak;
+        }
+    }
+
+    public void setLongestDailyStreak(int streak) {
+        this.longestDailyStreak = streak;
+    }
+
     public long getLastDailyClaimTime() {
         return lastDailyClaimTime;
     }

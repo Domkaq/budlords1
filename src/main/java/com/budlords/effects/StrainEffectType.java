@@ -417,7 +417,7 @@ public enum StrainEffectType {
     ROOT_CONNECTION("Root Connection", "§6🌳", "Connect with all plants!", Material.OAK_SAPLING,
         "Nature particles when near plants", EffectCategory.NATURE),
     
-    STORM_RIDER("Storm Rider", "§9⛈", "Ride the storm!", Material.WIND_CHARGE,
+    STORM_RIDER("Storm Rider", "§9⛈", "Ride the storm!", Material.LIGHTNING_ROD,
         "Boost during rainy weather", EffectCategory.NATURE),
     
     VOLCANIC_HEAT("Volcanic Heat", "§c🌋", "Radiate volcanic energy!", Material.MAGMA_BLOCK,
