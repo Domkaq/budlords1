@@ -43,6 +43,17 @@ public class FarmingListener implements Listener {
     }
     
     /**
+     * Helper method to update player's main hand item on next tick.
+     * This prevents Minecraft from overwriting our changes.
+     */
+    private void updateMainHandNextTick(Player player, ItemStack item) {
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            player.getInventory().setItemInMainHand(item);
+            player.updateInventory();
+        });
+    }
+    
+    /**
      * Prevents watering can items from being converted to plain water buckets
      * when the player picks up water. This event fires BEFORE the bucket becomes
      * a water bucket.
@@ -50,15 +61,18 @@ public class FarmingListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBucketFill(PlayerBucketFillEvent event) {
         Player player = event.getPlayer();
-        ItemStack itemInHand = event.getItemStack();
+        // Get the actual item in the player's hand, not the event's item
+        // because event.getItemStack() might return the result (water bucket)
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
         
         // Check if the item being used is a watering can
         if (plugin.getQualityItemManager().isWateringCanItem(itemInHand)) {
-            // Cancel the default bucket fill behavior
+            // Cancel the default bucket fill behavior - MUST cancel to prevent water bucket
             event.setCancelled(true);
             
-            // The custom filling is handled by handleWateringCan in onPlayerInteract
-            // But sometimes the bucket fill event fires first, so we handle it here too
+            // Set the result to be the original watering can to maintain consistency
+            event.setItemStack(itemInHand);
+            
             QualityItemManager qim = plugin.getQualityItemManager();
             
             int currentWater = qim.getWateringCanWater(itemInHand);
@@ -71,8 +85,10 @@ public class FarmingListener implements Listener {
             
             // Fill the can (fills to full)
             ItemStack filledCan = qim.fillWateringCan(itemInHand);
-            player.getInventory().setItemInMainHand(filledCan);
-            // After filling, water level is maxCapacity
+            
+            // Use helper method to update inventory on next tick
+            updateMainHandNextTick(player, filledCan);
+            
             player.sendMessage("§bWatering can filled! §7Water: " + maxCapacity + "/" + maxCapacity);
             player.playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL, 0.5f, 1.2f);
         }
@@ -436,7 +452,10 @@ public class FarmingListener implements Listener {
             
             // Fill the can
             ItemStack filledCan = qim.fillWateringCan(item);
-            player.getInventory().setItemInMainHand(filledCan);
+            
+            // Use helper method to update inventory on next tick
+            updateMainHandNextTick(player, filledCan);
+            
             player.sendMessage("§bFilled watering can! §7(" + maxCapacity + "/" + maxCapacity + " water)");
             player.playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL, 0.5f, 1.2f);
             return;
@@ -473,7 +492,9 @@ public class FarmingListener implements Listener {
                 int newWater = currentWater - 1;
                 int maxCapacity = qim.getWateringCanMaxCapacity(item);
                 ItemStack updatedCan = qim.setWateringCanWater(item, newWater);
-                player.getInventory().setItemInMainHand(updatedCan);
+                
+                // Use helper method to update inventory on next tick
+                updateMainHandNextTick(player, updatedCan);
                 
                 if (newWater > 0) {
                     player.sendMessage("§7Watering can: " + newWater + "/" + maxCapacity + " water remaining");
