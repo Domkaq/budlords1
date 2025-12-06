@@ -542,7 +542,7 @@ public class StrainManager {
             StrainVisualConfig tfVisual = new StrainVisualConfig();
             tfVisual.applyTheme(StrainVisualConfig.VisualTheme.FIRE_OG);
             tfVisual.setLeafMaterial(Material.MAGMA_BLOCK);
-            tfVisual.setBudMaterial(Material.LAVA_BUCKET);
+            tfVisual.setBudMaterial(Material.MAGMA_BLOCK);
             tfVisual.setBudType(StrainVisualConfig.BudType.VOLCANO);
             tfVisual.setLeafColorPrimary(org.bukkit.Color.fromRGB(255, 69, 0));
             tfVisual.setAmbientParticle(org.bukkit.Particle.LAVA);

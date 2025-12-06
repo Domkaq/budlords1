@@ -611,11 +611,16 @@ public class JointRollingManager implements InventoryHolder {
             
             // Brief delay before next stage
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                // IMPORTANT: Only remove from transitioning AFTER opening the new inventory
-                // to prevent the inventory close event from cleaning up the session
-                if (activeSessions.containsKey(player.getUniqueId())) {
-                    openMinigameGUI(player, session);
+                // Only proceed if session is still active
+                if (!activeSessions.containsKey(player.getUniqueId())) {
+                    transitioning.remove(player.getUniqueId());
+                    return;
                 }
+                
+                // Open the new inventory and then remove from transitioning
+                // This order is important to prevent race conditions
+                openMinigameGUI(player, session);
+                
                 // Now it's safe to remove from transitioning since the new inventory is open
                 transitioning.remove(player.getUniqueId());
             }, 20L);

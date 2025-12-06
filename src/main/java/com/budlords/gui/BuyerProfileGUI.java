@@ -213,10 +213,10 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 "",
                 "§7Current: " + weatherDisplay,
                 "",
-                "§7Check weather conditions",
-                "§7that affect your plants.",
+                "§7View weather info",
+                "§7in Stats page.",
                 "",
-                "§e▶ Tap to open",
+                "§e▶ Tap to view stats",
                 "§8ID: app_weather"
             )));
 
@@ -246,10 +246,10 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             Arrays.asList(
                 "§8━━━━━━━━━━━━━━━━",
                 "",
-                "§7Check current market",
-                "§7conditions and events.",
+                "§7View earnings and",
+                "§7market info in Stats.",
                 "",
-                "§e▶ Tap to open",
+                "§e▶ Tap to view stats",
                 "§8ID: app_market"
             )));
 
@@ -943,7 +943,8 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                         return;
                     }
                     if (line.equals("§8ID: app_weather")) {
-                        openStatsPage(player); // Weather is in stats page
+                        // Weather info is shown in stats page
+                        openStatsPage(player);
                         return;
                     }
                     if (line.equals("§8ID: app_plants")) {
@@ -951,7 +952,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                         return;
                     }
                     if (line.equals("§8ID: app_market")) {
-                        // Show market info - for now redirect to stats
+                        // Market info is shown in stats page
                         openStatsPage(player);
                         return;
                     }
