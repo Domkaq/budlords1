@@ -27,14 +27,20 @@ public class AmbientEffectsManager {
     private BukkitTask weatherEffectTask;
     private BukkitTask fireflyTask;
     
-    // Effect settings
-    private static final int AMBIENT_INTERVAL_TICKS = 60;      // 3 seconds
-    private static final int WEATHER_INTERVAL_TICKS = 100;     // 5 seconds
-    private static final int FIREFLY_INTERVAL_TICKS = 40;      // 2 seconds
+    // Effect settings - optimized for better performance with many plants
+    private static final int AMBIENT_INTERVAL_TICKS = 100;     // 5 seconds (increased from 3)
+    private static final int WEATHER_INTERVAL_TICKS = 120;     // 6 seconds (increased from 5)
+    private static final int FIREFLY_INTERVAL_TICKS = 60;      // 3 seconds (increased from 2)
     
-    private static final double FIREFLY_SPAWN_CHANCE = 0.4;
-    private static final double POLLEN_SPAWN_CHANCE = 0.3;
-    private static final double SPARKLE_CHANCE = 0.2;
+    // Reduced spawn chances for better performance
+    private static final double FIREFLY_SPAWN_CHANCE = 0.25;   // Reduced from 0.4
+    private static final double POLLEN_SPAWN_CHANCE = 0.2;     // Reduced from 0.3
+    private static final double SPARKLE_CHANCE = 0.15;         // Reduced from 0.2
+    
+    // Performance limits
+    private static final int MAX_PARTICLES_PER_CYCLE = 30;     // Maximum particles per update cycle
+    private static final int MANY_PLANTS_THRESHOLD = 15;       // Consider "many plants" threshold
+    private static final double MANY_PLANTS_SPAWN_REDUCTION = 0.5; // Spawn chance reduction factor when many plants
 
     public AmbientEffectsManager(BudLords plugin, FarmingManager farmingManager, StrainManager strainManager) {
         this.plugin = plugin;
@@ -50,11 +56,20 @@ public class AmbientEffectsManager {
         ambientTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             Collection<Plant> plants = farmingManager.getAllPlants();
             
+            // Performance optimization: limit particle spawning when many plants exist
+            int plantCount = plants.size();
+            boolean manyPlants = plantCount > MANY_PLANTS_THRESHOLD;
+            int particlesSpawned = 0;
+            
             for (Plant plant : plants) {
                 if (!isChunkLoaded(plant.getLocation())) continue;
                 
+                // Limit total particles when there are many plants
+                if (manyPlants && particlesSpawned >= MAX_PARTICLES_PER_CYCLE) break;
+                
                 // Spawn ambient particles based on plant state
                 spawnAmbientParticles(plant);
+                particlesSpawned++;
             }
         }, AMBIENT_INTERVAL_TICKS, AMBIENT_INTERVAL_TICKS);
     }
@@ -63,8 +78,16 @@ public class AmbientEffectsManager {
         weatherEffectTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             Collection<Plant> plants = farmingManager.getAllPlants();
             
+            // Performance optimization: limit particle spawning when many plants exist
+            int plantCount = plants.size();
+            boolean manyPlants = plantCount > MANY_PLANTS_THRESHOLD;
+            int particlesSpawned = 0;
+            
             for (Plant plant : plants) {
                 if (!isChunkLoaded(plant.getLocation())) continue;
+                
+                // Limit total particles when there are many plants
+                if (manyPlants && particlesSpawned >= MAX_PARTICLES_PER_CYCLE) break;
                 
                 World world = plant.getLocation().getWorld();
                 if (world == null) continue;
@@ -79,6 +102,7 @@ public class AmbientEffectsManager {
                     // Day time effects
                     spawnDayEffects(plant);
                 }
+                particlesSpawned++;
             }
         }, WEATHER_INTERVAL_TICKS, WEATHER_INTERVAL_TICKS);
     }
@@ -87,16 +111,27 @@ public class AmbientEffectsManager {
         fireflyTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             Collection<Plant> plants = farmingManager.getAllPlants();
             
+            // Performance optimization: limit fireflies when many plants exist
+            int plantCount = plants.size();
+            boolean manyPlants = plantCount > MANY_PLANTS_THRESHOLD;
+            int firefliesSpawned = 0;
+            int maxFireflies = manyPlants ? 10 : 20; // Limit fireflies when many plants
+            
             for (Plant plant : plants) {
                 if (!isChunkLoaded(plant.getLocation())) continue;
+                
+                // Limit total fireflies when there are many plants
+                if (manyPlants && firefliesSpawned >= maxFireflies) break;
                 
                 World world = plant.getLocation().getWorld();
                 if (world == null) continue;
                 
                 // Fireflies only at night near mature plants
                 if (world.getTime() >= 13000 && world.getTime() <= 23000 && plant.isFullyGrown()) {
-                    if (ThreadLocalRandom.current().nextDouble() < FIREFLY_SPAWN_CHANCE) {
+                    double spawnChance = manyPlants ? FIREFLY_SPAWN_CHANCE * MANY_PLANTS_SPAWN_REDUCTION : FIREFLY_SPAWN_CHANCE;
+                    if (ThreadLocalRandom.current().nextDouble() < spawnChance) {
                         spawnFirefly(plant.getLocation());
+                        firefliesSpawned++;
                     }
                 }
             }
@@ -305,6 +340,7 @@ public class AmbientEffectsManager {
 
     /**
      * Plays a harvest celebration effect at the given location.
+     * Optimized to reduce particle spam.
      */
     public void playHarvestCelebration(Location loc, Strain.Rarity rarity, StarRating quality) {
         World world = loc.getWorld();
@@ -312,28 +348,28 @@ public class AmbientEffectsManager {
         
         Location effectLoc = loc.clone().add(0.5, 0.5, 0.5);
         
-        // Base particles
+        // Reduced base particles for better performance
         world.spawnParticle(Particle.VILLAGER_HAPPY, effectLoc, 
-            15, 0.3, 0.3, 0.3, 0.1);
+            8, 0.3, 0.3, 0.3, 0.1);
         world.spawnParticle(Particle.COMPOSTER, effectLoc, 
-            10, 0.3, 0.3, 0.3, 0.05);
+            5, 0.3, 0.3, 0.3, 0.05);
         
-        // Quality-based effects
+        // Quality-based effects (reduced)
         if (quality == StarRating.FIVE_STAR) {
             world.spawnParticle(Particle.END_ROD, effectLoc, 
-                20, 0.4, 0.5, 0.4, 0.05);
+                10, 0.4, 0.5, 0.4, 0.05);
             world.spawnParticle(Particle.TOTEM, effectLoc.clone().add(0, 0.3, 0), 
-                5, 0.2, 0.2, 0.2, 0.1);
+                3, 0.2, 0.2, 0.2, 0.1);
         }
         
-        // Rarity-based effects
+        // Rarity-based effects (reduced)
         if (rarity == Strain.Rarity.LEGENDARY) {
             world.spawnParticle(Particle.TOTEM, effectLoc, 
-                30, 0.5, 0.7, 0.5, 0.15);
+                15, 0.5, 0.7, 0.5, 0.15);
             world.playSound(loc, Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.7f, 1.0f);
         } else if (rarity == Strain.Rarity.RARE) {
             world.spawnParticle(Particle.END_ROD, effectLoc, 
-                15, 0.4, 0.5, 0.4, 0.03);
+                8, 0.4, 0.5, 0.4, 0.03);
             world.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.3f);
         } else {
             world.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.2f);
