@@ -89,7 +89,12 @@ public class StrainVisualConfig {
         ANCIENT("Ancient", Material.ANCIENT_DEBRIS, "Rare ancient buds"),
         BEACON("Beacon", Material.BEACON, "Glowing beacon buds"),
         CONDUIT("Conduit", Material.CONDUIT, "Ocean power buds"),
-        HEART("Heart", Material.PINK_GLAZED_TERRACOTTA, "Love heart buds");
+        HEART("Heart", Material.PINK_GLAZED_TERRACOTTA, "Love heart buds"),
+        EMERALD("Emerald", Material.EMERALD_BLOCK, "Merchant's emerald buds"),
+        VOLCANO("Volcano", Material.MAGMA_BLOCK, "Volcanic lava buds"),
+        VOID("Void", Material.OBSIDIAN, "Dark void dimension buds"),
+        STAR("Star", Material.NETHER_STAR, "Celestial star buds"),
+        MIRROR("Mirror", Material.GLASS, "Reflective mirror buds");
         
         private final String displayName;
         private final Material defaultMaterial;
