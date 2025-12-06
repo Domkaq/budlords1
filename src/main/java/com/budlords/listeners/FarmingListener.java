@@ -890,13 +890,22 @@ public class FarmingListener implements Listener {
         
         // Check for formation bonus (same-strain plants in patterns)
         if (plugin.getFormationManager() != null) {
+            int farmingXP = getPlayerFarmingXP(player);
+            
             int formationBonus = plugin.getFormationManager().calculateFormationBonus(plant, player.getUniqueId());
             if (formationBonus > 0 && finalRating.getStars() + formationBonus <= 6) {
                 com.budlords.farming.FormationManager.FormationType formation = 
-                    plugin.getFormationManager().detectFormation(plant.getLocation(), plant.getStrainId());
+                    plugin.getFormationManager().detectFormation(plant.getLocation(), plant.getStrainId(), farmingXP);
                 finalRating = StarRating.fromValue(finalRating.getStars() + formationBonus);
                 player.sendMessage("§a✦ " + com.budlords.farming.FormationManager.getFormationDisplay(formation) + 
                     " §7Bonus! §a+" + formationBonus + " star(s)!");
+                
+                // Apply formation special effects!
+                com.budlords.farming.FormationManager.FormationEffect effect = 
+                    plugin.getFormationManager().getFormationEffect(plant, player.getUniqueId());
+                if (effect != null) {
+                    plugin.getFormationManager().applyFormationEffects(player, effect);
+                }
             }
         }
         
@@ -943,13 +952,22 @@ public class FarmingListener implements Listener {
         
         // Check for formation bonus (same-strain plants in patterns)
         if (plugin.getFormationManager() != null) {
+            int farmingXP = getPlayerFarmingXP(player);
+            
             int formationBonus = plugin.getFormationManager().calculateFormationBonus(plant, player.getUniqueId());
             if (formationBonus > 0 && finalRating.getStars() + formationBonus <= 6) {
                 com.budlords.farming.FormationManager.FormationType formation = 
-                    plugin.getFormationManager().detectFormation(plant.getLocation(), plant.getStrainId());
+                    plugin.getFormationManager().detectFormation(plant.getLocation(), plant.getStrainId(), farmingXP);
                 finalRating = StarRating.fromValue(finalRating.getStars() + formationBonus);
                 player.sendMessage("§a✦ " + com.budlords.farming.FormationManager.getFormationDisplay(formation) + 
                     " §7Bonus! §a+" + formationBonus + " star(s)!");
+                
+                // Apply formation special effects!
+                com.budlords.farming.FormationManager.FormationEffect effect = 
+                    plugin.getFormationManager().getFormationEffect(plant, player.getUniqueId());
+                if (effect != null) {
+                    plugin.getFormationManager().applyFormationEffects(player, effect);
+                }
             }
         }
 
@@ -1051,5 +1069,18 @@ public class FarmingListener implements Listener {
         if (quality >= 60) return "§a★★★☆☆ Good";
         if (quality >= 40) return "§e★★☆☆☆ Average";
         return "§c★☆☆☆☆ Poor";
+    }
+    
+    /**
+     * Gets the player's farming XP for formation detection.
+     * @param player The player
+     * @return The farming XP, or 0 if skill manager is unavailable
+     */
+    private int getPlayerFarmingXP(Player player) {
+        if (plugin.getSkillManager() != null) {
+            return plugin.getSkillManager().getTreeXP(player.getUniqueId(), 
+                com.budlords.skills.Skill.SkillTree.FARMING);
+        }
+        return 0;
     }
 }
