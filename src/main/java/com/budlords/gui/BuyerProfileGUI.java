@@ -859,9 +859,14 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
     
     /**
      * Opens the plant details GUI showing all the player's plants.
+     * 
+     * @SuppressWarnings("deprecation") is used because Bukkit.createInventory with string title
+     * is deprecated in favor of Adventure API's Component, but we maintain compatibility
+     * with Spigot servers that don't support Adventure API.
      */
     @SuppressWarnings("deprecation")
     private void openPlantDetailsGUI(Player player) {
+        // Using deprecated string title for Spigot compatibility
         Inventory inv = Bukkit.createInventory(this, 54, "§b§l📱 Plant Details");
         
         // Border

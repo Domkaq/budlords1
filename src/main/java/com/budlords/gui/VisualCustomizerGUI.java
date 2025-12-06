@@ -416,7 +416,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
 
         // Bud type selection (slots 29-34)
         BudType[] specialBuds = {BudType.SKULL, BudType.ZOMBIE, BudType.CREEPER, BudType.WITHER, 
-            BudType.DRAGON, BudType.PIGLIN, BudType.CRYSTAL, BudType.FIRE, BudType.ICE, 
+            BudType.DRAGON, BudType.PLAYER_HEAD, BudType.CRYSTAL, BudType.FIRE, BudType.ICE, 
             BudType.NETHER, BudType.END, BudType.AMETHYST};
         int[] budSlots = {29, 30, 31, 32, 33, 34};
         
@@ -668,15 +668,15 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
                 return;
             }
             
-            // Validate player name (Minecraft username rules)
+            // Validate player name (Minecraft username rules: 3-16 chars, alphanumeric + underscore)
             if (input.length() < 3 || input.length() > 16) {
-                player.sendMessage("§c✗ Player name must be 3-16 characters!");
+                player.sendMessage("§c✗ Minecraft username must be 3-16 characters!");
                 player.sendMessage("§7Type a valid Minecraft username, or type §fcancel §7to go back.");
                 return;
             }
             
             if (!input.matches("^[a-zA-Z0-9_]+$")) {
-                player.sendMessage("§c✗ Invalid username! Only letters, numbers, and underscores allowed.");
+                player.sendMessage("§c✗ Invalid Minecraft username! Only letters, numbers, and underscores allowed.");
                 player.sendMessage("§7Type a valid Minecraft username, or type §fcancel §7to go back.");
                 return;
             }
