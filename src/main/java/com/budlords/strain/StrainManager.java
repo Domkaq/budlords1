@@ -86,6 +86,11 @@ public class StrainManager {
             Strain purpleHaze = new Strain("purple_haze", "Purple Haze", Strain.Rarity.UNCOMMON, 60, 4, 65);
             purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.RAINBOW_AURA, 3));
             purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DRUNK_VISION, 2));
+            purpleHaze.setIconMaterial(Material.PURPLE_DYE);
+            // Apply purple visual theme - true to the real Purple Haze strain
+            StrainVisualConfig purpleHazeVisual = new StrainVisualConfig();
+            purpleHazeVisual.applyTheme(StrainVisualConfig.VisualTheme.PURPLE_HAZE);
+            purpleHaze.setVisualConfig(purpleHazeVisual);
             registerStrain(purpleHaze);
             
             Strain girlScoutCookies = new Strain("girl_scout_cookies", "Girl Scout Cookies", Strain.Rarity.UNCOMMON, 55, 4, 60);
@@ -106,6 +111,15 @@ public class StrainManager {
             Strain granddaddyPurple = new Strain("granddaddy_purple", "Granddaddy Purple", Strain.Rarity.UNCOMMON, 58, 4, 68);
             granddaddyPurple.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MEDITATION, 3));
             granddaddyPurple.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BUBBLE_AURA, 2));
+            granddaddyPurple.setIconMaterial(Material.PURPLE_DYE);
+            // Apply purple visual theme - Granddaddy Purple is known for its deep purple buds
+            StrainVisualConfig gdpVisual = new StrainVisualConfig();
+            gdpVisual.applyTheme(StrainVisualConfig.VisualTheme.PURPLE_HAZE);
+            // Customize to be darker purple than Purple Haze
+            gdpVisual.setLeafColorPrimary(org.bukkit.Color.fromRGB(75, 0, 130)); // Indigo/deep purple
+            gdpVisual.setBudType(StrainVisualConfig.BudType.NORMAL);
+            gdpVisual.setBudMaterial(Material.PURPLE_CONCRETE);
+            granddaddyPurple.setVisualConfig(gdpVisual);
             registerStrain(granddaddyPurple);
             
             // === RARE STRAINS ===
@@ -378,7 +392,14 @@ public class StrainManager {
     }
     
     public ItemStack createBudItem(Strain strain, int amount, com.budlords.quality.StarRating starRating) {
-        ItemStack bud = new ItemStack(Material.GREEN_DYE, amount);
+        // Use strain's icon material if it's a dye (for colored buds like purple strains)
+        // Otherwise default to GREEN_DYE
+        Material budMaterial = strain.getIconMaterial();
+        if (budMaterial == null || !budMaterial.name().endsWith("_DYE")) {
+            budMaterial = Material.GREEN_DYE;
+        }
+        
+        ItemStack bud = new ItemStack(budMaterial, amount);
         ItemMeta meta = bud.getItemMeta();
         
         if (meta != null) {
@@ -473,7 +494,10 @@ public class StrainManager {
     }
 
     public boolean isBudItem(ItemStack item) {
-        if (item == null || item.getType() != Material.GREEN_DYE) return false;
+        if (item == null) return false;
+        // Accept any dye material for buds (for colored strains like purple)
+        Material type = item.getType();
+        if (!type.name().endsWith("_DYE")) return false;
         if (!item.hasItemMeta()) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null || !meta.hasDisplayName()) return false;

@@ -81,6 +81,9 @@ public class BudLords extends JavaPlugin {
     
     // v3.1.0 - 3D Plant Visualization
     private com.budlords.farming.PlantVisualizationManager plantVisualizationManager;
+    
+    // v3.2.0 - Formation bonus system
+    private com.budlords.farming.FormationManager formationManager;
 
     @Override
     public void onEnable() {
@@ -135,6 +138,9 @@ public class BudLords extends JavaPlugin {
             
             // v3.1.0 - 3D Plant Visualization with armor stands
             this.plantVisualizationManager = new com.budlords.farming.PlantVisualizationManager(this, strainManager);
+            
+            // v3.2.0 - Formation bonus system for grouped plants
+            this.formationManager = new com.budlords.farming.FormationManager(this, farmingManager);
             
             // Register commands
             registerCommands();
@@ -500,5 +506,9 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.farming.PlantVisualizationManager getPlantVisualizationManager() {
         return plantVisualizationManager;
+    }
+    
+    public com.budlords.farming.FormationManager getFormationManager() {
+        return formationManager;
     }
 }

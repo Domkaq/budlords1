@@ -54,6 +54,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private static final int CONFIRM_SLOT = 31;
     private static final int CANCEL_SLOT = 27;
     private static final int INFO_SLOT = 4;
+    
+    // Dose-based success chance penalty constants
+    // Large sales (more grams) are riskier
+    private static final int DOSE_PENALTY_THRESHOLD = 15;  // Grams before penalty applies
+    private static final double DOSE_PENALTY_DIVISOR = 5.0; // Grams per penalty increment
+    private static final double DOSE_PENALTY_RATE = 0.01;   // 1% penalty per increment
 
     public MobSaleGUI(BudLords plugin, EconomyManager economyManager, 
                       PackagingManager packagingManager, StrainManager strainManager) {
@@ -324,6 +330,29 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         }
         return count;
     }
+    
+    /**
+     * Counts the total doses (grams) in a sale session.
+     * This is used for success chance calculation - larger deals are riskier.
+     * @param session The sale session
+     * @return Total grams being sold
+     */
+    private int countTotalDoses(SaleSession session) {
+        int totalDoses = 0;
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            
+            if (packagingManager.isPackagedProduct(item)) {
+                // Get grams from package and multiply by item count
+                int gramsPerPackage = packagingManager.getWeightFromPackage(item);
+                totalDoses += gramsPerPackage * item.getAmount();
+            } else if (JointItems.isJoint(item)) {
+                // Joints count as 1 dose per joint
+                totalDoses += item.getAmount();
+            }
+        }
+        return totalDoses;
+    }
 
     private String getPriceBreakdown(SaleSession session) {
         StringBuilder breakdown = new StringBuilder();
@@ -410,10 +439,11 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             }
         }
         
-        // Penalty for large sales
-        int itemCount = countItems(session);
-        if (itemCount > 10) {
-            double penalty = (itemCount - 10) * 0.02;
+        // Penalty for large sales - based on total doses (grams) being sold
+        // This makes selling larger packages riskier than many small ones
+        int totalDoses = countTotalDoses(session);
+        if (totalDoses > DOSE_PENALTY_THRESHOLD) {
+            double penalty = ((totalDoses - DOSE_PENALTY_THRESHOLD) / DOSE_PENALTY_DIVISOR) * DOSE_PENALTY_RATE;
             successChance = Math.max(0.1, successChance - penalty);
         }
         

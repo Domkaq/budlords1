@@ -104,6 +104,19 @@ public class FarmingListener implements Listener {
         Block clickedBlock = event.getClickedBlock();
 
         if (clickedBlock == null) return;
+        
+        // Check if clicking on a placed lamp to show range (with empty hand or any item)
+        if (farmingManager.hasPlacedLampAt(clickedBlock.getLocation())) {
+            com.budlords.quality.PlacedLamp placedLamp = farmingManager.getPlacedLampAt(clickedBlock.getLocation());
+            if (placedLamp != null) {
+                event.setCancelled(true);
+                farmingManager.showLampRange(placedLamp);
+                player.sendMessage("§e✦ " + placedLamp.getStarRating().getDisplay() + " §eGrow Lamp");
+                player.sendMessage("§7Range: §e" + placedLamp.getRange() + " blocks §7(below lamp)");
+                player.sendMessage("§7Quality Bonus: §a+" + String.format("%.0f%%", placedLamp.getQualityBonus() * 100));
+                return;
+            }
+        }
 
         // Check if placing a pot
         if (GrowingPot.isPotItem(item)) {
@@ -300,55 +313,90 @@ public class FarmingListener implements Listener {
         StarRating lampRating = GrowLamp.getRatingFromItem(item);
         if (lampRating == null) lampRating = StarRating.ONE_STAR;
         
-        // Calculate lamp effect radius based on star rating (1-5 blocks)
-        int lampRadius = lampRating.getStars();
-        
-        // Find all plants within the lamp's effect radius
-        Location centerLocation = clickedBlock.getLocation().add(0.5, 0.5, 0.5);
-        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(centerLocation, lampRadius);
-        
-        if (nearbyPlants.isEmpty()) {
-            // Also try to search around the clicked location in case it's far from plants
-            nearbyPlants = farmingManager.getNearbyPlants(clickedBlock.getRelative(BlockFace.UP).getLocation(), lampRadius);
-        }
-        
-        if (nearbyPlants.isEmpty()) {
-            nearbyPlants = farmingManager.getNearbyPlants(clickedBlock.getRelative(BlockFace.DOWN).getLocation(), lampRadius);
-        }
-        
-        if (nearbyPlants.isEmpty()) {
-            player.sendMessage("§cNo plants found nearby! Place the lamp closer to growing plants.");
-            player.sendMessage("§7Lamp range: §e" + lampRadius + " blocks §7based on star rating.");
-            return;
-        }
-        
-        // Apply lamp buff to ALL nearby plants
-        int affectedCount = 0;
-        for (Plant plant : nearbyPlants) {
-            // Apply the lamp rating to each plant
-            plant.setLampRating(lampRating);
-            affectedCount++;
-        }
-        
-        // Consume lamp item (only consume 1 lamp even if multiple plants affected)
-        if (player.getGameMode() != GameMode.CREATIVE) {
-            if (item.getAmount() == 1) {
-                player.getInventory().setItemInMainHand(null);
-            } else {
-                item.setAmount(item.getAmount() - 1);
+        // Check if clicking on an existing placed lamp (show range)
+        if (farmingManager.hasPlacedLampAt(clickedBlock.getLocation())) {
+            com.budlords.quality.PlacedLamp existingLamp = farmingManager.getPlacedLampAt(clickedBlock.getLocation());
+            if (existingLamp != null) {
+                farmingManager.showLampRange(existingLamp);
+                player.sendMessage("§e✦ Lamp Range: §7" + existingLamp.getRange() + " blocks");
+                player.sendMessage("§7Quality: " + existingLamp.getStarRating().getDisplay());
+                return;
             }
         }
         
-        // Show success message with affected plant count
-        player.sendMessage("§a✦ Installed " + lampRating.getDisplay() + " §aGrow Lamp!");
-        player.sendMessage("§7Affected plants: §e" + affectedCount);
-        player.sendMessage("§7Light bonus radius: §e" + lampRadius + " blocks");
+        // Place lamp above the clicked block
+        Block targetBlock = clickedBlock.getRelative(BlockFace.UP);
         
-        // Lamp glow particles for all affected area
-        Location particleLoc = centerLocation.clone().add(0, 1.0, 0);
-        centerLocation.getWorld().spawnParticle(Particle.GLOW, particleLoc, 20 + (lampRating.getStars() * 5), 
-            lampRadius * 0.5, 0.5, lampRadius * 0.5, 0.02);
-        centerLocation.getWorld().playSound(centerLocation, Sound.BLOCK_BEACON_ACTIVATE, 0.5f, 1.2f);
+        // Check if space is available
+        if (targetBlock.getType() != Material.AIR) {
+            // Try to place on top of clicked block if it's solid
+            if (clickedBlock.getType().isSolid()) {
+                targetBlock = clickedBlock.getRelative(BlockFace.UP);
+            } else {
+                player.sendMessage("§cCannot place lamp here - space is not empty!");
+                return;
+            }
+        }
+        
+        // Check if there's already a lamp at target
+        if (farmingManager.hasPlacedLampAt(targetBlock.getLocation())) {
+            player.sendMessage("§cThere is already a lamp here!");
+            return;
+        }
+        
+        // Place the lamp block (using the lamp's material based on rating)
+        Material lampMaterial = getLampMaterial(lampRating);
+        targetBlock.setType(lampMaterial);
+        
+        // Register the lamp in the tracking system
+        if (farmingManager.placeLamp(targetBlock.getLocation(), lampRating, player.getUniqueId())) {
+            // Consume lamp item
+            if (player.getGameMode() != GameMode.CREATIVE) {
+                if (item.getAmount() == 1) {
+                    player.getInventory().setItemInMainHand(null);
+                } else {
+                    item.setAmount(item.getAmount() - 1);
+                }
+            }
+            
+            int lampRange = lampRating.getStars() + 1;
+            
+            // Show success message
+            player.sendMessage("§a✦ Placed " + lampRating.getDisplay() + " §aGrow Lamp!");
+            player.sendMessage("§7Effect range: §e" + lampRange + " blocks §7(below lamp)");
+            player.sendMessage("§7Right-click the lamp to see its range.");
+            
+            // Show range visualization
+            com.budlords.quality.PlacedLamp placedLamp = farmingManager.getPlacedLampAt(targetBlock.getLocation());
+            if (placedLamp != null) {
+                farmingManager.showLampRange(placedLamp);
+            }
+            
+            // Lamp glow particles
+            Location particleLoc = targetBlock.getLocation().add(0.5, 0.5, 0.5);
+            targetBlock.getWorld().spawnParticle(Particle.GLOW, particleLoc, 20 + (lampRating.getStars() * 5), 
+                0.3, 0.3, 0.3, 0.02);
+            targetBlock.getWorld().playSound(particleLoc, Sound.BLOCK_BEACON_ACTIVATE, 0.5f, 1.2f);
+        } else {
+            // Placement failed - revert the block
+            targetBlock.setType(Material.AIR);
+            player.sendMessage("§cFailed to place lamp!");
+        }
+    }
+    
+    /**
+     * Gets the block material to use for a lamp based on its star rating.
+     */
+    private Material getLampMaterial(StarRating rating) {
+        return switch (rating) {
+            case ONE_STAR -> Material.LANTERN;
+            case TWO_STAR -> Material.SEA_LANTERN;
+            case THREE_STAR -> Material.GLOWSTONE;
+            case FOUR_STAR -> Material.SHROOMLIGHT;
+            case FIVE_STAR -> Material.END_ROD;
+            case SIX_STAR -> Material.BEACON;
+            default -> Material.LANTERN;
+        };
     }
 
     private void handleSeedPlanting(PlayerInteractEvent event, Player player, ItemStack item, Block clickedBlock) {
@@ -644,6 +692,28 @@ public class FarmingListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
+        Player player = event.getPlayer();
+        
+        // Check if breaking a placed lamp
+        if (farmingManager.hasPlacedLampAt(block.getLocation())) {
+            com.budlords.quality.PlacedLamp placedLamp = farmingManager.removePlacedLamp(block.getLocation());
+            if (placedLamp != null) {
+                event.setCancelled(true);
+                block.setType(Material.AIR);
+                
+                // Return the lamp item to the player
+                ItemStack lampItem = plugin.getQualityItemManager().createLamp(placedLamp.getStarRating(), 1);
+                HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(lampItem);
+                if (!leftover.isEmpty()) {
+                    leftover.values().forEach(i -> 
+                        player.getWorld().dropItemNaturally(player.getLocation(), i)
+                    );
+                }
+                player.sendMessage("§7Returned lamp: " + placedLamp.getStarRating().getDisplay());
+                player.playSound(player.getLocation(), Sound.BLOCK_LANTERN_BREAK, 0.5f, 1.0f);
+                return;
+            }
+        }
         
         // Check if breaking a plant (WHEAT for legacy, or any block with plant tracking for 3D)
         Plant plant = farmingManager.getPlantAt(block.getLocation());
@@ -652,8 +722,6 @@ public class FarmingListener implements Listener {
             if (plant != null) {
                 event.setCancelled(true);
                 event.setDropItems(false);
-                
-                Player player = event.getPlayer();
                 
                 if (plant.isFullyGrown()) {
                     // Check for scissors in hand for bonus
@@ -820,6 +888,27 @@ public class FarmingListener implements Listener {
             player.sendMessage("§6✦ Quality Upgrade! §7Scissors improved the bud quality!");
         }
         
+        // Check for formation bonus (same-strain plants in patterns)
+        if (plugin.getFormationManager() != null) {
+            int farmingXP = getPlayerFarmingXP(player);
+            
+            int formationBonus = plugin.getFormationManager().calculateFormationBonus(plant, player.getUniqueId());
+            if (formationBonus > 0 && finalRating.getStars() + formationBonus <= 6) {
+                com.budlords.farming.FormationManager.FormationType formation = 
+                    plugin.getFormationManager().detectFormation(plant.getLocation(), plant.getStrainId(), farmingXP);
+                finalRating = StarRating.fromValue(finalRating.getStars() + formationBonus);
+                player.sendMessage("§a✦ " + com.budlords.farming.FormationManager.getFormationDisplay(formation) + 
+                    " §7Bonus! §a+" + formationBonus + " star(s)!");
+                
+                // Apply formation special effects!
+                com.budlords.farming.FormationManager.FormationEffect effect = 
+                    plugin.getFormationManager().getFormationEffect(plant, player.getUniqueId());
+                if (effect != null) {
+                    plugin.getFormationManager().applyFormationEffects(player, effect);
+                }
+            }
+        }
+        
         // Check for rare drop
         if (scissors.triggersRareDrop()) {
             // Give bonus seed with higher rating
@@ -860,6 +949,27 @@ public class FarmingListener implements Listener {
 
         // Calculate final bud star rating (without scissors bonus)
         StarRating finalRating = plant.calculateFinalBudRating(null);
+        
+        // Check for formation bonus (same-strain plants in patterns)
+        if (plugin.getFormationManager() != null) {
+            int farmingXP = getPlayerFarmingXP(player);
+            
+            int formationBonus = plugin.getFormationManager().calculateFormationBonus(plant, player.getUniqueId());
+            if (formationBonus > 0 && finalRating.getStars() + formationBonus <= 6) {
+                com.budlords.farming.FormationManager.FormationType formation = 
+                    plugin.getFormationManager().detectFormation(plant.getLocation(), plant.getStrainId(), farmingXP);
+                finalRating = StarRating.fromValue(finalRating.getStars() + formationBonus);
+                player.sendMessage("§a✦ " + com.budlords.farming.FormationManager.getFormationDisplay(formation) + 
+                    " §7Bonus! §a+" + formationBonus + " star(s)!");
+                
+                // Apply formation special effects!
+                com.budlords.farming.FormationManager.FormationEffect effect = 
+                    plugin.getFormationManager().getFormationEffect(plant, player.getUniqueId());
+                if (effect != null) {
+                    plugin.getFormationManager().applyFormationEffects(player, effect);
+                }
+            }
+        }
 
         ItemStack buds = strainManager.createBudItem(strain, actualYield, finalRating);
         HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(buds);
@@ -959,5 +1069,18 @@ public class FarmingListener implements Listener {
         if (quality >= 60) return "§a★★★☆☆ Good";
         if (quality >= 40) return "§e★★☆☆☆ Average";
         return "§c★☆☆☆☆ Poor";
+    }
+    
+    /**
+     * Gets the player's farming XP for formation detection.
+     * @param player The player
+     * @return The farming XP, or 0 if skill manager is unavailable
+     */
+    private int getPlayerFarmingXP(Player player) {
+        if (plugin.getSkillManager() != null) {
+            return plugin.getSkillManager().getTreeXP(player.getUniqueId(), 
+                com.budlords.skills.Skill.SkillTree.FARMING);
+        }
+        return 0;
     }
 }

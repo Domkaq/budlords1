@@ -66,6 +66,12 @@ public class PlantVisualizationManager {
     // Small armor stands render helmets ~0.5 blocks above spawn point, so we need
     // to go deeper to get the helmet inside the pot
     private static final double POT_Y_OFFSET = -1.35;
+    
+    // Specific Y offsets for early growth stages (stages 0-2) to ensure they appear inside the pot
+    // These stages need deeper positioning as they're smaller and should be more contained
+    private static final double SEED_Y_OFFSET = -1.5;    // Seeds deep inside pot
+    private static final double SPROUT_Y_OFFSET = -1.45; // Sprouts slightly higher but still in pot
+    private static final double VEG_Y_OFFSET = -1.35;    // Vegetative starts emerging from pot
 
     public PlantVisualizationManager(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
@@ -149,7 +155,8 @@ public class PlantVisualizationManager {
         
         // Base location - centered on the pot block (one below the tracked plant location)
         // Plant location is 1 block above pot, so we adjust down to be inside the pot
-        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
+        // Use SEED_Y_OFFSET for seeds to ensure they're deep inside the pot
+        Location baseLoc = loc.clone().add(0.5, SEED_Y_OFFSET, 0.5);
         
         // NOTE: Removed soil/moss layers as they were visually sticking out of the pot
         // The flower pot block itself provides the visual container
@@ -194,7 +201,8 @@ public class PlantVisualizationManager {
         boolean glowing = config != null && config.isGlowing();
         
         // Base location - centered inside the pot
-        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
+        // Use SPROUT_Y_OFFSET to ensure sprouts are positioned inside the pot
+        Location baseLoc = loc.clone().add(0.5, SPROUT_Y_OFFSET, 0.5);
         
         // NOTE: Removed soil/moss/bamboo decorations as they were sticking out of the pot
         // The flower pot block provides the visual container
@@ -261,7 +269,8 @@ public class PlantVisualizationManager {
         if (world == null) return ids;
         
         // Base location centered inside the pot
-        Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
+        // Use VEG_Y_OFFSET for vegetative stage - plants are starting to emerge from pot
+        Location baseLoc = loc.clone().add(0.5, VEG_Y_OFFSET, 0.5);
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         double leafScale = config != null ? config.getLeafScale() : 1.0;
