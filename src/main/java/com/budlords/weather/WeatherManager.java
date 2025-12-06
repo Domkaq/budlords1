@@ -103,7 +103,10 @@ public class WeatherManager {
     }
 
     private void broadcastWeatherChange() {
-        if (!plugin.getConfig().getBoolean("weather.broadcast-changes", true)) return;
+        // Weather changes are no longer broadcasted to chat
+        // Players can check weather via /market or the Dealer Phone
+        // The config option is kept for backwards compatibility but defaults to false
+        if (!plugin.getConfig().getBoolean("weather.broadcast-changes", false)) return;
         
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.sendMessage("");
