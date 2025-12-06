@@ -1,6 +1,6 @@
 package com.budlords.farming;
 
-import com.budlords.quality.StarRating;
+import com.budlords.strain.Strain;
 import org.bukkit.Location;
 
 import java.util.UUID;
@@ -16,20 +16,6 @@ public class Plant {
     private int growthStage; // 0 = seed, 1 = small, 2 = mid, 3 = full
     private int quality;
     private long lastGrowthUpdate;
-    
-    // Star quality ratings for pot-based growing
-    private StarRating potRating;
-    private StarRating seedRating;
-    private StarRating lampRating;
-    private StarRating fertilizerRating;
-    private double waterLevel;
-    private double nutrientLevel;
-    private UUID potId;
-    
-    // Cooldown tracking for watering quality bonus
-    private long lastWateringBonusTime;
-    // Default cooldown - can be overridden by config via FarmingManager
-    private static final long DEFAULT_WATERING_BONUS_COOLDOWN_MS = 60000L;
 
     public Plant(String strainId, Location location, UUID ownerUuid) {
         this.id = UUID.randomUUID();
@@ -40,9 +26,6 @@ public class Plant {
         this.growthStage = 0;
         this.quality = 50;
         this.lastGrowthUpdate = System.currentTimeMillis();
-        this.waterLevel = 0.5;
-        this.nutrientLevel = 0.3;
-        this.lastWateringBonusTime = 0;
     }
 
     public Plant(UUID id, String strainId, Location location, UUID ownerUuid, 
@@ -55,34 +38,6 @@ public class Plant {
         this.growthStage = growthStage;
         this.quality = quality;
         this.lastGrowthUpdate = lastGrowthUpdate;
-        this.waterLevel = 0.5;
-        this.nutrientLevel = 0.3;
-        this.lastWateringBonusTime = 0;
-    }
-    
-    /**
-     * Full constructor with star ratings for pot-based growing.
-     */
-    public Plant(UUID id, String strainId, Location location, UUID ownerUuid, 
-                 long plantedTime, int growthStage, int quality, long lastGrowthUpdate,
-                 StarRating potRating, StarRating seedRating, StarRating lampRating,
-                 StarRating fertilizerRating, double waterLevel, double nutrientLevel, UUID potId) {
-        this.id = id;
-        this.strainId = strainId;
-        this.location = location;
-        this.ownerUuid = ownerUuid;
-        this.plantedTime = plantedTime;
-        this.growthStage = growthStage;
-        this.quality = quality;
-        this.lastGrowthUpdate = lastGrowthUpdate;
-        this.potRating = potRating;
-        this.seedRating = seedRating;
-        this.lampRating = lampRating;
-        this.fertilizerRating = fertilizerRating;
-        this.waterLevel = waterLevel;
-        this.nutrientLevel = nutrientLevel;
-        this.potId = potId;
-        this.lastWateringBonusTime = 0;
     }
 
     public UUID getId() {
@@ -159,153 +114,6 @@ public class Plant {
                location.getBlockX() + "," + 
                location.getBlockY() + "," + 
                location.getBlockZ();
-    }
-
-    // Star rating getters and setters
-    
-    public StarRating getPotRating() {
-        return potRating;
-    }
-
-    public void setPotRating(StarRating potRating) {
-        this.potRating = potRating;
-    }
-
-    public StarRating getSeedRating() {
-        return seedRating;
-    }
-
-    public void setSeedRating(StarRating seedRating) {
-        this.seedRating = seedRating;
-    }
-
-    public StarRating getLampRating() {
-        return lampRating;
-    }
-
-    public void setLampRating(StarRating lampRating) {
-        this.lampRating = lampRating;
-    }
-
-    public StarRating getFertilizerRating() {
-        return fertilizerRating;
-    }
-
-    public void setFertilizerRating(StarRating fertilizerRating) {
-        this.fertilizerRating = fertilizerRating;
-    }
-
-    public double getWaterLevel() {
-        return waterLevel;
-    }
-
-    public void setWaterLevel(double waterLevel) {
-        this.waterLevel = Math.max(0, Math.min(1.0, waterLevel));
-    }
-
-    public void water() {
-        this.waterLevel = 1.0;
-    }
-    
-    /**
-     * Waters the plant using a specific quality watering can.
-     * Higher quality watering cans provide additional quality bonuses, but only
-     * if the watering bonus cooldown has passed (prevents spam for free quality).
-     * @param wateringCanRating The star rating of the watering can used
-     * @param cooldownMs The cooldown time in milliseconds (from config)
-     * @return true if quality bonus was applied, false if still on cooldown
-     */
-    public boolean water(StarRating wateringCanRating, long cooldownMs) {
-        this.waterLevel = 1.0;
-        
-        // Higher star watering cans give quality bonus when watering
-        // But only if the cooldown has passed to prevent spam
-        if (wateringCanRating != null) {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastWateringBonusTime >= cooldownMs) {
-                // Add quality bonus based on watering can quality
-                // 1-star: +1 quality, 5-star: +5 quality
-                int qualityBonus = wateringCanRating.getStars();
-                addQuality(qualityBonus);
-                lastWateringBonusTime = currentTime;
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Gets the remaining cooldown time for watering quality bonus in seconds.
-     * @param cooldownMs The cooldown time in milliseconds (from config)
-     * @return remaining cooldown in seconds, or 0 if no cooldown active
-     */
-    public long getWateringBonusCooldownRemaining(long cooldownMs) {
-        long elapsed = System.currentTimeMillis() - lastWateringBonusTime;
-        if (elapsed >= cooldownMs) {
-            return 0;
-        }
-        return (cooldownMs - elapsed) / 1000;
-    }
-
-    public double getNutrientLevel() {
-        return nutrientLevel;
-    }
-
-    public void setNutrientLevel(double nutrientLevel) {
-        this.nutrientLevel = Math.max(0, Math.min(1.0, nutrientLevel));
-    }
-
-    public void fertilize(StarRating fertilizerQuality) {
-        this.fertilizerRating = fertilizerQuality;
-        this.nutrientLevel = Math.min(1.0, this.nutrientLevel + (0.2 * fertilizerQuality.getStars()));
-    }
-
-    public UUID getPotId() {
-        return potId;
-    }
-
-    public void setPotId(UUID potId) {
-        this.potId = potId;
-    }
-
-    public boolean hasPot() {
-        return potId != null || potRating != null;
-    }
-
-    /**
-     * Calculates the overall care quality based on water, nutrients, and lamp.
-     * @return A value between 0.0 and 1.0 representing care quality
-     */
-    public double getCareQuality() {
-        double care = 0;
-        care += waterLevel * 0.4;      // 40% weight for water
-        care += nutrientLevel * 0.35;  // 35% weight for nutrients
-        care += (lampRating != null ? 0.25 : 0);  // 25% weight for lamp
-        return Math.min(1.0, care);
-    }
-
-    /**
-     * Calculates the effective growth speed multiplier based on all factors.
-     */
-    public double getGrowthSpeedMultiplier() {
-        double baseMult = potRating != null ? potRating.getGrowthSpeedMultiplier() : 1.0;
-        double careMult = 0.7 + (getCareQuality() * 0.6); // 0.7 to 1.3 based on care
-        double lampMult = lampRating != null ? (0.9 + (lampRating.getStars() * 0.04)) : 1.0;
-        return baseMult * careMult * lampMult;
-    }
-
-    /**
-     * Calculates the final star rating for the harvested bud.
-     */
-    public StarRating calculateFinalBudRating(StarRating scissorsRating) {
-        return StarRating.calculateBudRating(
-            potRating, 
-            seedRating, 
-            lampRating, 
-            fertilizerRating, 
-            scissorsRating, 
-            getCareQuality()
-        );
     }
 
     @Override

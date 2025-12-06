@@ -1,17 +1,9 @@
 package com.budlords.listeners;
 
-import com.budlords.BudLords;
 import com.budlords.economy.EconomyManager;
-import com.budlords.gui.BlackMarketShopGUI;
-import com.budlords.gui.BuyerProfileGUI;
-import com.budlords.gui.MarketShopGUI;
-import com.budlords.gui.MobSaleGUI;
-import com.budlords.items.PhoneItems;
-import com.budlords.joint.JointItems;
 import com.budlords.npc.NPCManager;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
-import com.budlords.strain.StrainManager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,32 +15,17 @@ import org.bukkit.inventory.ItemStack;
 
 public class NPCListener implements Listener {
 
-    private final BudLords plugin;
     private final NPCManager npcManager;
     private final EconomyManager economyManager;
     private final RankManager rankManager;
     private final PackagingManager packagingManager;
-    private final MarketShopGUI marketShopGUI;
-    private final BlackMarketShopGUI blackMarketShopGUI;
-    private final MobSaleGUI mobSaleGUI;
-    private final StrainManager strainManager;
-    private final BuyerProfileGUI buyerProfileGUI;
 
-    public NPCListener(BudLords plugin, NPCManager npcManager, EconomyManager economyManager, 
-                       RankManager rankManager, PackagingManager packagingManager,
-                       MarketShopGUI marketShopGUI, BlackMarketShopGUI blackMarketShopGUI,
-                       MobSaleGUI mobSaleGUI, StrainManager strainManager,
-                       BuyerProfileGUI buyerProfileGUI) {
-        this.plugin = plugin;
+    public NPCListener(NPCManager npcManager, EconomyManager economyManager, 
+                       RankManager rankManager, PackagingManager packagingManager) {
         this.npcManager = npcManager;
         this.economyManager = economyManager;
         this.rankManager = rankManager;
         this.packagingManager = packagingManager;
-        this.marketShopGUI = marketShopGUI;
-        this.blackMarketShopGUI = blackMarketShopGUI;
-        this.mobSaleGUI = mobSaleGUI;
-        this.strainManager = strainManager;
-        this.buyerProfileGUI = buyerProfileGUI;
     }
 
     // Using deprecated sendMessage and BungeeCord Chat API for Bukkit/Spigot compatibility
@@ -68,72 +45,41 @@ public class NPCListener implements Listener {
 
         ItemStack item = player.getInventory().getItemInMainHand();
 
-        // Check if holding phone - open buyer profile GUI
-        if (PhoneItems.isPhone(item)) {
-            if (buyerProfileGUI != null) {
-                buyerProfileGUI.openBuyerProfile(player, npcType, entity);
-            } else {
-                player.sendMessage("§cPhone system is not available!");
-            }
-            return;
-        }
+        // Check if holding a packaged product
+        if (packagingManager.isPackagedProduct(item)) {
+            NPCManager.TradeResult result = npcManager.attemptTrade(player, entity, item);
+            player.sendMessage(result.message());
 
-        // Check if holding seeds - BlackMarket Joe doesn't buy seeds
-        if (strainManager.isSeedItem(item)) {
+            if (result.success()) {
+                // Show action bar with rank info
+                String rankDisplay = rankManager.getRankDisplayName(player);
+                player.spigot().sendMessage(
+                    net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
+                    net.md_5.bungee.api.chat.TextComponent.fromLegacyText(
+                        "§a+" + economyManager.formatMoney(result.amount()) + " §7| Rank: " + rankDisplay
+                    )[0]
+                );
+            }
+        } else {
+            // Show trader info
+            String traderName = switch (npcType) {
+                case MARKET_JOE -> "§a§lMarket Joe";
+                case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
+                case VILLAGE_VENDOR -> "§e§lVillage Vendor";
+                default -> "§7Trader";
+            };
+
+            player.sendMessage("");
+            player.sendMessage(traderName);
+            player.sendMessage("§7Hold a packaged product to sell!");
+            player.sendMessage("§7Use §f/package <amount>§7 to package buds.");
+            player.sendMessage("");
+
             if (npcType == NPCManager.NPCType.BLACKMARKET_JOE) {
-                player.sendMessage("§5BlackMarket Joe doesn't buy seeds!");
-                player.sendMessage("§7Sell packaged buds instead.");
-                return;
+                player.sendMessage("§5§oBetter prices for rare strains...");
+            } else if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {
+                player.sendMessage("§e§oLower prices, but always willing to buy.");
             }
-        }
-
-        // Check if holding a packaged product or joint - open the sale GUI
-        if (packagingManager.isPackagedProduct(item) || JointItems.isJoint(item)) {
-            // Open the Schedule 1 style sale GUI
-            mobSaleGUI.open(player, entity, npcType);
-            return;
-        }
-        
-        // Market Joe opens shop GUI when not holding packaged product
-        if (npcType == NPCManager.NPCType.MARKET_JOE) {
-            marketShopGUI.open(player);
-            return;
-        }
-        
-        // BlackMarket Joe opens his shop GUI when not holding packaged product
-        if (npcType == NPCManager.NPCType.BLACKMARKET_JOE) {
-            blackMarketShopGUI.open(player);
-            return;
-        }
-        
-        // Configurable mobs (enabled in config) - show message about what they buy
-        if (npcType == NPCManager.NPCType.CONFIGURABLE_MOB) {
-            String entityName = entity.getCustomName() != null ? entity.getCustomName() : entity.getType().name().replace("_", " ");
-            player.sendMessage("");
-            player.sendMessage("§e§l" + entityName);
-            player.sendMessage("§7This buyer is interested in your products!");
-            player.sendMessage("§7Hold a packaged product or joint to sell!");
-            player.sendMessage("");
-            return;
-        }
-
-        // Show trader info for Village Vendors
-        String traderName = switch (npcType) {
-            case MARKET_JOE -> "§a§lMarket Joe";
-            case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
-            case VILLAGE_VENDOR -> "§e§lVillage Vendor";
-            case CONFIGURABLE_MOB -> "§e§l" + entity.getType().name().replace("_", " ");
-            default -> "§7Trader";
-        };
-
-        player.sendMessage("");
-        player.sendMessage(traderName);
-        player.sendMessage("§7Hold a packaged product or joint to sell!");
-        player.sendMessage("§7Use §f/package <amount>§7 to package buds.");
-        player.sendMessage("");
-
-        if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {
-            player.sendMessage("§e§oLower prices, but always willing to buy.");
         }
     }
 }
