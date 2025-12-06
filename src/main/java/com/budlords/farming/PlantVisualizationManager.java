@@ -71,7 +71,7 @@ public class PlantVisualizationManager {
     // These stages need deeper positioning as they're smaller and should be more contained
     private static final double SEED_Y_OFFSET = -1.5;    // Seeds deep inside pot
     private static final double SPROUT_Y_OFFSET = -1.45; // Sprouts slightly higher but still in pot
-    private static final double VEG_Y_OFFSET = -1.35;    // Vegetative starts emerging from pot
+    private static final double VEG_Y_OFFSET = -1.5;     // Vegetative - lower to prevent floating
 
     public PlantVisualizationManager(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
