@@ -750,12 +750,15 @@ public class PlantVisualizationManager {
 
     /**
      * Removes all armor stands for a plant.
+     * Also ensures all related visual configs are cleaned up to prevent memory leaks
+     * and lingering particle effects.
      */
     public void removeVisualization(String locKey) {
         List<UUID> ids = plantArmorStands.remove(locKey);
         plantVisualConfigs.remove(locKey);
         if (ids == null) return;
         
+        // Remove all armor stands associated with this plant
         for (UUID id : ids) {
             Entity entity = Bukkit.getEntity(id);
             if (entity != null && entity instanceof ArmorStand) {
@@ -851,6 +854,23 @@ public class PlantVisualizationManager {
      */
     private void startParticleTask() {
         particleTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+            // Clean up any stale entries (plants that no longer exist)
+            plantArmorStands.entrySet().removeIf(entry -> {
+                List<UUID> ids = entry.getValue();
+                if (ids == null || ids.isEmpty()) return true;
+                
+                // Check if at least one armor stand still exists
+                boolean hasValidStand = false;
+                for (UUID id : ids) {
+                    Entity entity = Bukkit.getEntity(id);
+                    if (entity != null && !entity.isDead()) {
+                        hasValidStand = true;
+                        break;
+                    }
+                }
+                return !hasValidStand;
+            });
+            
             int plantCount = plantArmorStands.size();
             
             // Reduce particle spawning when there are many plants
