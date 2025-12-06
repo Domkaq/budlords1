@@ -392,7 +392,14 @@ public class StrainManager {
     }
     
     public ItemStack createBudItem(Strain strain, int amount, com.budlords.quality.StarRating starRating) {
-        ItemStack bud = new ItemStack(Material.GREEN_DYE, amount);
+        // Use strain's icon material if it's a dye (for colored buds like purple strains)
+        // Otherwise default to GREEN_DYE
+        Material budMaterial = strain.getIconMaterial();
+        if (budMaterial == null || !budMaterial.name().endsWith("_DYE")) {
+            budMaterial = Material.GREEN_DYE;
+        }
+        
+        ItemStack bud = new ItemStack(budMaterial, amount);
         ItemMeta meta = bud.getItemMeta();
         
         if (meta != null) {
@@ -487,7 +494,10 @@ public class StrainManager {
     }
 
     public boolean isBudItem(ItemStack item) {
-        if (item == null || item.getType() != Material.GREEN_DYE) return false;
+        if (item == null) return false;
+        // Accept any dye material for buds (for colored strains like purple)
+        Material type = item.getType();
+        if (!type.name().endsWith("_DYE")) return false;
         if (!item.hasItemMeta()) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null || !meta.hasDisplayName()) return false;

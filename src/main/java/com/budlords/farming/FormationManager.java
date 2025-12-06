@@ -17,6 +17,14 @@ public class FormationManager {
 
     private final BudLords plugin;
     private final FarmingManager farmingManager;
+    
+    // Formation bonus configuration constants
+    private static final double BASE_SUCCESS_CHANCE = 0.1;        // 10% base chance
+    private static final double MAX_SUCCESS_CHANCE = 0.5;         // 50% cap
+    private static final double XP_SUCCESS_DIVISOR = 100.0;       // XP per chance increment
+    private static final double XP_SUCCESS_BONUS = 0.05;          // +5% per increment
+    private static final int MAX_STAR_BOOST = 3;                  // Maximum bonus stars
+    private static final int XP_PER_STAR_BOOST = 200;             // XP needed for +1 max boost
 
     // Formation patterns - relative positions from a center plant
     // L-shape pattern variants
@@ -89,16 +97,15 @@ public class FormationManager {
         // Get player's farming skill level for success chance calculation
         int farmingXP = 0;
         int maxStarBoost = 1; // Default max boost
-        double baseSuccessChance = 0.1; // 10% base chance
+        double baseSuccessChance = BASE_SUCCESS_CHANCE;
         
         if (plugin.getSkillManager() != null) {
             farmingXP = plugin.getSkillManager().getTreeXP(ownerUuid, Skill.SkillTree.FARMING);
             
             // Higher farming XP = better chance and higher max boost
-            // Every 100 XP gives +5% success chance (capped at 50% total)
-            // Every 200 XP allows +1 to max star boost (capped at 3)
-            baseSuccessChance = Math.min(0.5, 0.1 + (farmingXP / 100.0) * 0.05);
-            maxStarBoost = Math.min(3, 1 + farmingXP / 200);
+            baseSuccessChance = Math.min(MAX_SUCCESS_CHANCE, 
+                BASE_SUCCESS_CHANCE + (farmingXP / XP_SUCCESS_DIVISOR) * XP_SUCCESS_BONUS);
+            maxStarBoost = Math.min(MAX_STAR_BOOST, 1 + farmingXP / XP_PER_STAR_BOOST);
         }
         
         // Better formations have higher success chance

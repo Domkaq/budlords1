@@ -10,6 +10,9 @@ import java.util.UUID;
  * Lamps can be placed several blocks above plants and affect all pots within their range.
  */
 public class PlacedLamp {
+    
+    // Range bonus added to star count to get total range in blocks
+    private static final int RANGE_BONUS = 1;
 
     private final UUID id;
     private final Location location;
@@ -55,10 +58,10 @@ public class PlacedLamp {
 
     /**
      * Gets the effective range of this lamp in blocks.
-     * Higher star ratings provide more range (1-6 blocks).
+     * Range = star rating + RANGE_BONUS (1-star = 2 blocks, 6-star = 7 blocks).
      */
     public int getRange() {
-        return starRating.getStars() + 1; // 2-7 blocks range
+        return starRating.getStars() + RANGE_BONUS;
     }
 
     /**

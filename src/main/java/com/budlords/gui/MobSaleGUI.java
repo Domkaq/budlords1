@@ -54,6 +54,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private static final int CONFIRM_SLOT = 31;
     private static final int CANCEL_SLOT = 27;
     private static final int INFO_SLOT = 4;
+    
+    // Dose-based success chance penalty constants
+    // Large sales (more grams) are riskier
+    private static final int DOSE_PENALTY_THRESHOLD = 15;  // Grams before penalty applies
+    private static final double DOSE_PENALTY_DIVISOR = 5.0; // Grams per penalty increment
+    private static final double DOSE_PENALTY_RATE = 0.01;   // 1% penalty per increment
 
     public MobSaleGUI(BudLords plugin, EconomyManager economyManager, 
                       PackagingManager packagingManager, StrainManager strainManager) {
@@ -436,9 +442,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         // Penalty for large sales - based on total doses (grams) being sold
         // This makes selling larger packages riskier than many small ones
         int totalDoses = countTotalDoses(session);
-        if (totalDoses > 15) {
-            // 1% penalty for every 5 grams over 15g
-            double penalty = ((totalDoses - 15) / 5.0) * 0.01;
+        if (totalDoses > DOSE_PENALTY_THRESHOLD) {
+            double penalty = ((totalDoses - DOSE_PENALTY_THRESHOLD) / DOSE_PENALTY_DIVISOR) * DOSE_PENALTY_RATE;
             successChance = Math.max(0.1, successChance - penalty);
         }
         
