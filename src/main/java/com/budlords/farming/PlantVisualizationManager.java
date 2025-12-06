@@ -809,7 +809,8 @@ public class PlantVisualizationManager {
                 // When many plants exist, only animate a subset of armor stands per plant
                 int updateInterval = manyPlants ? 3 : 1;
                 
-                // Calculate animation based on style (simplified for performance)
+                // Calculate animation based on style
+                // Note: When many plants exist, only a subset of armor stands per plant are animated
                 double sway = 0;
                 double bounce = 0;
                 double spin = 0;

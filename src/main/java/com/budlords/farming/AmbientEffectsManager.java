@@ -40,6 +40,7 @@ public class AmbientEffectsManager {
     // Performance limits
     private static final int MAX_PARTICLES_PER_CYCLE = 30;     // Maximum particles per update cycle
     private static final int MANY_PLANTS_THRESHOLD = 15;       // Consider "many plants" threshold
+    private static final double MANY_PLANTS_SPAWN_REDUCTION = 0.5; // Spawn chance reduction factor when many plants
 
     public AmbientEffectsManager(BudLords plugin, FarmingManager farmingManager, StrainManager strainManager) {
         this.plugin = plugin;
@@ -127,7 +128,7 @@ public class AmbientEffectsManager {
                 
                 // Fireflies only at night near mature plants
                 if (world.getTime() >= 13000 && world.getTime() <= 23000 && plant.isFullyGrown()) {
-                    double spawnChance = manyPlants ? FIREFLY_SPAWN_CHANCE * 0.5 : FIREFLY_SPAWN_CHANCE;
+                    double spawnChance = manyPlants ? FIREFLY_SPAWN_CHANCE * MANY_PLANTS_SPAWN_REDUCTION : FIREFLY_SPAWN_CHANCE;
                     if (ThreadLocalRandom.current().nextDouble() < spawnChance) {
                         spawnFirefly(plant.getLocation());
                         firefliesSpawned++;
