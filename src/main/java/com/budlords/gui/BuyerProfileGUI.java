@@ -71,7 +71,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
     @SuppressWarnings("deprecation")
     public void openContactsList(Player player) {
         currentPage.put(player.getUniqueId(), "apps");
-        Inventory inv = Bukkit.createInventory(this, 45, "§b§l📱 Dealer Phone");
+        Inventory inv = Bukkit.createInventory(this, 54, "§b§l📱 Dealer Phone");
         updateAppsPage(inv, player);
         player.openInventory(inv);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.5f, 1.5f);
@@ -142,11 +142,11 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             inv.setItem(i, (i == 3 || i == 4 || i == 5) ? borderAccent : borderDark);
         }
         // Bottom border
-        for (int i = 36; i < 45; i++) {
+        for (int i = 45; i < 54; i++) {
             inv.setItem(i, borderDark);
         }
         // Side borders
-        for (int i = 9; i < 36; i += 9) {
+        for (int i = 9; i < 45; i += 9) {
             inv.setItem(i, borderDark);
             inv.setItem(i + 8, borderDark);
         }
@@ -164,8 +164,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             ));
         inv.setItem(4, header);
 
-        // ===== APPS GRID =====
-        // Row 1: Contacts, Orders, Stats
+        // ===== APPS GRID - Row 1: Contacts, Orders, Stats =====
         inv.setItem(11, createItem(Material.PLAYER_HEAD, 
             "§a§l📞 Contacts",
             Arrays.asList(
@@ -202,7 +201,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 "§8ID: app_stats"
             )));
 
-        // Row 2: Weather, Plants, Market
+        // ===== Row 2: Weather, Plants, Market =====
         com.budlords.weather.WeatherManager weatherManager = plugin.getWeatherManager();
         String weatherDisplay = weatherManager != null ? 
             weatherManager.getCurrentWeather().getColoredDisplay() : "§7N/A";
@@ -242,19 +241,70 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             )));
 
         inv.setItem(24, createItem(Material.GOLD_INGOT, 
-            "§6§l💰 Market",
+            "§6§l💰 Wallet",
             Arrays.asList(
                 "§8━━━━━━━━━━━━━━━━",
                 "",
-                "§7View earnings and",
-                "§7market info in Stats.",
+                "§7Balance: §a" + economyManager.formatMoney(economyManager.getBalance(player)),
                 "",
-                "§e▶ Tap to view stats",
-                "§8ID: app_market"
+                "§7Check balance and",
+                "§7send money to players.",
+                "",
+                "§e▶ Tap to open",
+                "§8ID: app_wallet"
             )));
 
-        // Row 3: Reputation legend
-        inv.setItem(31, createItem(Material.NETHER_STAR, 
+        // ===== Row 3: Skills, Daily, Challenges =====
+        inv.setItem(29, createItem(Material.EXPERIENCE_BOTTLE, 
+            "§d§l⚡ Skills",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7View and upgrade",
+                "§7your dealer skills.",
+                "",
+                "§e▶ Tap to open",
+                "§8ID: app_skills"
+            )));
+
+        inv.setItem(31, createItem(Material.CHEST, 
+            "§e§l🎁 Daily",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7Claim your daily",
+                "§7rewards here!",
+                "",
+                "§e▶ Tap to claim",
+                "§8ID: app_daily"
+            )));
+
+        inv.setItem(33, createItem(Material.BOOK, 
+            "§c§l🏆 Challenges",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7View active challenges",
+                "§7and earn rewards!",
+                "",
+                "§e▶ Tap to open",
+                "§8ID: app_challenges"
+            )));
+
+        // ===== Row 4: Collection, Rep Guide =====
+        inv.setItem(38, createItem(Material.FILLED_MAP, 
+            "§9§l📚 Collection",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7View your strain",
+                "§7collection progress.",
+                "",
+                "§e▶ Tap to open",
+                "§8ID: app_collection"
+            )));
+
+        inv.setItem(40, createItem(Material.NETHER_STAR, 
             "§e§l★ Rep Guide",
             Arrays.asList(
                 "§8━━━━━━━━━━━━━━━━",
@@ -268,7 +318,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             )));
 
         // Close button - phone home button style
-        inv.setItem(40, createItem(Material.BARRIER, "§c§l✗ Close",
+        inv.setItem(49, createItem(Material.BARRIER, "§c§l✗ Close",
             Arrays.asList("", "§8Tap to close phone")));
     }
 
@@ -951,9 +1001,43 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                         handlePlantMonitoringClick(player, event.getInventory());
                         return;
                     }
-                    if (line.equals("§8ID: app_market")) {
-                        // Market info is shown in stats page
-                        openStatsPage(player);
+                    if (line.equals("§8ID: app_wallet")) {
+                        // Show wallet info with balance
+                        player.closeInventory();
+                        player.sendMessage("");
+                        player.sendMessage("§6§l💰 WALLET");
+                        player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━");
+                        player.sendMessage("§7Balance: §a" + economyManager.formatMoney(economyManager.getBalance(player)));
+                        player.sendMessage("");
+                        player.sendMessage("§7Commands:");
+                        player.sendMessage("§e/bal §7- Check your balance");
+                        player.sendMessage("§e/pay <player> <amount> §7- Send money");
+                        player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━");
+                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.0f);
+                        return;
+                    }
+                    if (line.equals("§8ID: app_skills")) {
+                        // Open skills GUI
+                        player.closeInventory();
+                        player.performCommand("skills");
+                        return;
+                    }
+                    if (line.equals("§8ID: app_daily")) {
+                        // Claim daily rewards
+                        player.closeInventory();
+                        player.performCommand("daily");
+                        return;
+                    }
+                    if (line.equals("§8ID: app_challenges")) {
+                        // Open challenges GUI
+                        player.closeInventory();
+                        player.performCommand("challenges");
+                        return;
+                    }
+                    if (line.equals("§8ID: app_collection")) {
+                        // Open collection GUI
+                        player.closeInventory();
+                        player.performCommand("collection");
                         return;
                     }
                     
@@ -986,8 +1070,8 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             }
         }
 
-        // Handle close button (slot 40 on most pages)
-        if (slot == 40 && clicked.getType() == Material.BARRIER) {
+        // Handle close button (slot 40 or 49 depending on page)
+        if ((slot == 40 || slot == 49) && clicked.getType() == Material.BARRIER) {
             player.closeInventory();
             currentPage.remove(player.getUniqueId());
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
