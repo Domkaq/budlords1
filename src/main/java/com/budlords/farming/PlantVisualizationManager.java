@@ -112,14 +112,18 @@ public class PlantVisualizationManager {
         StrainVisualConfig visualConfig = getStrainVisualConfig(plant);
         plantVisualConfigs.put(locKey, visualConfig);
         
+        // Calculate expected plant count (current count + 1 for this plant if it's new)
+        // This ensures LOD is calculated correctly even during plant creation
+        int expectedPlantCount = plantArmorStands.size() + 1;
+        
         // Create new visualization based on growth stage
         List<UUID> armorStandIds = new ArrayList<>();
         
         switch (plant.getGrowthStage()) {
-            case 0 -> armorStandIds.addAll(createSeedVisual(plant, loc, visualConfig));
-            case 1 -> armorStandIds.addAll(createSproutVisual(plant, loc, visualConfig));
-            case 2 -> armorStandIds.addAll(createVegetativeVisual(plant, loc, visualConfig));
-            case 3 -> armorStandIds.addAll(createFloweringVisual(plant, loc, visualConfig));
+            case 0 -> armorStandIds.addAll(createSeedVisual(plant, loc, visualConfig, expectedPlantCount));
+            case 1 -> armorStandIds.addAll(createSproutVisual(plant, loc, visualConfig, expectedPlantCount));
+            case 2 -> armorStandIds.addAll(createVegetativeVisual(plant, loc, visualConfig, expectedPlantCount));
+            case 3 -> armorStandIds.addAll(createFloweringVisual(plant, loc, visualConfig, expectedPlantCount));
         }
         
         plantArmorStands.put(locKey, armorStandIds);
@@ -162,8 +166,10 @@ public class PlantVisualizationManager {
      * Plants appear INSIDE the pot, not floating above.
      * 
      * OPTIMIZED: Reduced from 2 armor stands to 1 for performance.
+     * 
+     * @param plantCount The expected total plant count (used for LOD calculation)
      */
-    private List<UUID> createSeedVisual(Plant plant, Location loc, StrainVisualConfig config) {
+    private List<UUID> createSeedVisual(Plant plant, Location loc, StrainVisualConfig config, int plantCount) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
@@ -197,13 +203,14 @@ public class PlantVisualizationManager {
      * Shows the characteristic double-round seed leaves with the first serrated cannabis leaves above.
      * 
      * OPTIMIZED: Reduced from 6 armor stands to 3-4 based on LOD.
+     * 
+     * @param plantCount The expected total plant count (used for LOD calculation)
      */
-    private List<UUID> createSproutVisual(Plant plant, Location loc, StrainVisualConfig config) {
+    private List<UUID> createSproutVisual(Plant plant, Location loc, StrainVisualConfig config, int plantCount) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        int plantCount = plantArmorStands.size();
         DetailLevel lod = getDetailLevel(plantCount);
         
         double heightScale = config != null ? config.getHeightScale() : 1.0;
@@ -259,13 +266,14 @@ public class PlantVisualizationManager {
      * - LOW: 6 stands (stem + main leaves only)
      * - MEDIUM: 10 stands (stem + leaves, no fingers)
      * - HIGH: 15 stands (stem + leaves + simplified fingers)
+     * 
+     * @param plantCount The expected total plant count (used for LOD calculation)
      */
-    private List<UUID> createVegetativeVisual(Plant plant, Location loc, StrainVisualConfig config) {
+    private List<UUID> createVegetativeVisual(Plant plant, Location loc, StrainVisualConfig config, int plantCount) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        int plantCount = plantArmorStands.size();
         DetailLevel lod = getDetailLevel(plantCount);
         
         Location baseLoc = loc.clone().add(0.5, VEG_Y_OFFSET, 0.5);
@@ -386,13 +394,14 @@ public class PlantVisualizationManager {
      * - LOW: 8 stands (stem + basic buds + 2 leaves)
      * - MEDIUM: 15 stands (stem + buds + leaves, no fingers/calyxes)
      * - HIGH: 25 stands (stem + buds + leaves + simplified details)
+     * 
+     * @param plantCount The expected total plant count (used for LOD calculation)
      */
-    private List<UUID> createFloweringVisual(Plant plant, Location loc, StrainVisualConfig config) {
+    private List<UUID> createFloweringVisual(Plant plant, Location loc, StrainVisualConfig config, int plantCount) {
         List<UUID> ids = new ArrayList<>();
         World world = loc.getWorld();
         if (world == null) return ids;
         
-        int plantCount = plantArmorStands.size();
         DetailLevel lod = getDetailLevel(plantCount);
         
         Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
@@ -695,7 +704,7 @@ public class PlantVisualizationManager {
             int maxProcessPerTick = switch (lod) {
                 case LOW -> 5;      // Process only 5 plants per tick
                 case MEDIUM -> 15;  // Process 15 plants per tick
-                case HIGH -> Integer.MAX_VALUE; // Process all
+                case HIGH -> 50;    // Process up to 50 plants per tick (reasonable upper limit)
             };
             
             int processed = 0;
