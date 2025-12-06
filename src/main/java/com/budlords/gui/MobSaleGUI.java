@@ -599,10 +599,15 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         // Check for bulk order fulfillment bonus
         double bulkOrderBonus = 1.0;
         if (plugin.getBulkOrderManager() != null) {
-            String strainId = getFirstStrainId(session);
-            if (strainId != null) {
-                bulkOrderBonus = plugin.getBulkOrderManager().checkOrderFulfillment(playerId, strainId, countItems(session));
-                total *= bulkOrderBonus;
+            // Get the active order to check against
+            var activeOrder = plugin.getBulkOrderManager().getActiveOrder(playerId);
+            if (activeOrder != null) {
+                // Count only items matching the order's strain
+                int matchingItems = countItemsOfStrain(session, activeOrder.strainId);
+                if (matchingItems > 0) {
+                    bulkOrderBonus = plugin.getBulkOrderManager().checkOrderFulfillment(playerId, activeOrder.strainId, matchingItems);
+                    total *= bulkOrderBonus;
+                }
             }
         }
         
@@ -776,6 +781,31 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             }
         }
         return null;
+    }
+    
+    /**
+     * Counts items of a specific strain in the session.
+     * This ensures bulk order fulfillment only counts matching strains.
+     */
+    private int countItemsOfStrain(SaleSession session, String targetStrainId) {
+        if (targetStrainId == null) return 0;
+        
+        int count = 0;
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            
+            String strainId = null;
+            if (packagingManager.isPackagedProduct(item)) {
+                strainId = packagingManager.getStrainIdFromPackage(item);
+            } else if (JointItems.isJoint(item)) {
+                strainId = JointItems.getJointStrainId(item);
+            }
+            
+            if (targetStrainId.equals(strainId)) {
+                count += item.getAmount();
+            }
+        }
+        return count;
     }
     
     /**
