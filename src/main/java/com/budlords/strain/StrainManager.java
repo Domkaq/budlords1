@@ -362,8 +362,9 @@ public class StrainManager {
     
     /**
      * Gets a seed material based on strain rarity for visual variety in shops.
+     * Public so it can be used by shop GUIs for consistent seed appearance.
      */
-    private Material getSeedMaterialForRarity(Strain.Rarity rarity) {
+    public static Material getSeedMaterialForRarity(Strain.Rarity rarity) {
         return switch (rarity) {
             case COMMON -> Material.WHEAT_SEEDS;      // Regular wheat seeds for common
             case UNCOMMON -> Material.BEETROOT_SEEDS; // Beetroot seeds for uncommon

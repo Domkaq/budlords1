@@ -253,7 +253,7 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
             
             inv.setItem(slots[slotIndex], createShopItem(
-                getSeedMaterialForRarity(strain.getRarity()),
+                StrainManager.getSeedMaterialForRarity(strain.getRarity()),
                 strain.getRarity().getColorCode() + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
                 lore,
@@ -261,18 +261,6 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             ));
             slotIndex++;
         }
-    }
-    
-    /**
-     * Gets a seed material based on strain rarity for visual variety in shops.
-     */
-    private Material getSeedMaterialForRarity(Strain.Rarity rarity) {
-        return switch (rarity) {
-            case COMMON -> Material.WHEAT_SEEDS;      // Regular wheat seeds for common
-            case UNCOMMON -> Material.BEETROOT_SEEDS; // Beetroot seeds for uncommon
-            case RARE -> Material.MELON_SEEDS;        // Melon seeds for rare
-            case LEGENDARY -> Material.PUMPKIN_SEEDS; // Pumpkin seeds for legendary
-        };
     }
     
     /**
@@ -429,7 +417,7 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
             
             inv.setItem(slots[slotIndex], createShopItem(
-                getSeedMaterialForRarity(strain.getRarity()),
+                StrainManager.getSeedMaterialForRarity(strain.getRarity()),
                 "§6✦ " + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
                 lore,
