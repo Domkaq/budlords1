@@ -32,12 +32,33 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
     
     // Active sessions tracking which entity the player is viewing
     private final Map<UUID, NPCManager.NPCType> viewingSessions;
+    
+    // Players who have purchased the plant monitoring feature
+    private final Set<UUID> plantMonitoringUnlocked;
+    
+    // Cost for plant monitoring feature
+    private static final double PLANT_MONITORING_COST = 20000.0;
 
     public BuyerProfileGUI(BudLords plugin, EconomyManager economyManager) {
         this.plugin = plugin;
         this.economyManager = economyManager;
         this.viewingSessions = new ConcurrentHashMap<>();
+        this.plantMonitoringUnlocked = ConcurrentHashMap.newKeySet();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+    
+    /**
+     * Checks if a player has unlocked the plant monitoring feature.
+     */
+    public boolean hasPlantMonitoring(UUID playerId) {
+        return plantMonitoringUnlocked.contains(playerId);
+    }
+    
+    /**
+     * Unlocks plant monitoring for a player.
+     */
+    public void unlockPlantMonitoring(UUID playerId) {
+        plantMonitoringUnlocked.add(playerId);
     }
 
     /**
@@ -156,12 +177,13 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                     "§8━━━━━━━━━━━━━━━━",
                     "",
                     "§7Buyer: §f" + activeOrder.buyerName,
-                    "§7Wants: §e" + activeOrder.quantity + "x §f" + activeOrder.strainName,
+                    "§7Wants: §e" + activeOrder.quantity + "g §f" + activeOrder.strainName,
                     "",
                     "§7Bonus: §a+" + String.format("%.0f%%", (activeOrder.priceMultiplier - 1) * 100),
                     "§7Time: §e" + activeOrder.getTimeRemainingText(),
                     "",
-                    "§7§oSell to any buyer to complete!"
+                    "§7§oPackage in any combo!",
+                    "§7§o(e.g. 4x10g + 1g = 41g)"
                 )));
             inv.setItem(21, createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null));
         } else {
@@ -242,6 +264,99 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 "§7Best Sale: §e" + plugin.getEconomyManager().formatMoney(
                     stats != null ? stats.getHighestSingleSale() : 0)
             )));
+
+        // ===== WEATHER INFO =====
+        com.budlords.weather.WeatherManager weatherManager = plugin.getWeatherManager();
+        if (weatherManager != null) {
+            com.budlords.weather.WeatherManager.WeatherType currentWeather = weatherManager.getCurrentWeather();
+            double growthMult = weatherManager.getGrowthMultiplier();
+            double qualityMult = weatherManager.getQualityMultiplier();
+            
+            String growthDisplay = growthMult >= 1.0 ? 
+                "§a+" + String.format("%.0f%%", (growthMult - 1.0) * 100) :
+                "§c" + String.format("%.0f%%", (growthMult - 1.0) * 100);
+            String qualityDisplay = qualityMult >= 1.0 ?
+                "§a+" + String.format("%.0f%%", (qualityMult - 1.0) * 100) :
+                "§c" + String.format("%.0f%%", (qualityMult - 1.0) * 100);
+            
+            inv.setItem(31, createItem(Material.SUNFLOWER,
+                "§e§l☀ WEATHER",
+                Arrays.asList(
+                    "§8━━━━━━━━━━━━━━━━",
+                    "",
+                    "§7Current: " + currentWeather.getColoredDisplay(),
+                    "",
+                    "§7Growth: " + growthDisplay,
+                    "§7Quality: " + qualityDisplay,
+                    "",
+                    "§7Weather affects your plants!"
+                )));
+        } else {
+            inv.setItem(31, createItem(Material.SUNFLOWER,
+                "§e§l☀ WEATHER",
+                Arrays.asList("", "§7Weather info unavailable")));
+        }
+        
+        // ===== PLANT MONITORING =====
+        boolean hasMonitoring = hasPlantMonitoring(player.getUniqueId());
+        if (hasMonitoring) {
+            // Get player's plants
+            Collection<com.budlords.farming.Plant> allPlants = plugin.getFarmingManager().getAllPlants();
+            List<com.budlords.farming.Plant> playerPlants = new ArrayList<>();
+            for (com.budlords.farming.Plant plant : allPlants) {
+                if (plant.getOwnerUuid().equals(player.getUniqueId())) {
+                    playerPlants.add(plant);
+                }
+            }
+            
+            List<String> plantLore = new ArrayList<>();
+            plantLore.add("§8━━━━━━━━━━━━━━━━");
+            plantLore.add("");
+            plantLore.add("§7Total Plants: §a" + playerPlants.size());
+            plantLore.add("");
+            
+            // Show summary of plants
+            int growing = 0, mature = 0, infected = 0;
+            for (com.budlords.farming.Plant plant : playerPlants) {
+                if (plant.isFullyGrown()) mature++;
+                else growing++;
+                
+                // Check for infection using disease manager
+                if (plugin.getDiseaseManager() != null && 
+                    plugin.getDiseaseManager().isInfected(plant.getLocation())) {
+                    infected++;
+                }
+            }
+            
+            plantLore.add("§7Growing: §e" + growing);
+            plantLore.add("§7Ready to Harvest: §a" + mature);
+            if (infected > 0) {
+                plantLore.add("§cInfected: §4" + infected + " §c⚠");
+            }
+            plantLore.add("");
+            plantLore.add("§e▶ Click for details");
+            
+            inv.setItem(32, createItem(Material.LIME_DYE,
+                "§a§l🌿 PLANTS §7(" + playerPlants.size() + ")",
+                plantLore));
+        } else {
+            // Show purchase option
+            inv.setItem(32, createItem(Material.RED_DYE,
+                "§c§l🌿 PLANT MONITOR",
+                Arrays.asList(
+                    "§8━━━━━━━━━━━━━━━━",
+                    "",
+                    "§7Track your plants remotely!",
+                    "",
+                    "§7• View all planted seeds",
+                    "§7• See growth stages",
+                    "§7• Check for infections",
+                    "",
+                    "§6Cost: §e$20,000",
+                    "",
+                    "§e▶ Click to purchase"
+                )));
+        }
 
         // Reputation legend
         inv.setItem(34, createItem(Material.NETHER_STAR, 
@@ -651,6 +766,21 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                     }
                 }
             }
+            
+            // Handle plant monitoring slot (32)
+            if (slot == 32) {
+                handlePlantMonitoringClick(player, event.getInventory());
+                return;
+            }
+        }
+        // Handle plant details view
+        else if (title.contains("Plant Details")) {
+            // Back to contacts
+            if (slot == 49) {
+                openContactsList(player);
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
+                return;
+            }
         }
         // Handle profile view
         else if (title.contains("Profile")) {
@@ -693,6 +823,148 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
         
         // Refresh the GUI
         updateContactsList(inv, player);
+    }
+    
+    /**
+     * Handles clicking on the plant monitoring button.
+     */
+    private void handlePlantMonitoringClick(Player player, Inventory inv) {
+        if (hasPlantMonitoring(player.getUniqueId())) {
+            // Open plant details GUI
+            openPlantDetailsGUI(player);
+        } else {
+            // Try to purchase
+            double balance = economyManager.getBalance(player);
+            if (balance >= PLANT_MONITORING_COST) {
+                economyManager.removeBalance(player, PLANT_MONITORING_COST);
+                unlockPlantMonitoring(player.getUniqueId());
+                
+                player.sendMessage("");
+                player.sendMessage("§a§l✓ Plant Monitoring Unlocked!");
+                player.sendMessage("§7You can now view your plants remotely from the Dealer Phone.");
+                player.sendMessage("§7$20,000 has been deducted from your balance.");
+                player.sendMessage("");
+                
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.2f);
+                
+                // Refresh the GUI
+                updateContactsList(inv, player);
+            } else {
+                player.sendMessage("§cYou need $20,000 to unlock Plant Monitoring!");
+                player.sendMessage("§7Current balance: " + economyManager.formatMoney(balance));
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+            }
+        }
+    }
+    
+    /**
+     * Opens the plant details GUI showing all the player's plants.
+     */
+    @SuppressWarnings("deprecation")
+    private void openPlantDetailsGUI(Player player) {
+        Inventory inv = Bukkit.createInventory(this, 54, "§b§l📱 Plant Details");
+        
+        // Border
+        ItemStack border = createItem(Material.GREEN_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 9; i++) {
+            inv.setItem(i, border);
+            inv.setItem(45 + i, border);
+        }
+        for (int i = 9; i < 45; i += 9) {
+            inv.setItem(i, border);
+            inv.setItem(i + 8, border);
+        }
+        
+        // Header
+        Collection<com.budlords.farming.Plant> allPlants = plugin.getFarmingManager().getAllPlants();
+        List<com.budlords.farming.Plant> playerPlants = new ArrayList<>();
+        for (com.budlords.farming.Plant plant : allPlants) {
+            if (plant.getOwnerUuid().equals(player.getUniqueId())) {
+                playerPlants.add(plant);
+            }
+        }
+        
+        inv.setItem(4, createItem(Material.OAK_SAPLING,
+            "§a§l🌿 Your Plants §7(" + playerPlants.size() + ")",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━━━━━━━",
+                "",
+                "§7View detailed information",
+                "§7about your growing plants.",
+                ""
+            )));
+        
+        // Display plants (max 28 slots: 10-16, 19-25, 28-34, 37-43)
+        int[] plantSlots = {10, 11, 12, 13, 14, 15, 16, 
+                           19, 20, 21, 22, 23, 24, 25,
+                           28, 29, 30, 31, 32, 33, 34,
+                           37, 38, 39, 40, 41, 42, 43};
+        
+        int slotIdx = 0;
+        for (com.budlords.farming.Plant plant : playerPlants) {
+            if (slotIdx >= plantSlots.length) break;
+            
+            com.budlords.strain.Strain strain = plugin.getStrainManager().getStrain(plant.getStrainId());
+            String strainName = strain != null ? strain.getName() : "Unknown";
+            
+            // Check for infection
+            boolean isInfected = plugin.getDiseaseManager() != null && 
+                plugin.getDiseaseManager().isInfected(plant.getLocation());
+            
+            List<String> plantLore = new ArrayList<>();
+            plantLore.add("§8━━━━━━━━━━━━━━━━");
+            plantLore.add("");
+            plantLore.add("§7Stage: §e" + plant.getGrowthStageName() + " §7(" + (plant.getGrowthStage() + 1) + "/4)");
+            plantLore.add("§7Quality: §e" + plant.getQuality() + "%");
+            
+            if (plant.hasPot()) {
+                plantLore.add("");
+                if (plant.getPotRating() != null) {
+                    plantLore.add("§7Pot: " + plant.getPotRating().getDisplay());
+                }
+                if (plant.getSeedRating() != null) {
+                    plantLore.add("§7Seed: " + plant.getSeedRating().getDisplay());
+                }
+                plantLore.add("§7Water: §b" + String.format("%.0f%%", plant.getWaterLevel() * 100));
+                plantLore.add("§7Nutrients: §e" + String.format("%.0f%%", plant.getNutrientLevel() * 100));
+                if (plant.getLampRating() != null) {
+                    plantLore.add("§7Lamp: " + plant.getLampRating().getDisplay());
+                }
+            }
+            
+            plantLore.add("");
+            plantLore.add("§7Location: §f" + plant.getLocation().getBlockX() + 
+                ", " + plant.getLocation().getBlockY() + 
+                ", " + plant.getLocation().getBlockZ());
+            
+            if (isInfected) {
+                plantLore.add("");
+                plantLore.add("§c⚠ INFECTED! §7Use a cure item");
+            }
+            
+            if (plant.isFullyGrown()) {
+                plantLore.add("");
+                plantLore.add("§a✓ Ready to harvest!");
+            }
+            
+            Material icon = isInfected ? Material.DEAD_BUSH : 
+                (plant.isFullyGrown() ? Material.LIME_DYE : Material.GREEN_DYE);
+            String statusPrefix = isInfected ? "§c⚠ " : 
+                (plant.isFullyGrown() ? "§a✓ " : "§e");
+            
+            inv.setItem(plantSlots[slotIdx], createItem(icon,
+                statusPrefix + strainName,
+                plantLore));
+            
+            slotIdx++;
+        }
+        
+        // Back button
+        inv.setItem(49, createItem(Material.ARROW, "§e§l← Back",
+            Arrays.asList("", "§7Return to phone")));
+        
+        player.openInventory(inv);
+        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
     }
 
     @Override

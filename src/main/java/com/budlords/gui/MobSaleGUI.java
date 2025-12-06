@@ -820,22 +820,30 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private int countItemsOfStrain(SaleSession session, String targetStrainId) {
         if (targetStrainId == null) return 0;
         
-        int count = 0;
+        int totalGrams = 0;
         for (ItemStack item : session.itemsToSell) {
             if (item == null) continue;
             
             String strainId = null;
+            int weightPerItem = 1; // Default to 1 gram per item
+            
             if (packagingManager.isPackagedProduct(item)) {
                 strainId = packagingManager.getStrainIdFromPackage(item);
+                // Get the weight of each package (1g, 3g, 5g, or 10g)
+                weightPerItem = packagingManager.getWeightFromPackage(item);
+                if (weightPerItem <= 0) weightPerItem = 1; // Safety default
             } else if (JointItems.isJoint(item)) {
                 strainId = JointItems.getJointStrainId(item);
+                // Joints count as 1 gram each
+                weightPerItem = 1;
             }
             
             if (targetStrainId.equals(strainId)) {
-                count += item.getAmount();
+                // Total grams = weight per item * number of items in stack
+                totalGrams += weightPerItem * item.getAmount();
             }
         }
-        return count;
+        return totalGrams;
     }
     
     /**
