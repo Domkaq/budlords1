@@ -253,7 +253,7 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
             
             inv.setItem(slots[slotIndex], createShopItem(
-                Material.WHEAT_SEEDS,
+                StrainManager.getSeedMaterialForRarity(strain.getRarity()),
                 strain.getRarity().getColorCode() + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
                 lore,
@@ -417,7 +417,7 @@ public class BlackMarketShopGUI implements InventoryHolder, Listener {
             lore.add(canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money");
             
             inv.setItem(slots[slotIndex], createShopItem(
-                Material.WHEAT_SEEDS,
+                StrainManager.getSeedMaterialForRarity(strain.getRarity()),
                 "§6✦ " + strain.getName() + " Seed " + rating.getDisplay(),
                 price,
                 lore,

@@ -116,6 +116,15 @@ public class JointRollingManager implements InventoryHolder {
         String title = getMinigameTitle(session.getCurrentStage());
         Inventory inv = Bukkit.createInventory(this, 54, title);
         
+        // For TOBACCO_ROLL stage, automatically start the timer when entering
+        // This ensures the timeout will trigger even if the player doesn't click
+        if (session.getCurrentStage() == JointRollingSession.RollingStage.TOBACCO_ROLL) {
+            if (!session.isMinigameActive()) {
+                session.setMinigameActive(true);
+                session.setTargetProgress(100);
+            }
+        }
+        
         updateMinigameGUI(inv, player, session);
         player.openInventory(inv);
         
@@ -248,6 +257,9 @@ public class JointRollingManager implements InventoryHolder {
     // ====== TOBACCO ROLL MINIGAME ======
     // Click rapidly to fill the progress bar
     
+    // Time limit for tobacco roll in milliseconds
+    private static final long TOBACCO_ROLL_TIME_LIMIT = 8000L;
+    
     private void setupTobaccoRollMinigame(Inventory inv, JointRollingSession session) {
         // Progress bar display
         int progressSlots = 7;
@@ -264,34 +276,39 @@ public class JointRollingManager implements InventoryHolder {
             }
         }
         
-        // Click target
+        // Click target - make it more visible with prominent display
         inv.setItem(31, createGuiItem(Material.DRIED_KELP_BLOCK, 
             "§6§l✦ ROLL TOBACCO ✦",
             Arrays.asList(
                 "",
-                "§e>>> CLICK RAPIDLY! <<<",
+                "§e§l>>> CLICK ME RAPIDLY! <<<",
                 "",
                 createProgressBar(session.getMinigameProgress() / 100.0),
-                "§7Progress: §e" + session.getMinigameProgress() + "/100"
+                "§7Progress: §e" + session.getMinigameProgress() + "/100",
+                "",
+                "§7Click fast to fill the bar!"
             )));
         
         // Instructions
         inv.setItem(13, createGuiItem(Material.BOOK, "§e§lHow to Play",
             Arrays.asList(
                 "",
-                "§7Click the §6TOBACCO §7rapidly!",
+                "§7Click the §6§lTOBACCO §7rapidly!",
                 "§7Fill the bar before time runs out!",
                 "",
-                "§7Speed matters for bonus points!"
+                "§7Speed matters for bonus points!",
+                "",
+                "§cDon't stop clicking!"
             )));
         
-        // Timer (if session has started)
+        // Timer - now always shown since minigame starts automatically
         if (session.isMinigameActive()) {
             long elapsed = System.currentTimeMillis() - session.getMinigameStartTime();
-            long remaining = 5000 - elapsed; // 5 second timer
+            long remaining = TOBACCO_ROLL_TIME_LIMIT - elapsed;
+            String timeColor = remaining > 3000 ? "§a" : (remaining > 1500 ? "§e" : "§c");
             inv.setItem(40, createGuiItem(Material.CLOCK, 
-                "§c§lTime: " + String.format("%.1f", remaining / 1000.0) + "s",
-                Arrays.asList("", "§7Hurry!")));
+                timeColor + "§lTime: " + String.format("%.1f", Math.max(0, remaining) / 1000.0) + "s",
+                Arrays.asList("", "§7Hurry! Click the tobacco!")));
         }
     }
 
@@ -484,7 +501,7 @@ public class JointRollingManager implements InventoryHolder {
             
             if (session.getMinigameProgress() >= 100) {
                 long elapsed = System.currentTimeMillis() - session.getMinigameStartTime();
-                int timeBonus = Math.max(0, (int) ((5000 - elapsed) / 50)); // Faster = more points
+                int timeBonus = Math.max(0, (int) ((TOBACCO_ROLL_TIME_LIMIT - elapsed) / 80)); // Faster = more points
                 int score = 70 + Math.min(30, timeBonus);
                 session.setStageScore(score);
                 
@@ -715,10 +732,10 @@ public class JointRollingManager implements InventoryHolder {
                         }
                     }
                     case TOBACCO_ROLL -> {
-                        // Check timeout
+                        // Check timeout - uses TOBACCO_ROLL_TIME_LIMIT constant
                         if (sess.isMinigameActive()) {
                             long elapsed = System.currentTimeMillis() - sess.getMinigameStartTime();
-                            if (elapsed > 5000) {
+                            if (elapsed > TOBACCO_ROLL_TIME_LIMIT) {
                                 // Time's up!
                                 int score = Math.min(100, sess.getMinigameProgress());
                                 sess.setStageScore(score);

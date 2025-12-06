@@ -325,7 +325,9 @@ public class StrainManager {
     }
     
     public ItemStack createSeedItem(Strain strain, int amount, com.budlords.quality.StarRating starRating) {
-        ItemStack seed = new ItemStack(Material.WHEAT_SEEDS, amount);
+        // Use different seed materials based on strain rarity for visual variety
+        Material seedMaterial = getSeedMaterialForRarity(strain.getRarity());
+        ItemStack seed = new ItemStack(seedMaterial, amount);
         ItemMeta meta = seed.getItemMeta();
         
         if (meta != null) {
@@ -356,6 +358,19 @@ public class StrainManager {
         }
         
         return seed;
+    }
+    
+    /**
+     * Gets a seed material based on strain rarity for visual variety in shops.
+     * Public so it can be used by shop GUIs for consistent seed appearance.
+     */
+    public static Material getSeedMaterialForRarity(Strain.Rarity rarity) {
+        return switch (rarity) {
+            case COMMON -> Material.WHEAT_SEEDS;      // Regular wheat seeds for common
+            case UNCOMMON -> Material.BEETROOT_SEEDS; // Beetroot seeds for uncommon
+            case RARE -> Material.MELON_SEEDS;        // Melon seeds for rare
+            case LEGENDARY -> Material.PUMPKIN_SEEDS; // Pumpkin seeds for legendary
+        };
     }
 
     public ItemStack createBudItem(Strain strain, int amount) {
@@ -442,7 +457,15 @@ public class StrainManager {
     }
 
     public boolean isSeedItem(ItemStack item) {
-        if (item == null || item.getType() != Material.WHEAT_SEEDS) return false;
+        if (item == null) return false;
+        // Check for all seed types used by different rarity levels
+        Material type = item.getType();
+        if (type != Material.WHEAT_SEEDS && 
+            type != Material.BEETROOT_SEEDS && 
+            type != Material.MELON_SEEDS && 
+            type != Material.PUMPKIN_SEEDS) {
+            return false;
+        }
         if (!item.hasItemMeta()) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null || !meta.hasDisplayName()) return false;

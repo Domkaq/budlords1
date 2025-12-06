@@ -151,20 +151,10 @@ public class PlantVisualizationManager {
         // Plant location is 1 block above pot, so we adjust down to be inside the pot
         Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
         
-        // Rich soil base with moss for professional nursery look
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.12, 0));
-        soilLayer.setHelmet(new ItemStack(Material.ROOTED_DIRT)); // Rich soil texture
-        soilLayer.setSmall(true);
-        ids.add(soilLayer.getUniqueId());
+        // NOTE: Removed soil/moss layers as they were visually sticking out of the pot
+        // The flower pot block itself provides the visual container
         
-        // Moss carpet decoration for nursery feel
-        ArmorStand moss = createBaseArmorStand(world, baseLoc.clone().add(0.08, -0.08, 0.08));
-        moss.setHelmet(new ItemStack(Material.MOSS_CARPET));
-        moss.setSmall(true);
-        moss.setHeadPose(new EulerAngle(Math.toRadians(5), Math.toRadians(30), 0));
-        ids.add(moss.getUniqueId());
-        
-        // The seed - positioned inside the pot, partially buried in soil
+        // The seed - positioned inside the pot
         ArmorStand seed = createBaseArmorStand(world, baseLoc.clone().add(0, -0.02 * heightScale, 0));
         seed.setHelmet(new ItemStack(Material.COCOA_BEANS)); // Brown seed appearance
         seed.setSmall(true);
@@ -189,7 +179,6 @@ public class PlantVisualizationManager {
      * Creates the sprout stage visual (Stage 1).
      * A realistic cannabis seedling with cotyledons (seed leaves) and first true leaves emerging.
      * Shows the characteristic double-round seed leaves with the first serrated cannabis leaves above.
-     * Now includes bamboo decoration in pot for better texture.
      */
     private List<UUID> createSproutVisual(Plant plant, Location loc, StrainVisualConfig config) {
         List<UUID> ids = new ArrayList<>();
@@ -207,27 +196,10 @@ public class PlantVisualizationManager {
         // Base location - centered inside the pot
         Location baseLoc = loc.clone().add(0.5, POT_Y_OFFSET, 0.5);
         
-        // Rich soil base for professional nursery look
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.12, 0));
-        soilLayer.setHelmet(new ItemStack(Material.ROOTED_DIRT));
-        soilLayer.setSmall(true);
-        ids.add(soilLayer.getUniqueId());
+        // NOTE: Removed soil/moss/bamboo decorations as they were sticking out of the pot
+        // The flower pot block provides the visual container
         
-        // Moss decoration for natural pot appearance
-        ArmorStand moss1 = createBaseArmorStand(world, baseLoc.clone().add(0.1, -0.08, 0.1));
-        moss1.setHelmet(new ItemStack(Material.MOSS_CARPET));
-        moss1.setSmall(true);
-        moss1.setHeadPose(new EulerAngle(Math.toRadians(8), Math.toRadians(45), 0));
-        ids.add(moss1.getUniqueId());
-        
-        // Small bamboo shoot decoration inside pot
-        ArmorStand bambooDecor = createBaseArmorStand(world, baseLoc.clone().add(-0.1, -0.02, 0.08));
-        bambooDecor.setHelmet(new ItemStack(Material.BAMBOO));
-        bambooDecor.setSmall(true);
-        bambooDecor.setHeadPose(new EulerAngle(Math.toRadians(12), Math.toRadians(-30), 0));
-        ids.add(bambooDecor.getUniqueId());
-        
-        // Thin stem emerging from soil - young green stem
+        // Thin stem emerging - young green stem
         ArmorStand stem = createBaseArmorStand(world, baseLoc.clone().add(0, 0.12 * heightScale, 0));
         stem.setHelmet(new ItemStack(Material.END_ROD)); // Thin white-green stem
         stem.setSmall(true);
@@ -299,40 +271,8 @@ public class PlantVisualizationManager {
             config.getLeafColorPrimary() : getStrainColor(plant);
         boolean glowing = config != null && config.isGlowing();
         
-        // ===== PROFESSIONAL POT BASE WITH DECORATIONS =====
-        // Rich soil layer
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.12, 0));
-        soilLayer.setHelmet(new ItemStack(Material.ROOTED_DIRT));
-        soilLayer.setSmall(true);
-        ids.add(soilLayer.getUniqueId());
-        
-        // Moss carpet - left side
-        ArmorStand moss1 = createBaseArmorStand(world, baseLoc.clone().add(-0.1, -0.06, 0.06));
-        moss1.setHelmet(new ItemStack(Material.MOSS_CARPET));
-        moss1.setSmall(true);
-        moss1.setHeadPose(new EulerAngle(Math.toRadians(8), Math.toRadians(-20), 0));
-        ids.add(moss1.getUniqueId());
-        
-        // Moss carpet - right side
-        ArmorStand moss2 = createBaseArmorStand(world, baseLoc.clone().add(0.1, -0.06, -0.06));
-        moss2.setHelmet(new ItemStack(Material.MOSS_CARPET));
-        moss2.setSmall(true);
-        moss2.setHeadPose(new EulerAngle(Math.toRadians(6), Math.toRadians(30), 0));
-        ids.add(moss2.getUniqueId());
-        
-        // Bamboo decoration - back left
-        ArmorStand bamboo1 = createBaseArmorStand(world, baseLoc.clone().add(-0.12, 0.0, 0.1));
-        bamboo1.setHelmet(new ItemStack(Material.BAMBOO));
-        bamboo1.setSmall(true);
-        bamboo1.setHeadPose(new EulerAngle(Math.toRadians(10), Math.toRadians(-40), 0));
-        ids.add(bamboo1.getUniqueId());
-        
-        // Small fern decoration - front
-        ArmorStand fern = createBaseArmorStand(world, baseLoc.clone().add(0.08, -0.02, -0.1));
-        fern.setHelmet(new ItemStack(Material.FERN));
-        fern.setSmall(true);
-        fern.setHeadPose(new EulerAngle(Math.toRadians(15), Math.toRadians(60), 0));
-        ids.add(fern.getUniqueId());
+        // NOTE: Removed pot base decorations (soil, moss, bamboo, fern) as they were sticking out of the pot
+        // The flower pot block provides the visual container
         
         // ===== MAIN STEM STRUCTURE =====
         // Lower stem segment - thick woody base
@@ -506,46 +446,8 @@ public class PlantVisualizationManager {
         BudType budType = config != null ? config.getBudType() : BudType.NORMAL;
         boolean glowing = config != null && config.isGlowing();
         
-        // ===== PROFESSIONAL POT BASE =====
-        // Rich soil layer
-        ArmorStand soilLayer = createBaseArmorStand(world, baseLoc.clone().add(0, -0.12, 0));
-        soilLayer.setHelmet(new ItemStack(Material.ROOTED_DIRT));
-        soilLayer.setSmall(true);
-        ids.add(soilLayer.getUniqueId());
-        
-        // Moss carpet decorations - gives nursery/greenhouse look
-        ArmorStand moss1 = createBaseArmorStand(world, baseLoc.clone().add(-0.1, -0.06, 0.08));
-        moss1.setHelmet(new ItemStack(Material.MOSS_CARPET));
-        moss1.setSmall(true);
-        moss1.setHeadPose(new EulerAngle(Math.toRadians(8), Math.toRadians(-25), 0));
-        ids.add(moss1.getUniqueId());
-        
-        ArmorStand moss2 = createBaseArmorStand(world, baseLoc.clone().add(0.1, -0.06, -0.08));
-        moss2.setHelmet(new ItemStack(Material.MOSS_CARPET));
-        moss2.setSmall(true);
-        moss2.setHeadPose(new EulerAngle(Math.toRadians(6), Math.toRadians(35), 0));
-        ids.add(moss2.getUniqueId());
-        
-        // Bamboo shoots for professional texture - back left
-        ArmorStand bamboo1 = createBaseArmorStand(world, baseLoc.clone().add(-0.14, 0.0, 0.1));
-        bamboo1.setHelmet(new ItemStack(Material.BAMBOO));
-        bamboo1.setSmall(true);
-        bamboo1.setHeadPose(new EulerAngle(Math.toRadians(10), Math.toRadians(-35), 0));
-        ids.add(bamboo1.getUniqueId());
-        
-        // Bamboo - back right
-        ArmorStand bamboo2 = createBaseArmorStand(world, baseLoc.clone().add(0.14, 0.0, 0.1));
-        bamboo2.setHelmet(new ItemStack(Material.BAMBOO));
-        bamboo2.setSmall(true);
-        bamboo2.setHeadPose(new EulerAngle(Math.toRadians(10), Math.toRadians(35), 0));
-        ids.add(bamboo2.getUniqueId());
-        
-        // Small fern decoration - front
-        ArmorStand fern = createBaseArmorStand(world, baseLoc.clone().add(0, -0.02, -0.12));
-        fern.setHelmet(new ItemStack(Material.FERN));
-        fern.setSmall(true);
-        fern.setHeadPose(new EulerAngle(Math.toRadians(12), 0, 0));
-        ids.add(fern.getUniqueId());
+        // NOTE: Removed pot base decorations (soil, moss, bamboo, fern) as they were sticking out of the pot
+        // The flower pot block provides the visual container
         
         // ===== MAIN STEM STRUCTURE =====
         // Thick woody base stem
