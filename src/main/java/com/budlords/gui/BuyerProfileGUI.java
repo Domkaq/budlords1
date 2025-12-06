@@ -323,7 +323,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 
                 // Check for infection using disease manager
                 if (plugin.getDiseaseManager() != null && 
-                    plugin.getDiseaseManager().isInfected(plant.getLocation())) {
+                    plugin.getDiseaseManager().isInfected(plant)) {
                     infected++;
                 }
             }
@@ -914,7 +914,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             
             // Check for infection
             boolean isInfected = plugin.getDiseaseManager() != null && 
-                plugin.getDiseaseManager().isInfected(plant.getLocation());
+                plugin.getDiseaseManager().isInfected(plant);
             
             List<String> plantLore = new ArrayList<>();
             plantLore.add("§8━━━━━━━━━━━━━━━━");

@@ -700,14 +700,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         if (args.length > 2 && args[1].equalsIgnoreCase("set")) {
-            String weatherType = args[2].toUpperCase();
-            try {
-                var type = com.budlords.weather.WeatherManager.WeatherType.valueOf(weatherType);
-                weatherManager.setWeather(type);
-                sender.sendMessage("§a§l[DEBUG] §7Weather set to: " + type.getColoredDisplay());
-            } catch (IllegalArgumentException e) {
-                sender.sendMessage("§cInvalid weather type! Options: SUNNY, RAINY, STORMY, DROUGHT, FOGGY, WINDY, PERFECT");
-            }
+            sender.sendMessage("§cWeather is automatically updated based on world conditions.");
+            sender.sendMessage("§7Use Minecraft weather commands to affect in-game weather.");
             return;
         }
         
@@ -742,7 +736,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         Plant plant = nearbyPlants.get(0);
-        diseaseManager.infectPlant(plant.getLocation());
+        // Infect with a random common disease for testing
+        diseaseManager.infectPlant(plant, com.budlords.diseases.PlantDisease.ROOT_ROT);
         sender.sendMessage("§a§l[DEBUG] §7Infected plant at " + formatLocation(plant.getLocation()));
         sender.sendMessage("§7Strain: §e" + plant.getStrainId());
     }
@@ -767,8 +762,14 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         Plant plant = nearbyPlants.get(0);
-        diseaseManager.curePlant(plant.getLocation());
-        sender.sendMessage("§a§l[DEBUG] §7Cured plant at " + formatLocation(plant.getLocation()));
+        // Use the recommended cure for whatever disease the plant has
+        boolean cured = diseaseManager.curePlant(player, plant.getLocation(), 
+            com.budlords.diseases.PlantDisease.Cure.HEALING_SALVE);
+        if (cured) {
+            sender.sendMessage("§a§l[DEBUG] §7Cured plant at " + formatLocation(plant.getLocation()));
+        } else {
+            sender.sendMessage("§c§l[DEBUG] §7Plant was not infected or cure failed");
+        }
     }
     
     private void handleGiveSeed(CommandSender sender, String[] args) {
@@ -850,12 +851,12 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             case "lamp" -> item = qim.createLamp(rating, 1);
             case "scissors" -> item = qim.createScissors(rating, 1);
             case "fertilizer" -> item = qim.createFertilizer(rating, 1);
-            case "grinder" -> item = qim.createGrinder(rating, 1);
-            case "papers" -> item = qim.createRollingPapers(rating, 1);
-            case "phone" -> item = qim.createDealerPhone(1);
+            case "grinder" -> item = com.budlords.joint.JointItems.createGrinder(rating, 1);
+            case "papers" -> item = com.budlords.joint.JointItems.createRollingPaper(1);
+            case "tobacco" -> item = com.budlords.joint.JointItems.createTobacco(1);
             default -> {
                 sender.sendMessage("§cUnknown item type: " + itemType);
-                sender.sendMessage("§7Options: pot, lamp, scissors, fertilizer, grinder, papers, phone");
+                sender.sendMessage("§7Options: pot, lamp, scissors, fertilizer, grinder, papers, tobacco");
                 return;
             }
         }
@@ -914,35 +915,18 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             return;
         }
         
-        if (args.length > 1 && args[1].equalsIgnoreCase("complete")) {
-            // Complete all active challenges
-            var challenges = challengeManager.getActiveChallenges();
-            for (var challenge : challenges) {
-                challengeManager.completeChallenge(player, challenge);
-            }
-            sender.sendMessage("§a§l[DEBUG] §7Completed all active challenges!");
-            return;
-        }
-        
         sender.sendMessage("§8§m════════════════════════════════════════");
         sender.sendMessage("§6§l  Challenge Debug");
         sender.sendMessage("§8§m════════════════════════════════════════");
-        
-        var challenges = challengeManager.getActiveChallenges();
-        if (challenges.isEmpty()) {
-            sender.sendMessage("§7  No active challenges.");
-        } else {
-            for (var challenge : challenges) {
-                sender.sendMessage("§e  " + challenge.getName());
-                sender.sendMessage("§7    Type: " + challenge.getType().name());
-                sender.sendMessage("§7    Target: " + challenge.getTarget());
-                sender.sendMessage("§7    Reward: §a$" + String.format("%.2f", challenge.getReward()));
-            }
-        }
-        
+        sender.sendMessage("§7  Use §e/challenges §7to view and complete challenges.");
+        sender.sendMessage("§7  Challenge system is managed through GUI.");
         sender.sendMessage("");
-        sender.sendMessage("§7  Use §e/debug challenge complete §7to finish all");
+        sender.sendMessage("§7  Use §e/debug challenge gui §7to open challenges menu");
         sender.sendMessage("§8§m════════════════════════════════════════");
+        
+        if (args.length > 1 && args[1].equalsIgnoreCase("gui")) {
+            challengeManager.openChallengesGUI(player);
+        }
     }
     
     private void handleBulkOrder(CommandSender sender, String[] args) {
@@ -989,42 +973,16 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             return;
         }
         
-        if (args.length < 3) {
-            sender.sendMessage("§cUsage: /debug crossbreed <strain1> <strain2>");
-            return;
-        }
-        
         var crossbreedManager = plugin.getCrossbreedManager();
         if (crossbreedManager == null) {
             sender.sendMessage("§cCrossbreed manager not initialized!");
             return;
         }
         
-        String strain1Id = args[1].toLowerCase();
-        String strain2Id = args[2].toLowerCase();
-        
-        Strain parent1 = plugin.getStrainManager().getStrain(strain1Id);
-        Strain parent2 = plugin.getStrainManager().getStrain(strain2Id);
-        
-        if (parent1 == null) {
-            sender.sendMessage("§cStrain not found: " + strain1Id);
-            return;
-        }
-        if (parent2 == null) {
-            sender.sendMessage("§cStrain not found: " + strain2Id);
-            return;
-        }
-        
-        Strain result = crossbreedManager.crossbreed(player, parent1, parent2);
-        if (result != null) {
-            sender.sendMessage("§a§l[DEBUG] §7Crossbreed successful!");
-            sender.sendMessage("§7  Parents: §e" + parent1.getName() + " §7x §e" + parent2.getName());
-            sender.sendMessage("§7  Result: §d" + result.getName());
-            sender.sendMessage("§7  Rarity: " + result.getRarity().getDisplayName());
-            sender.sendMessage("§7  Effects: §d" + result.getEffectCount());
-        } else {
-            sender.sendMessage("§c§l[DEBUG] §7Crossbreed failed!");
-        }
+        // Open the crossbreed GUI for interactive crossbreeding
+        sender.sendMessage("§a§l[DEBUG] §7Opening crossbreed GUI...");
+        sender.sendMessage("§7Use the GUI to select strains and crossbreed.");
+        crossbreedManager.openCrossbreedGUI(player);
     }
     
     private void handleSetQuality(CommandSender sender, String[] args) {
@@ -1094,7 +1052,7 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         
         if (args.length < 2) {
             sender.sendMessage("§cUsage: /debug spawnnpc <type>");
-            sender.sendMessage("§7Types: MARKET_JOE, SHADY_STEVE, LUXURY_LAURA, PARTY_PETE, etc.");
+            sender.sendMessage("§7Types: MARKET_JOE, BLACKMARKET_JOE");
             return;
         }
         
@@ -1105,12 +1063,16 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         String typeName = args[1].toUpperCase();
-        try {
-            var npcType = com.budlords.npc.NPCManager.NPCType.valueOf(typeName);
-            npcManager.spawnNPC(player.getLocation(), npcType);
-            sender.sendMessage("§a§l[DEBUG] §7Spawned NPC: " + npcType.name());
-        } catch (IllegalArgumentException e) {
-            sender.sendMessage("§cInvalid NPC type: " + typeName);
+        switch (typeName) {
+            case "MARKET_JOE" -> {
+                npcManager.spawnMarketJoe(player.getLocation());
+                sender.sendMessage("§a§l[DEBUG] §7Spawned Market Joe");
+            }
+            case "BLACKMARKET_JOE" -> {
+                npcManager.spawnBlackMarketJoe(player.getLocation());
+                sender.sendMessage("§a§l[DEBUG] §7Spawned BlackMarket Joe");
+            }
+            default -> sender.sendMessage("§cInvalid NPC type: " + typeName + ". Options: MARKET_JOE, BLACKMARKET_JOE");
         }
     }
     
@@ -1129,15 +1091,17 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§8§m════════════════════════════════════════");
         sender.sendMessage("§a§l  Skills Debug");
         sender.sendMessage("§8§m════════════════════════════════════════");
-        
-        for (com.budlords.skills.Skill skill : com.budlords.skills.Skill.values()) {
-            int level = skillManager.getSkillLevel(player, skill);
-            int xp = skillManager.getSkillXp(player, skill);
-            sender.sendMessage("§7  " + skill.getDisplayName() + ": §eLv" + level + " §7(" + xp + " XP)");
-        }
-        
+        sender.sendMessage("§7  Skill Points: §e" + skillManager.getSkillPoints(player.getUniqueId()));
+        sender.sendMessage("§7  Unlocked Skills: §e" + skillManager.getUnlockedCount(player.getUniqueId()));
         sender.sendMessage("");
-        sender.sendMessage("§7  Use §e/debug addskillxp <skill> <amount>");
+        sender.sendMessage("§7  Tree XP:");
+        for (com.budlords.skills.Skill.SkillTree tree : com.budlords.skills.Skill.SkillTree.values()) {
+            int xp = skillManager.getTreeXP(player.getUniqueId(), tree);
+            sender.sendMessage("§7    " + tree.getDisplayName() + ": §e" + xp + " XP");
+        }
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug addskillxp <tree> <amount>");
+        sender.sendMessage("§7  Trees: FARMING, QUALITY, TRADING, PROCESSING");
         sender.sendMessage("§8§m════════════════════════════════════════");
     }
     
@@ -1148,7 +1112,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /debug addskillxp <skill> <amount>");
+            sender.sendMessage("§cUsage: /debug addskillxp <tree> <amount>");
+            sender.sendMessage("§7Trees: FARMING, QUALITY, TRADING, PROCESSING");
             return;
         }
         
@@ -1158,16 +1123,16 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             return;
         }
         
-        String skillName = args[1].toUpperCase();
+        String treeName = args[1].toUpperCase();
         int amount = parseInt(args[2], 100);
         
         try {
-            var skill = com.budlords.skills.Skill.valueOf(skillName);
-            skillManager.addSkillXp(player, skill, amount);
-            sender.sendMessage("§a§l[DEBUG] §7Added §e" + amount + " §7XP to " + skill.getDisplayName());
+            var tree = com.budlords.skills.Skill.SkillTree.valueOf(treeName);
+            skillManager.addTreeXP(player.getUniqueId(), tree, amount);
+            sender.sendMessage("§a§l[DEBUG] §7Added §e" + amount + " §7XP to " + tree.getDisplayName());
         } catch (IllegalArgumentException e) {
-            sender.sendMessage("§cInvalid skill: " + skillName);
-            sender.sendMessage("§7Skills: GROWING, HARVESTING, BREEDING, PROCESSING, SELLING");
+            sender.sendMessage("§cInvalid skill tree: " + treeName);
+            sender.sendMessage("§7Trees: FARMING, QUALITY, TRADING, PROCESSING");
         }
     }
     
@@ -1190,14 +1155,27 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             return;
         }
         
+        if (args.length > 1 && args[1].equalsIgnoreCase("gui")) {
+            prestigeManager.openPrestigeGUI(player);
+            return;
+        }
+        
         var stats = plugin.getStatsManager().getStats(player);
+        int currentPrestige = stats.getPrestigeLevel();
+        double balance = plugin.getEconomyManager().getBalance(player);
+        double cost = prestigeManager.getPrestigeCost(currentPrestige);
+        boolean canAfford = balance >= cost;
+        
         sender.sendMessage("§8§m════════════════════════════════════════");
         sender.sendMessage("§d§l  Prestige Debug");
         sender.sendMessage("§8§m════════════════════════════════════════");
-        sender.sendMessage("§7  Current Level: §d" + stats.getPrestigeLevel());
-        sender.sendMessage("§7  Can Prestige: " + (prestigeManager.canPrestige(player) ? "§aYes" : "§cNo"));
+        sender.sendMessage("§7  Current Level: §d" + currentPrestige);
+        sender.sendMessage("§7  Next Cost: §e$" + String.format("%,.0f", cost));
+        sender.sendMessage("§7  Balance: §e$" + String.format("%,.0f", balance));
+        sender.sendMessage("§7  Can Afford: " + (canAfford ? "§aYes" : "§cNo"));
         sender.sendMessage("");
         sender.sendMessage("§7  Use §e/debug prestige set <level>");
+        sender.sendMessage("§7  Use §e/debug prestige gui §7to open menu");
         sender.sendMessage("§8§m════════════════════════════════════════");
     }
     
@@ -1208,24 +1186,14 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             return;
         }
         
-        if (args.length > 2 && args[1].equalsIgnoreCase("set")) {
-            try {
-                double mult = Double.parseDouble(args[2]);
-                marketManager.setGlobalMultiplier(mult);
-                sender.sendMessage("§a§l[DEBUG] §7Set market multiplier to §e" + String.format("%.2fx", mult));
-            } catch (NumberFormatException e) {
-                sender.sendMessage("§cInvalid multiplier! Must be a number.");
-            }
-            return;
-        }
-        
         sender.sendMessage("§8§m════════════════════════════════════════");
         sender.sendMessage("§6§l  Market Debug");
         sender.sendMessage("§8§m════════════════════════════════════════");
-        sender.sendMessage("§7  Global Multiplier: §e" + String.format("%.2fx", marketManager.getGlobalMultiplier()));
-        sender.sendMessage("§7  Active Event: " + marketManager.getActiveEventDisplay());
+        sender.sendMessage("§7  Current Event: §e" + marketManager.getCurrentMarketEvent());
+        sender.sendMessage("§7  Event Multiplier: §e" + String.format("%.2fx", marketManager.getEventMultiplier()));
+        sender.sendMessage("§7  Time Remaining: §e" + marketManager.getEventTimeRemainingMinutes() + " minutes");
         sender.sendMessage("");
-        sender.sendMessage("§7  Use §e/debug market set <multiplier>");
+        sender.sendMessage(marketManager.getMarketStatusDisplay());
         sender.sendMessage("§8§m════════════════════════════════════════");
     }
     
@@ -1248,9 +1216,10 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 return;
             }
             
-            org.bukkit.inventory.ItemStack joint = com.budlords.joint.JointItems.createJoint(strain, StarRating.FIVE_STAR, 85);
+            org.bukkit.inventory.ItemStack joint = com.budlords.joint.JointItems.createJoint(
+                strain.getId(), strain.getName(), StarRating.FIVE_STAR, strain.getPotency(), 1);
             player.getInventory().addItem(joint);
-            sender.sendMessage("§a§l[DEBUG] §7Gave §e" + strain.getName() + " §7joint (5★, 85% quality)");
+            sender.sendMessage("§a§l[DEBUG] §7Gave §e" + strain.getName() + " §7joint (5★, " + strain.getPotency() + "% potency)");
             return;
         }
         
@@ -1259,7 +1228,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage("§8§m════════════════════════════════════════");
             sender.sendMessage("§e§l  Joint Rolling Debug");
             sender.sendMessage("§8§m════════════════════════════════════════");
-            sender.sendMessage("§7  Active Sessions: §e" + rollingManager.getActiveSessionCount());
+            sender.sendMessage("§7  Rolling Manager: §a" + (rollingManager != null ? "Active" : "Not loaded"));
+            sender.sendMessage("§7  Has Active Session: " + (rollingManager != null && rollingManager.hasActiveSession(player) ? "§aYes" : "§cNo"));
             sender.sendMessage("§8§m════════════════════════════════════════");
             return;
         }
