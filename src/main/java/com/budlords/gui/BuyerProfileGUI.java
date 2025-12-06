@@ -1128,7 +1128,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.2f);
         
         // Refresh the GUI
-        updateContactsList(inv, player);
+        updateOrdersPage(inv, player);
     }
     
     /**
@@ -1154,7 +1154,7 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.2f);
                 
                 // Refresh the GUI
-                updateContactsList(inv, player);
+                updateAppsPage(inv, player);
             } else {
                 player.sendMessage("§cYou need $20,000 to unlock Plant Monitoring!");
                 player.sendMessage("§7Current balance: " + economyManager.formatMoney(balance));
