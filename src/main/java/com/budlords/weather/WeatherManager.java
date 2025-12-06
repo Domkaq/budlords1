@@ -103,23 +103,10 @@ public class WeatherManager {
     }
 
     private void broadcastWeatherChange() {
-        // Weather changes are no longer broadcasted to chat
+        // Weather changes are no longer broadcasted to chat to reduce spam
         // Players can check weather via /market or the Dealer Phone
-        // The config option is kept for backwards compatibility but defaults to false
-        if (!plugin.getConfig().getBoolean("weather.broadcast-changes", false)) return;
-        
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage("");
-            player.sendMessage("§7☁ Weather: " + currentWeather.getColoredDisplay());
-            player.sendMessage("§7  Growth: " + formatMultiplier(currentGrowthMultiplier));
-            player.sendMessage("§7  Quality: " + formatMultiplier(currentQualityMultiplier));
-            if (currentWaterGainRate > 0) {
-                player.sendMessage("§7  Plants are being watered!");
-            }
-            player.sendMessage("");
-            
-            player.playSound(player.getLocation(), currentWeather.getSound(), 0.5f, 1.0f);
-        }
+        // This method is intentionally disabled and kept only for backwards compatibility
+        return;
     }
 
     private String formatMultiplier(double mult) {

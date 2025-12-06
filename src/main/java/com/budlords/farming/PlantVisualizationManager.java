@@ -773,12 +773,23 @@ public class PlantVisualizationManager {
 
     /**
      * Starts the animation task with custom animation styles.
+     * Optimized to reduce lag when many plants are present.
      */
     private void startAnimationTask() {
         animationTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             long time = System.currentTimeMillis();
+            int plantCount = plantArmorStands.size();
+            
+            // If there are many plants, reduce animation frequency/complexity
+            boolean manyPlants = plantCount > 20;
+            int maxProcessPerTick = manyPlants ? 10 : Integer.MAX_VALUE;
+            int processed = 0;
             
             for (Map.Entry<String, List<UUID>> entry : plantArmorStands.entrySet()) {
+                // Limit processing when there are many plants
+                if (manyPlants && processed >= maxProcessPerTick) break;
+                processed++;
+                
                 String locKey = entry.getKey();
                 StrainVisualConfig config = plantVisualConfigs.get(locKey);
                 
@@ -788,7 +799,14 @@ public class PlantVisualizationManager {
                 // Skip frozen plants
                 if (style == AnimationStyle.FROZEN) continue;
                 
-                // Calculate animation based on style
+                // Simplified animation for performance - only update every few armor stands
+                List<UUID> armorStands = entry.getValue();
+                if (armorStands.isEmpty()) continue;
+                
+                // When many plants exist, only animate a subset of armor stands per plant
+                int updateInterval = manyPlants ? 3 : 1;
+                
+                // Calculate animation based on style (simplified for performance)
                 double sway = 0;
                 double bounce = 0;
                 double spin = 0;
@@ -809,7 +827,9 @@ public class PlantVisualizationManager {
                     default -> sway = Math.sin(time / 1000.0 * speed) * 0.02;
                 }
                 
-                for (UUID id : entry.getValue()) {
+                // Only update a subset of armor stands when performance is critical
+                for (int i = 0; i < armorStands.size(); i += updateInterval) {
+                    UUID id = armorStands.get(i);
                     Entity entity = Bukkit.getEntity(id);
                     if (entity instanceof ArmorStand stand) {
                         EulerAngle current = stand.getHeadPose();
@@ -822,15 +842,26 @@ public class PlantVisualizationManager {
                     }
                 }
             }
-        }, 20L, 5L); // Every 0.25 seconds
+        }, 20L, 10L); // Increased from 5L to 10L (0.5 seconds instead of 0.25) for better performance
     }
     
     /**
      * Starts the particle effect task for ambient effects.
+     * Optimized to reduce particle spam when many plants exist.
      */
     private void startParticleTask() {
         particleTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+            int plantCount = plantArmorStands.size();
+            
+            // Reduce particle spawning when there are many plants
+            boolean manyPlants = plantCount > 20;
+            int maxParticlesPerCycle = manyPlants ? 15 : Integer.MAX_VALUE;
+            int particlesSpawned = 0;
+            
             for (Map.Entry<String, List<UUID>> entry : plantArmorStands.entrySet()) {
+                // Limit particle spawning for performance
+                if (manyPlants && particlesSpawned >= maxParticlesPerCycle) break;
+                
                 String locKey = entry.getKey();
                 StrainVisualConfig config = plantVisualConfigs.get(locKey);
                 
@@ -849,21 +880,29 @@ public class PlantVisualizationManager {
                     World world = Bukkit.getWorld(parts[0]);
                     if (world == null) continue;
                     
+                    // Check if chunk is loaded before spawning particles
+                    int chunkX = Integer.parseInt(parts[1]) >> 4;
+                    int chunkZ = Integer.parseInt(parts[3]) >> 4;
+                    if (!world.isChunkLoaded(chunkX, chunkZ)) continue;
+                    
                     double x = Double.parseDouble(parts[1]) + 0.5;
                     double y = Double.parseDouble(parts[2]) + 0.5;
                     double z = Double.parseDouble(parts[3]) + 0.5;
                     
                     Location loc = new Location(world, x, y, z);
                     
-                    // Spawn particles based on intensity (1-10 -> 1-5 particles)
-                    int count = Math.max(1, intensity / 2);
+                    // Reduce particle count when there are many plants
+                    int baseCount = Math.max(1, intensity / 2);
+                    int count = manyPlants ? Math.max(1, baseCount / 2) : baseCount;
                     world.spawnParticle(particle, loc, count, 0.2, 0.3, 0.2, 0.02);
+                    
+                    particlesSpawned++;
                     
                 } catch (NumberFormatException e) {
                     // Skip invalid locations
                 }
             }
-        }, 40L, 20L); // Every second
+        }, 40L, 40L); // Increased from 20L to 40L (2 seconds instead of 1) for better performance
     }
 
     /**
