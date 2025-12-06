@@ -261,6 +261,13 @@ public class JointRollingManager implements InventoryHolder {
     private static final long TOBACCO_ROLL_TIME_LIMIT = 8000L;
     
     private void setupTobaccoRollMinigame(Inventory inv, JointRollingSession session) {
+        // CRITICAL: Ensure minigame is always active when in TOBACCO_ROLL stage
+        // This prevents the game from getting stuck if not activated elsewhere
+        if (!session.isMinigameActive()) {
+            session.setMinigameActive(true);
+            session.setTargetProgress(100);
+        }
+        
         // Progress bar display
         int progressSlots = 7;
         int[] slots = {19, 20, 21, 22, 23, 24, 25};
@@ -301,15 +308,13 @@ public class JointRollingManager implements InventoryHolder {
                 "§cDon't stop clicking!"
             )));
         
-        // Timer - now always shown since minigame starts automatically
-        if (session.isMinigameActive()) {
-            long elapsed = System.currentTimeMillis() - session.getMinigameStartTime();
-            long remaining = TOBACCO_ROLL_TIME_LIMIT - elapsed;
-            String timeColor = remaining > 3000 ? "§a" : (remaining > 1500 ? "§e" : "§c");
-            inv.setItem(40, createGuiItem(Material.CLOCK, 
-                timeColor + "§lTime: " + String.format("%.1f", Math.max(0, remaining) / 1000.0) + "s",
-                Arrays.asList("", "§7Hurry! Click the tobacco!")));
-        }
+        // Timer - always shown since minigame is always active for TOBACCO_ROLL
+        long elapsed = System.currentTimeMillis() - session.getMinigameStartTime();
+        long remaining = TOBACCO_ROLL_TIME_LIMIT - elapsed;
+        String timeColor = remaining > 3000 ? "§a" : (remaining > 1500 ? "§e" : "§c");
+        inv.setItem(40, createGuiItem(Material.CLOCK, 
+            timeColor + "§lTime: " + String.format("%.1f", Math.max(0, remaining) / 1000.0) + "s",
+            Arrays.asList("", "§7Hurry! Click the tobacco!")));
     }
 
     // ====== GRIND MINIGAME ======
@@ -732,18 +737,23 @@ public class JointRollingManager implements InventoryHolder {
                         }
                     }
                     case TOBACCO_ROLL -> {
+                        // Ensure minigame is always active for TOBACCO_ROLL stage
+                        // This is a safety check to prevent getting stuck
+                        if (!sess.isMinigameActive()) {
+                            sess.setMinigameActive(true);
+                            sess.setTargetProgress(100);
+                        }
+                        
                         // Check timeout - uses TOBACCO_ROLL_TIME_LIMIT constant
-                        if (sess.isMinigameActive()) {
-                            long elapsed = System.currentTimeMillis() - sess.getMinigameStartTime();
-                            if (elapsed > TOBACCO_ROLL_TIME_LIMIT) {
-                                // Time's up!
-                                int score = Math.min(100, sess.getMinigameProgress());
-                                sess.setStageScore(score);
-                                player.sendMessage("§c§lTime's up! §7Score: " + score);
-                                completeStage(player, sess);
-                                cancel();
-                                return;
-                            }
+                        long elapsed = System.currentTimeMillis() - sess.getMinigameStartTime();
+                        if (elapsed > TOBACCO_ROLL_TIME_LIMIT) {
+                            // Time's up!
+                            int score = Math.min(100, sess.getMinigameProgress());
+                            sess.setStageScore(score);
+                            player.sendMessage("§c§lTime's up! §7Score: " + score);
+                            completeStage(player, sess);
+                            cancel();
+                            return;
                         }
                     }
                     case FINAL_ROLL -> {

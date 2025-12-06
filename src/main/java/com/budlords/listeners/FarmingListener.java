@@ -749,18 +749,9 @@ public class FarmingListener implements Listener {
                                 );
                             }
                             player.sendMessage("§7Returned pot: " + harvested.getPotRating().getDisplay());
-                            
-                            // Return lamp if present
-                            if (harvested.getLampRating() != null) {
-                                ItemStack lamp = plugin.getQualityItemManager().createLamp(harvested.getLampRating(), 1);
-                                HashMap<Integer, ItemStack> lampLeftover = player.getInventory().addItem(lamp);
-                                if (!lampLeftover.isEmpty()) {
-                                    lampLeftover.values().forEach(i -> 
-                                        player.getWorld().dropItemNaturally(player.getLocation(), i)
-                                    );
-                                }
-                                player.sendMessage("§7Returned lamp: " + harvested.getLampRating().getDisplay());
-                            }
+                            // Note: Lamps are NOT returned when removing a pot - lamps are placed 
+                            // separately as blocks and can affect multiple pots. The lamp rating
+                            // on a plant is just a buff indicator, not ownership.
                         }
                     }
                 } else {
@@ -788,18 +779,9 @@ public class FarmingListener implements Listener {
                             );
                         }
                         player.sendMessage("§7Returned pot: " + plant.getPotRating().getDisplay());
-                        
-                        // Return lamp if present
-                        if (plant.getLampRating() != null) {
-                            ItemStack lamp = plugin.getQualityItemManager().createLamp(plant.getLampRating(), 1);
-                            HashMap<Integer, ItemStack> lampLeftover = player.getInventory().addItem(lamp);
-                            if (!lampLeftover.isEmpty()) {
-                                lampLeftover.values().forEach(i -> 
-                                    player.getWorld().dropItemNaturally(player.getLocation(), i)
-                                );
-                            }
-                            player.sendMessage("§7Returned lamp: " + plant.getLampRating().getDisplay());
-                        }
+                        // Note: Lamps are NOT returned when removing a pot - lamps are placed 
+                        // separately as blocks and can affect multiple pots. The lamp rating
+                        // on a plant is just a buff indicator, not ownership.
                     }
                     
                     farmingManager.removePlant(block.getLocation());
@@ -842,11 +824,9 @@ public class FarmingListener implements Listener {
                         // Remove pot from tracking
                         farmingManager.removePot(block.getLocation());
                         
-                        // Return lamp if present
-                        if (plantAbove.getLampRating() != null) {
-                            ItemStack lamp = plugin.getQualityItemManager().createLamp(plantAbove.getLampRating(), 1);
-                            event.getPlayer().getWorld().dropItemNaturally(block.getLocation(), lamp);
-                        }
+                        // Note: Lamps are NOT returned when removing a pot - lamps are placed 
+                        // separately as blocks and can affect multiple pots. The lamp rating
+                        // on a plant is just a buff indicator, not ownership.
                     }
                 }
             } else if (block.getType() == Material.FLOWER_POT) {
