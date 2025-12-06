@@ -2,7 +2,7 @@ name: BudLords
 version: '${project.version}'
 main: com.budlords.BudLords
 api-version: '1.20'
-description: A weed farming RPG + black market economy system for Minecraft - v3.0.0 Major Update
+description: A weed farming RPG + black market economy system for Minecraft
 author: BudLords Team
 
 commands:
@@ -31,81 +31,13 @@ commands:
     usage: /<command>
     permission: budlords.admin
   package:
-    description: Package weed buds (Operator only)
+    description: Package weed buds
     usage: /<command> <amount>
-    permission: budlords.admin
+    permission: budlords.package
   budlords:
     description: Main BudLords command
     usage: /<command>
     permission: budlords.use
-  stats:
-    description: View your BudLords statistics
-    usage: /<command>
-    permission: budlords.use
-  prestige:
-    description: Open the prestige menu
-    usage: /<command>
-    permission: budlords.use
-  challenges:
-    description: View daily and weekly challenges
-    usage: /<command>
-    permission: budlords.use
-  crossbreed:
-    description: Open the crossbreeding lab
-    usage: /<command>
-    permission: budlords.use
-  leaderboard:
-    description: View server leaderboards
-    usage: /<command> [category]
-    aliases: [lb, top]
-    permission: budlords.use
-  # v2.0.0 Commands
-  season:
-    description: View current season and bonuses
-    usage: /<command> [info|set]
-    permission: budlords.use
-  achievements:
-    description: View your achievements
-    usage: /<command> [category]
-    aliases: [achieve, ach]
-    permission: budlords.use
-  skills:
-    description: View and manage your skill tree
-    usage: /<command> [tree]
-    aliases: [skill, skilltree]
-    permission: budlords.use
-  collection:
-    description: View your strain collection book
-    usage: /<command> [page]
-    aliases: [book, strainbook]
-    permission: budlords.use
-  # v3.0.0 Commands
-  daily:
-    description: Claim your daily reward
-    usage: /<command>
-    aliases: [dailyreward, streak]
-    permission: budlords.use
-  market:
-    description: View current market conditions and prices
-    usage: /<command>
-    aliases: [marketstatus, prices]
-    permission: budlords.use
-  orders:
-    description: View and manage bulk orders
-    usage: /<command> [new]
-    aliases: [bulkorders, order]
-    permission: budlords.use
-  reputation:
-    description: View your reputation with buyers
-    usage: /<command>
-    aliases: [rep, standing]
-    permission: budlords.use
-  # Admin Debug Command
-  debug:
-    description: Admin debug tools for testing BudLords
-    usage: /<command> [toggle|plants|strains|player|effects|economy|entity|growplant|giveeffect|testmutation|reload|save|config|clear]
-    aliases: [bldebug, budlordsdebug]
-    permission: budlords.admin
 
 permissions:
   budlords.use:
@@ -119,9 +51,6 @@ permissions:
     default: true
   budlords.package:
     description: Package weed
-    default: true
-  budlords.market.news:
-    description: Receive market event notifications
     default: true
   budlords.admin:
     description: Admin commands

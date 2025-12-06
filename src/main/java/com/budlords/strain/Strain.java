@@ -1,13 +1,6 @@
 package com.budlords.strain;
 
-import com.budlords.effects.StrainEffect;
-import com.budlords.effects.StrainEffectType;
 import org.bukkit.Material;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Strain {
 
@@ -18,21 +11,6 @@ public class Strain {
     private int yield;
     private int packagingQuality;
     private Material iconMaterial;
-    private List<StrainEffect> effects;
-    
-    // Maximum number of effects a strain can have (normal)
-    public static final int MAX_EFFECTS = 5;
-    // Maximum effects for crossbred strains with mutation
-    public static final int MAX_EFFECTS_CROSSBRED = 8;
-    // Unlimited effects for admin-created strains (reasonably high upper bound)
-    public static final int MAX_EFFECTS_ADMIN = 100;
-    
-    // Flag for special crossbred strains
-    private boolean isCrossbred = false;
-    private boolean isAdminCreated = false;
-    
-    // Visual customization for 3D plant appearance
-    private StrainVisualConfig visualConfig;
 
     public Strain(String id, String name, Rarity rarity, int potency, int yield, int packagingQuality) {
         this.id = id;
@@ -42,8 +20,6 @@ public class Strain {
         this.yield = yield;
         this.packagingQuality = packagingQuality;
         this.iconMaterial = Material.GREEN_DYE;
-        this.effects = new ArrayList<>();
-        this.visualConfig = new StrainVisualConfig(); // Default visual config
     }
 
     public String getId() {
@@ -97,191 +73,6 @@ public class Strain {
     public void setIconMaterial(Material iconMaterial) {
         this.iconMaterial = iconMaterial;
     }
-    
-    // ===== CROSSBRED/ADMIN FLAGS =====
-    
-    public boolean isCrossbred() {
-        return isCrossbred;
-    }
-    
-    public void setCrossbred(boolean crossbred) {
-        this.isCrossbred = crossbred;
-    }
-    
-    public boolean isAdminCreated() {
-        return isAdminCreated;
-    }
-    
-    public void setAdminCreated(boolean adminCreated) {
-        this.isAdminCreated = adminCreated;
-    }
-    
-    // ===== VISUAL CONFIG =====
-    
-    /**
-     * Gets the visual configuration for this strain.
-     */
-    public StrainVisualConfig getVisualConfig() {
-        if (visualConfig == null) {
-            visualConfig = new StrainVisualConfig();
-        }
-        return visualConfig;
-    }
-    
-    /**
-     * Sets the visual configuration for this strain.
-     */
-    public void setVisualConfig(StrainVisualConfig config) {
-        this.visualConfig = config;
-    }
-    
-    /**
-     * Gets the maximum number of effects this strain can have.
-     */
-    public int getMaxEffects() {
-        if (isAdminCreated) return MAX_EFFECTS_ADMIN;
-        if (isCrossbred) return MAX_EFFECTS_CROSSBRED;
-        return MAX_EFFECTS;
-    }
-    
-    // ===== EFFECTS MANAGEMENT =====
-    
-    /**
-     * Gets the list of effects for this strain.
-     */
-    public List<StrainEffect> getEffects() {
-        return Collections.unmodifiableList(effects);
-    }
-    
-    /**
-     * Sets the effects for this strain.
-     */
-    public void setEffects(List<StrainEffect> effects) {
-        this.effects = new ArrayList<>(effects);
-        int maxEffects = getMaxEffects();
-        // Limit to max effects efficiently by removing excess elements
-        while (this.effects.size() > maxEffects) {
-            this.effects.remove(this.effects.size() - 1);
-        }
-    }
-    
-    /**
-     * Adds an effect to this strain if there's room.
-     */
-    public boolean addEffect(StrainEffect effect) {
-        if (effects.size() >= getMaxEffects()) {
-            return false;
-        }
-        // Don't add duplicate effect types
-        for (StrainEffect existing : effects) {
-            if (existing.getType() == effect.getType()) {
-                return false;
-            }
-        }
-        effects.add(effect);
-        return true;
-    }
-    
-    /**
-     * Removes an effect by type.
-     */
-    public boolean removeEffect(StrainEffectType type) {
-        return effects.removeIf(e -> e.getType() == type);
-    }
-    
-    /**
-     * Checks if this strain has a specific effect.
-     */
-    public boolean hasEffect(StrainEffectType type) {
-        return effects.stream().anyMatch(e -> e.getType() == type);
-    }
-    
-    /**
-     * Gets a specific effect by type, or null if not present.
-     */
-    public StrainEffect getEffect(StrainEffectType type) {
-        return effects.stream()
-            .filter(e -> e.getType() == type)
-            .findFirst()
-            .orElse(null);
-    }
-    
-    /**
-     * Clears all effects.
-     */
-    public void clearEffects() {
-        effects.clear();
-    }
-    
-    /**
-     * Gets a display string for all effects.
-     */
-    public String getEffectsDisplay() {
-        if (effects.isEmpty()) {
-            return "§7None";
-        }
-        return effects.stream()
-            .map(StrainEffect::getCompactDisplay)
-            .collect(Collectors.joining("§7, "));
-    }
-    
-    /**
-     * Gets lore lines for all effects.
-     */
-    public List<String> getEffectsLore() {
-        List<String> lore = new ArrayList<>();
-        if (effects.isEmpty()) {
-            lore.add("§7No special effects");
-        } else {
-            for (StrainEffect effect : effects) {
-                lore.add(effect.getLoreDisplay());
-            }
-        }
-        return lore;
-    }
-    
-    /**
-     * Checks if this strain has any legendary effects.
-     */
-    public boolean hasLegendaryEffect() {
-        return effects.stream().anyMatch(e -> e.getType().isLegendary());
-    }
-    
-    /**
-     * Gets the number of effects.
-     */
-    public int getEffectCount() {
-        return effects.size();
-    }
-    
-    /**
-     * Serializes effects to a comma-separated string.
-     */
-    public String serializeEffects() {
-        if (effects.isEmpty()) {
-            return "";
-        }
-        return effects.stream()
-            .map(StrainEffect::serialize)
-            .collect(Collectors.joining(","));
-    }
-    
-    /**
-     * Deserializes effects from a comma-separated string.
-     */
-    public void deserializeEffects(String data) {
-        effects.clear();
-        if (data == null || data.isEmpty()) {
-            return;
-        }
-        String[] parts = data.split(",");
-        for (String part : parts) {
-            StrainEffect effect = StrainEffect.deserialize(part);
-            if (effect != null) {
-                effects.add(effect);
-            }
-        }
-    }
 
     public double getBaseValue() {
         double rarityMultiplier = switch (rarity) {
@@ -290,39 +81,23 @@ public class Strain {
             case RARE -> 2.5;
             case LEGENDARY -> 5.0;
         };
-        
-        // Effects add value
-        double effectBonus = 1.0;
-        for (StrainEffect effect : effects) {
-            effectBonus += 0.1 * effect.getIntensity();
-            if (effect.getType().isLegendary()) {
-                effectBonus += 0.5; // Legendary effects add significant value
-            }
-        }
-        
-        return (potency * 0.5 + packagingQuality * 0.3) * rarityMultiplier * effectBonus;
+        return (potency * 0.5 + packagingQuality * 0.3) * rarityMultiplier;
     }
 
     public enum Rarity {
-        COMMON("§7Common", "§7"),
-        UNCOMMON("§aUncommon", "§a"),
-        RARE("§9Rare", "§9"),
-        LEGENDARY("§6Legendary", "§6");
+        COMMON("§7Common"),
+        UNCOMMON("§aUncommon"),
+        RARE("§9Rare"),
+        LEGENDARY("§6Legendary");
 
         private final String displayName;
-        private final String colorCode;
 
-        Rarity(String displayName, String colorCode) {
+        Rarity(String displayName) {
             this.displayName = displayName;
-            this.colorCode = colorCode;
         }
 
         public String getDisplayName() {
             return displayName;
-        }
-
-        public String getColorCode() {
-            return colorCode;
         }
 
         public Rarity next() {

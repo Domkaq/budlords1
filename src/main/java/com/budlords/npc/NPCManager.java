@@ -1,11 +1,9 @@
 package com.budlords.npc;
 
 import com.budlords.BudLords;
-import com.budlords.challenges.Challenge;
 import com.budlords.economy.EconomyManager;
 import com.budlords.packaging.PackagingManager;
 import com.budlords.progression.RankManager;
-import com.budlords.stats.PlayerStats;
 import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
 import org.bukkit.Location;
@@ -95,22 +93,7 @@ public class NPCManager {
             }
         }
         
-        // Check if entity type is allowed in config
-        if (isEntityAllowedForSelling(entity)) {
-            return NPCType.CONFIGURABLE_MOB;
-        }
-        
         return NPCType.NONE;
-    }
-    
-    /**
-     * Checks if an entity type is allowed for selling based on config.
-     */
-    public boolean isEntityAllowedForSelling(Entity entity) {
-        if (entity == null) return false;
-        
-        String entityType = entity.getType().name().toLowerCase();
-        return plugin.getConfig().getBoolean("trading.allowed-mobs." + entityType, false);
     }
 
     public TradeResult attemptTrade(Player player, Entity trader, ItemStack item) {
@@ -147,40 +130,15 @@ public class NPCManager {
         if (!success) {
             // Failed deal - apply cooldown
             applyCooldown(playerId);
-            
-            // Update failed sales stats
-            if (plugin.getStatsManager() != null) {
-                PlayerStats stats = plugin.getStatsManager().getStats(player);
-                stats.incrementFailedSales();
-            }
-            
             return new TradeResult(false, "§cThe deal went wrong! You seem suspicious... Cool off for a bit.", 0);
         }
 
-        // Calculate final price with prestige bonus
-        double basePrice = calculateFinalPrice(baseValue, strain, npcType, player);
-        double finalPrice = economyManager.applyPrestigeEarningsBonus(player, basePrice);
-        
-        // Show bonus if applicable
-        boolean hasPrestigeBonus = finalPrice > basePrice;
+        // Calculate final price
+        double finalPrice = calculateFinalPrice(baseValue, strain, npcType, player);
 
         // Process transaction
         economyManager.addBalance(player, finalPrice);
         economyManager.recordEarnings(player, finalPrice);
-
-        // Update stats and challenges
-        if (plugin.getStatsManager() != null) {
-            PlayerStats stats = plugin.getStatsManager().getStats(player);
-            stats.incrementSuccessfulSales();
-            stats.recordSale(finalPrice);
-        }
-        
-        // Update challenge progress
-        if (plugin.getChallengeManager() != null) {
-            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SELL_PRODUCTS, 1);
-            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SUCCESSFUL_TRADES, 1);
-            plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.EARN_MONEY, (int) finalPrice);
-        }
 
         // Remove item from hand
         if (item.getAmount() == 1) {
@@ -189,12 +147,8 @@ public class NPCManager {
             item.setAmount(item.getAmount() - 1);
         }
 
-        String message = "§aSold " + strain.getName() + " - " + weight + "g for §e" + 
-                economyManager.formatMoney(finalPrice) + "§a!";
-        if (hasPrestigeBonus) {
-            message += " §5(+Prestige Bonus!)";
-        }
-        return new TradeResult(true, message, finalPrice);
+        return new TradeResult(true, "§aSold " + strain.getName() + " - " + weight + "g for §e" + 
+                economyManager.formatMoney(finalPrice) + "§a!", finalPrice);
     }
 
     private double calculateSuccessChance(Player player, Strain strain, int weight, NPCType npcType) {
@@ -220,14 +174,6 @@ public class NPCManager {
         // Black market bonus
         if (npcType == NPCType.BLACKMARKET_JOE) {
             chance += 0.1;
-        }
-        
-        // Apply prestige success bonus
-        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
-            com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(player);
-            if (stats != null && stats.getPrestigeLevel() > 0) {
-                chance += plugin.getPrestigeManager().getSuccessBonus(stats.getPrestigeLevel());
-            }
         }
         
         return Math.max(0.3, Math.min(0.98, chance));
@@ -278,8 +224,7 @@ public class NPCManager {
         NONE,
         MARKET_JOE,
         BLACKMARKET_JOE,
-        VILLAGE_VENDOR,
-        CONFIGURABLE_MOB  // Entity types enabled in config trading.allowed-mobs
+        VILLAGE_VENDOR
     }
 
     public record TradeResult(boolean success, String message, double amount) {
