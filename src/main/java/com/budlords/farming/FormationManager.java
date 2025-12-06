@@ -299,7 +299,7 @@ public class FormationManager {
                 player.sendMessage("§a⟿ Line Formation: §7+Speed boost!");
             }
             case CORNER -> {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 200, 0));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 200, 0));
                 player.sendMessage("§b⌐ Corner Formation: §7+Mining speed!");
             }
             case L_SHAPE -> {
@@ -319,7 +319,7 @@ public class FormationManager {
                 player.sendMessage("§e✚ Cross Formation: §7+Health regen & saturation!");
             }
             case SQUARE -> {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 300, 0));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 300, 0));
                 player.sendMessage("§9□ Square Formation: §7+Damage resistance!");
             }
             
@@ -352,15 +352,15 @@ public class FormationManager {
             
             // Master formations - Powerful buffs
             case PENTAGON -> {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 400, 0));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 400, 0));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 400, 0));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 400, 0));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200, 0));
                 world.spawnParticle(Particle.ENCHANTMENT_TABLE, loc, 50, 1, 2, 1, 0.5);
                 player.sendMessage("§5⬠ Pentagon Formation: §7+Strength & Protection!");
             }
             case HEXAGON -> {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 500, 1));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 500, 1));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 500, 1));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, 500, 1));
                 world.spawnParticle(Particle.SOUL, loc, 40, 1, 1, 1, 0.1);
                 player.sendMessage("§d⬡ Hexagon Formation: §7+Speed, Haste & Luck II!");
@@ -382,9 +382,9 @@ public class FormationManager {
             
             // Legendary formations - Elite buffs
             case YIN_YANG -> {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 600, 1));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 600, 1));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 600, 0));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 600, 1));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 600, 1));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 300, 1));
                 world.spawnParticle(Particle.DRAGON_BREATH, loc, 30, 1, 1, 1, 0.1);
                 world.spawnParticle(Particle.END_ROD, loc, 30, 1, 1, 1, 0.1);
@@ -392,7 +392,7 @@ public class FormationManager {
             }
             case INFINITY -> {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 800, 2));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 800, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 800, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 1));
                 world.spawnParticle(Particle.TOTEM, loc, 50, 2, 2, 2, 0.3);
                 player.playSound(loc, Sound.BLOCK_BEACON_POWER_SELECT, 1.0f, 1.2f);
@@ -418,9 +418,9 @@ public class FormationManager {
             
             // Mythic formations - God-tier buffs
             case DRAGON -> {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 1000, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1000, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 1000, 0));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 600, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 600, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
                 world.spawnParticle(Particle.DRAGON_BREATH, loc, 100, 3, 3, 3, 0.2);
                 world.spawnParticle(Particle.FLAME, loc, 50, 2, 2, 2, 0.1);
@@ -439,9 +439,9 @@ public class FormationManager {
             }
             case CELESTIAL -> {
                 // Ultimate buff - all positive effects!
-                player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 800, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 800, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 800, 2));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 800, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 800, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 800, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, 1200, 3));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 1200, 0));
@@ -454,7 +454,7 @@ public class FormationManager {
             }
             case ANCIENT_RUNE -> {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, 1000, 3));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 1000, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 1000, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE, 1000, 2));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.CONDUIT_POWER, 600, 0));
                 world.spawnParticle(Particle.ENCHANTMENT_TABLE, loc, 150, 4, 4, 4, 2.0);
