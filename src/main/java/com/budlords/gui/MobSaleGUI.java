@@ -324,6 +324,29 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         }
         return count;
     }
+    
+    /**
+     * Counts the total doses (grams) in a sale session.
+     * This is used for success chance calculation - larger deals are riskier.
+     * @param session The sale session
+     * @return Total grams being sold
+     */
+    private int countTotalDoses(SaleSession session) {
+        int totalDoses = 0;
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            
+            if (packagingManager.isPackagedProduct(item)) {
+                // Get grams from package and multiply by item count
+                int gramsPerPackage = packagingManager.getWeightFromPackage(item);
+                totalDoses += gramsPerPackage * item.getAmount();
+            } else if (JointItems.isJoint(item)) {
+                // Joints count as 1 dose per joint
+                totalDoses += item.getAmount();
+            }
+        }
+        return totalDoses;
+    }
 
     private String getPriceBreakdown(SaleSession session) {
         StringBuilder breakdown = new StringBuilder();
@@ -410,10 +433,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             }
         }
         
-        // Penalty for large sales
-        int itemCount = countItems(session);
-        if (itemCount > 10) {
-            double penalty = (itemCount - 10) * 0.02;
+        // Penalty for large sales - based on total doses (grams) being sold
+        // This makes selling larger packages riskier than many small ones
+        int totalDoses = countTotalDoses(session);
+        if (totalDoses > 15) {
+            // 1% penalty for every 5 grams over 15g
+            double penalty = ((totalDoses - 15) / 5.0) * 0.01;
             successChance = Math.max(0.1, successChance - penalty);
         }
         

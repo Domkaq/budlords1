@@ -3,6 +3,7 @@ package com.budlords.farming;
 import com.budlords.BudLords;
 import com.budlords.data.DataManager;
 import com.budlords.quality.GrowingPot;
+import com.budlords.quality.PlacedLamp;
 import com.budlords.quality.StarRating;
 import com.budlords.strain.Strain;
 import com.budlords.strain.StrainManager;
@@ -28,9 +29,11 @@ public class FarmingManager {
     
     private final Map<String, Plant> plants; // locationString -> Plant
     private final Map<String, GrowingPot> pots; // locationString -> GrowingPot
+    private final Map<String, PlacedLamp> placedLamps; // locationString -> PlacedLamp
     private BukkitTask growthTask;
     private BukkitTask particleTask;
     private BukkitTask careDecayTask;
+    private BukkitTask lampEffectTask;
 
     public FarmingManager(BudLords plugin, DataManager dataManager, StrainManager strainManager) {
         this.plugin = plugin;
@@ -38,12 +41,15 @@ public class FarmingManager {
         this.strainManager = strainManager;
         this.plants = new ConcurrentHashMap<>();
         this.pots = new ConcurrentHashMap<>();
+        this.placedLamps = new ConcurrentHashMap<>();
         
         loadPlants();
         loadPots();
+        loadPlacedLamps();
         startGrowthTask();
         startParticleTask();
         startCareDecayTask();
+        startLampEffectTask();
     }
 
     private void loadPlants() {
@@ -165,9 +171,17 @@ public class FarmingManager {
                 // Calculate effective growth interval based on plant's quality bonuses
                 double growthMultiplier = plant.getGrowthSpeedMultiplier();
                 
+                UUID ownerUuid = plant.getOwnerUuid();
+                
+                // Apply skill-based growth speed bonus (Green Fingers, Accelerated Growth)
+                if (ownerUuid != null && plugin.getSkillManager() != null) {
+                    double skillGrowthBonus = plugin.getSkillManager().getBonusMultiplier(ownerUuid, 
+                        com.budlords.skills.Skill.BonusType.GROWTH_SPEED);
+                    growthMultiplier *= skillGrowthBonus;
+                }
+                
                 // Apply prestige growth speed bonus if available
                 if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
-                    UUID ownerUuid = plant.getOwnerUuid();
                     if (ownerUuid != null) {
                         com.budlords.stats.PlayerStats stats = plugin.getStatsManager().getStats(ownerUuid);
                         if (stats != null && stats.getPrestigeLevel() > 0) {
@@ -920,6 +934,243 @@ public class FarmingManager {
                location.getBlockY() + "," + 
                location.getBlockZ();
     }
+    
+    // ====== PLACED LAMP MANAGEMENT ======
+    
+    private void loadPlacedLamps() {
+        FileConfiguration config = dataManager.getPlantsConfig();
+        ConfigurationSection lampsSection = config.getConfigurationSection("placed-lamps");
+        
+        if (lampsSection == null) {
+            return;
+        }
+
+        for (String key : lampsSection.getKeys(false)) {
+            try {
+                ConfigurationSection lampSection = lampsSection.getConfigurationSection(key);
+                if (lampSection == null) continue;
+
+                String worldName = lampSection.getString("world");
+                int x = lampSection.getInt("x");
+                int y = lampSection.getInt("y");
+                int z = lampSection.getInt("z");
+                String ratingStr = lampSection.getString("rating", "ONE_STAR");
+                String ownerStr = lampSection.getString("owner");
+                long placedTime = lampSection.getLong("placed-time", System.currentTimeMillis());
+
+                World world = Bukkit.getWorld(worldName);
+                if (world == null) continue;
+
+                Location location = new Location(world, x, y, z);
+                StarRating rating;
+                try {
+                    rating = StarRating.valueOf(ratingStr);
+                } catch (IllegalArgumentException e) {
+                    rating = StarRating.ONE_STAR;
+                }
+                UUID owner = ownerStr != null ? UUID.fromString(ownerStr) : null;
+                
+                PlacedLamp lamp = new PlacedLamp(UUID.randomUUID(), location, rating, owner, placedTime);
+                placedLamps.put(getLocationKey(location), lamp);
+                
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load placed lamp: " + key);
+            }
+        }
+        
+        plugin.getLogger().info("Loaded " + placedLamps.size() + " placed lamps.");
+    }
+    
+    public void savePlacedLamps() {
+        FileConfiguration config = dataManager.getPlantsConfig();
+        config.set("placed-lamps", null); // Clear existing
+
+        int counter = 0;
+        for (Map.Entry<String, PlacedLamp> entry : placedLamps.entrySet()) {
+            PlacedLamp lamp = entry.getValue();
+            Location loc = lamp.getLocation();
+            if (loc == null || loc.getWorld() == null) continue;
+            
+            String key = "placed-lamps.lamp_" + counter;
+            config.set(key + ".world", loc.getWorld().getName());
+            config.set(key + ".x", loc.getBlockX());
+            config.set(key + ".y", loc.getBlockY());
+            config.set(key + ".z", loc.getBlockZ());
+            config.set(key + ".rating", lamp.getStarRating().name());
+            if (lamp.getOwnerUuid() != null) {
+                config.set(key + ".owner", lamp.getOwnerUuid().toString());
+            }
+            config.set(key + ".placed-time", lamp.getPlacedTime());
+            counter++;
+        }
+
+        dataManager.savePlants();
+    }
+    
+    /**
+     * Places a lamp at the specified location.
+     * @param location The location to place the lamp
+     * @param rating The star rating of the lamp
+     * @param ownerUuid The player who placed the lamp
+     * @return true if placement was successful
+     */
+    public boolean placeLamp(Location location, StarRating rating, UUID ownerUuid) {
+        String key = getLocationKey(location);
+        if (placedLamps.containsKey(key)) {
+            return false; // Already a lamp here
+        }
+        
+        PlacedLamp lamp = new PlacedLamp(UUID.randomUUID(), location, rating, ownerUuid);
+        placedLamps.put(key, lamp);
+        
+        // Apply lamp effects to all plants in range immediately
+        applyLampEffectsToNearbyPlants(lamp);
+        
+        return true;
+    }
+    
+    /**
+     * Removes a placed lamp at the specified location.
+     * @param location The location of the lamp
+     * @return The removed lamp, or null if no lamp was there
+     */
+    public PlacedLamp removePlacedLamp(Location location) {
+        PlacedLamp lamp = placedLamps.remove(getLocationKey(location));
+        
+        if (lamp != null) {
+            // Remove lamp effects from plants that were in range
+            removeLampEffectsFromNearbyPlants(lamp);
+        }
+        
+        return lamp;
+    }
+    
+    /**
+     * Gets the placed lamp at the specified location.
+     */
+    public PlacedLamp getPlacedLampAt(Location location) {
+        return placedLamps.get(getLocationKey(location));
+    }
+    
+    /**
+     * Checks if there is a placed lamp at the specified location.
+     */
+    public boolean hasPlacedLampAt(Location location) {
+        return placedLamps.containsKey(getLocationKey(location));
+    }
+    
+    /**
+     * Applies lamp effects to all plants within range of a lamp.
+     */
+    private void applyLampEffectsToNearbyPlants(PlacedLamp lamp) {
+        for (Plant plant : plants.values()) {
+            if (lamp.isLocationInRange(plant.getLocation())) {
+                // Only apply if this lamp has a better rating than current lamp
+                StarRating currentLamp = plant.getLampRating();
+                if (currentLamp == null || lamp.getStarRating().getStars() > currentLamp.getStars()) {
+                    plant.setLampRating(lamp.getStarRating());
+                }
+            }
+        }
+    }
+    
+    /**
+     * Removes lamp effects from plants when a lamp is removed.
+     * Recalculates lamp effects from other lamps in range.
+     */
+    private void removeLampEffectsFromNearbyPlants(PlacedLamp removedLamp) {
+        for (Plant plant : plants.values()) {
+            if (removedLamp.isLocationInRange(plant.getLocation())) {
+                // Check if any other lamp affects this plant
+                StarRating bestLampRating = null;
+                for (PlacedLamp otherLamp : placedLamps.values()) {
+                    if (otherLamp.isLocationInRange(plant.getLocation())) {
+                        if (bestLampRating == null || otherLamp.getStarRating().getStars() > bestLampRating.getStars()) {
+                            bestLampRating = otherLamp.getStarRating();
+                        }
+                    }
+                }
+                plant.setLampRating(bestLampRating); // May be null if no other lamps in range
+            }
+        }
+    }
+    
+    /**
+     * Gets the best lamp rating affecting a specific location.
+     * @param location The location to check
+     * @return The best StarRating from lamps in range, or null if no lamps
+     */
+    public StarRating getBestLampRatingAt(Location location) {
+        StarRating best = null;
+        for (PlacedLamp lamp : placedLamps.values()) {
+            if (lamp.isLocationInRange(location)) {
+                if (best == null || lamp.getStarRating().getStars() > best.getStars()) {
+                    best = lamp.getStarRating();
+                }
+            }
+        }
+        return best;
+    }
+    
+    /**
+     * Shows the range of a placed lamp using particles.
+     * @param lamp The lamp to show range for
+     */
+    public void showLampRange(PlacedLamp lamp) {
+        Location center = lamp.getLocation();
+        World world = center.getWorld();
+        if (world == null) return;
+        
+        int range = lamp.getRange();
+        
+        // Draw circle at lamp height
+        for (double angle = 0; angle < 2 * Math.PI; angle += Math.PI / 16) {
+            double x = center.getBlockX() + 0.5 + range * Math.cos(angle);
+            double z = center.getBlockZ() + 0.5 + range * Math.sin(angle);
+            Location particleLoc = new Location(world, x, center.getBlockY() + 0.5, z);
+            world.spawnParticle(Particle.END_ROD, particleLoc, 1, 0, 0, 0, 0);
+        }
+        
+        // Draw vertical lines down to show the affected area
+        for (int i = 0; i < 4; i++) {
+            double angle = i * Math.PI / 2;
+            double x = center.getBlockX() + 0.5 + range * Math.cos(angle);
+            double z = center.getBlockZ() + 0.5 + range * Math.sin(angle);
+            for (int y = 0; y <= 5 && center.getBlockY() - y >= 0; y++) {
+                Location particleLoc = new Location(world, x, center.getBlockY() - y + 0.5, z);
+                world.spawnParticle(Particle.GLOW, particleLoc, 1, 0, 0, 0, 0);
+            }
+        }
+        
+        // Central beam
+        for (int y = 0; y <= 5 && center.getBlockY() - y >= 0; y++) {
+            Location particleLoc = center.clone().add(0.5, -y + 0.5, 0.5);
+            world.spawnParticle(Particle.GLOW, particleLoc, 3, 0.1, 0.1, 0.1, 0);
+        }
+        
+        // Sound effect
+        world.playSound(center, Sound.BLOCK_BEACON_AMBIENT, 0.5f, 1.5f);
+    }
+    
+    /**
+     * Gets all placed lamps in the tracking system.
+     */
+    public Collection<PlacedLamp> getAllPlacedLamps() {
+        return Collections.unmodifiableCollection(placedLamps.values());
+    }
+    
+    /**
+     * Starts the lamp effect task that periodically applies lamp bonuses to plants.
+     * This ensures newly planted seeds get lamp effects from existing lamps.
+     */
+    private void startLampEffectTask() {
+        // Run every 5 seconds (100 ticks) to apply lamp effects
+        lampEffectTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+            for (PlacedLamp lamp : placedLamps.values()) {
+                applyLampEffectsToNearbyPlants(lamp);
+            }
+        }, 100L, 100L);
+    }
 
     public void shutdown() {
         if (growthTask != null) {
@@ -931,7 +1182,11 @@ public class FarmingManager {
         if (careDecayTask != null) {
             careDecayTask.cancel();
         }
+        if (lampEffectTask != null) {
+            lampEffectTask.cancel();
+        }
         savePlants();
         savePots();
+        savePlacedLamps();
     }
 }

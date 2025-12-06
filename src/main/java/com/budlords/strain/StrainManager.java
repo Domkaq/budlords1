@@ -86,6 +86,11 @@ public class StrainManager {
             Strain purpleHaze = new Strain("purple_haze", "Purple Haze", Strain.Rarity.UNCOMMON, 60, 4, 65);
             purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.RAINBOW_AURA, 3));
             purpleHaze.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.DRUNK_VISION, 2));
+            purpleHaze.setIconMaterial(Material.PURPLE_DYE);
+            // Apply purple visual theme - true to the real Purple Haze strain
+            StrainVisualConfig purpleHazeVisual = new StrainVisualConfig();
+            purpleHazeVisual.applyTheme(StrainVisualConfig.VisualTheme.PURPLE_HAZE);
+            purpleHaze.setVisualConfig(purpleHazeVisual);
             registerStrain(purpleHaze);
             
             Strain girlScoutCookies = new Strain("girl_scout_cookies", "Girl Scout Cookies", Strain.Rarity.UNCOMMON, 55, 4, 60);
@@ -106,6 +111,15 @@ public class StrainManager {
             Strain granddaddyPurple = new Strain("granddaddy_purple", "Granddaddy Purple", Strain.Rarity.UNCOMMON, 58, 4, 68);
             granddaddyPurple.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.MEDITATION, 3));
             granddaddyPurple.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BUBBLE_AURA, 2));
+            granddaddyPurple.setIconMaterial(Material.PURPLE_DYE);
+            // Apply purple visual theme - Granddaddy Purple is known for its deep purple buds
+            StrainVisualConfig gdpVisual = new StrainVisualConfig();
+            gdpVisual.applyTheme(StrainVisualConfig.VisualTheme.PURPLE_HAZE);
+            // Customize to be darker purple than Purple Haze
+            gdpVisual.setLeafColorPrimary(org.bukkit.Color.fromRGB(75, 0, 130)); // Indigo/deep purple
+            gdpVisual.setBudType(StrainVisualConfig.BudType.NORMAL);
+            gdpVisual.setBudMaterial(Material.PURPLE_CONCRETE);
+            granddaddyPurple.setVisualConfig(gdpVisual);
             registerStrain(granddaddyPurple);
             
             // === RARE STRAINS ===
