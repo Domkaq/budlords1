@@ -157,10 +157,12 @@ public class BulkOrderManager {
             player.sendMessage("");
             player.sendMessage("§6§l📋 NEW BULK ORDER AVAILABLE!");
             player.sendMessage("§7Buyer: §f" + buyerName);
-            player.sendMessage("§7Wants: §e" + quantity + "x §f" + strain.getName());
+            player.sendMessage("§7Wants: §e" + quantity + "g §f" + strain.getName());
             player.sendMessage("§7Bonus: §a+" + String.format("%.0f%%", (bonus - 1) * 100) + " §7price!");
             player.sendMessage("§7Tier: " + tier.displayName);
             player.sendMessage("§7Expires in: §e" + order.getTimeRemainingText());
+            player.sendMessage("");
+            player.sendMessage("§8§o(Package in any combo: 4x10g + 1g = 41g)");
             player.sendMessage("§7Use §e/orders §7to view details!");
             player.sendMessage("");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.7f, 1.2f);

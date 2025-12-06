@@ -56,12 +56,35 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             case "economy" -> handleEconomyInfo(sender, args);
             case "entity" -> handleEntityInfo(sender, args);
             case "growplant" -> handleGrowPlant(sender, args);
+            case "setplantstage" -> handleSetPlantStage(sender, args);
+            case "refreshplant" -> handleRefreshPlant(sender, args);
+            case "waterplant" -> handleWaterPlant(sender, args);
+            case "givemoney" -> handleGiveMoney(sender, args);
             case "giveeffect" -> handleGiveEffect(sender, args);
             case "testmutation" -> handleTestMutation(sender, args);
             case "reload" -> handleReload(sender);
             case "save" -> handleSave(sender);
             case "config" -> handleConfigInfo(sender, args);
             case "clear" -> handleClear(sender, args);
+            // New comprehensive debug commands
+            case "weather" -> handleWeather(sender, args);
+            case "infect" -> handleInfect(sender, args);
+            case "cure" -> handleCure(sender, args);
+            case "giveseed" -> handleGiveSeed(sender, args);
+            case "givebud" -> handleGiveBud(sender, args);
+            case "giveitem" -> handleGiveItem(sender, args);
+            case "reputation" -> handleReputation(sender, args);
+            case "challenge" -> handleChallenge(sender, args);
+            case "bulkorder" -> handleBulkOrder(sender, args);
+            case "crossbreed" -> handleCrossbreed(sender, args);
+            case "setquality" -> handleSetQuality(sender, args);
+            case "removeplant" -> handleRemovePlant(sender, args);
+            case "spawnnpc" -> handleSpawnNpc(sender, args);
+            case "skills" -> handleSkills(sender, args);
+            case "addskillxp" -> handleAddSkillXp(sender, args);
+            case "prestige" -> handlePrestige(sender, args);
+            case "market" -> handleMarket(sender, args);
+            case "joint" -> handleJoint(sender, args);
             default -> showDebugHelp(sender);
         }
 
@@ -73,16 +96,50 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§c§l  BudLords Admin Debug Tools");
         sender.sendMessage("§8§m════════════════════════════════════════");
         sender.sendMessage("");
-        sender.sendMessage("§e  /debug toggle §7- Toggle debug mode (verbose logging)");
+        sender.sendMessage("§6§lPlant Commands:");
         sender.sendMessage("§e  /debug plants [radius] §7- Show nearby plants info");
-        sender.sendMessage("§e  /debug strains [name] §7- List/search strains");
-        sender.sendMessage("§e  /debug player <name> §7- Show player stats");
-        sender.sendMessage("§e  /debug effects [category] §7- List all effects");
-        sender.sendMessage("§e  /debug economy §7- Show economy stats");
-        sender.sendMessage("§e  /debug entity §7- Show nearby sellable entities");
         sender.sendMessage("§e  /debug growplant §7- Instantly grow nearest plant");
-        sender.sendMessage("§e  /debug giveeffect <effect> [player] §7- Give effect");
-        sender.sendMessage("§e  /debug testmutation §7- Test crossbreed mutation");
+        sender.sendMessage("§e  /debug setplantstage <0-3> §7- Set plant stage");
+        sender.sendMessage("§e  /debug refreshplant §7- Refresh plant visual");
+        sender.sendMessage("§e  /debug waterplant §7- Max water/nutrients");
+        sender.sendMessage("§e  /debug setquality <0-100> §7- Set plant quality");
+        sender.sendMessage("§e  /debug removeplant §7- Remove nearest plant");
+        sender.sendMessage("§e  /debug infect §7- Infect nearest plant");
+        sender.sendMessage("§e  /debug cure §7- Cure nearest plant");
+        sender.sendMessage("");
+        sender.sendMessage("§6§lItem Commands:");
+        sender.sendMessage("§e  /debug giveseed <strain> [stars] §7- Give seed item");
+        sender.sendMessage("§e  /debug givebud <strain> [stars] [amount] §7- Give bud item");
+        sender.sendMessage("§e  /debug giveitem <type> [stars] §7- Give quality item");
+        sender.sendMessage("§e  /debug joint <give|info> [strain] §7- Joint commands");
+        sender.sendMessage("");
+        sender.sendMessage("§6§lEconomy Commands:");
+        sender.sendMessage("§e  /debug economy §7- Show economy stats");
+        sender.sendMessage("§e  /debug givemoney <amount> §7- Give money");
+        sender.sendMessage("§e  /debug market [set <multiplier>] §7- Market info/set");
+        sender.sendMessage("§e  /debug reputation [add <buyer> <amount>] §7- Rep info/add");
+        sender.sendMessage("§e  /debug bulkorder [generate] §7- Bulk order info");
+        sender.sendMessage("");
+        sender.sendMessage("§6§lPlayer Commands:");
+        sender.sendMessage("§e  /debug player <name> §7- Show player stats");
+        sender.sendMessage("§e  /debug prestige [set <level>] §7- Prestige info/set");
+        sender.sendMessage("§e  /debug skills [add <skill> <xp>] §7- Skills info");
+        sender.sendMessage("§e  /debug challenge [complete] §7- Challenge info");
+        sender.sendMessage("§e  /debug giveeffect <effect> [player] §7- Apply effect");
+        sender.sendMessage("");
+        sender.sendMessage("§6§lWorld Commands:");
+        sender.sendMessage("§e  /debug weather [set <type>] §7- Weather info/set");
+        sender.sendMessage("§e  /debug entity [radius] §7- Show sellable entities");
+        sender.sendMessage("§e  /debug spawnnpc <type> §7- Spawn NPC buyer");
+        sender.sendMessage("");
+        sender.sendMessage("§6§lStrain Commands:");
+        sender.sendMessage("§e  /debug strains [search] §7- List/search strains");
+        sender.sendMessage("§e  /debug effects [category] §7- List all effects");
+        sender.sendMessage("§e  /debug crossbreed <strain1> <strain2> §7- Test crossbreed");
+        sender.sendMessage("§e  /debug testmutation §7- Test mutation chances");
+        sender.sendMessage("");
+        sender.sendMessage("§6§lSystem Commands:");
+        sender.sendMessage("§e  /debug toggle §7- Toggle debug mode");
         sender.sendMessage("§e  /debug reload §7- Reload all data");
         sender.sendMessage("§e  /debug save §7- Force save all data");
         sender.sendMessage("§e  /debug config <key> §7- View config values");
@@ -156,7 +213,7 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 String strainName = strain != null ? strain.getName() : plant.getStrainId();
                 
                 sender.sendMessage("§e  " + (count + 1) + ". §f" + strainName);
-                sender.sendMessage("§7     Stage: §a" + plant.getGrowthStage() + "/5 §7| Quality: §a" + plant.getQuality());
+                sender.sendMessage("§7     Stage: §a" + plant.getGrowthStage() + "/3 §7(" + plant.getGrowthStageName() + ") §7| Quality: §a" + plant.getQuality());
                 sender.sendMessage("§7     Pot: " + (plant.hasPot() ? "§a✓" : "§c✗") + " §7| Water: §b" + String.format("%.0f%%", plant.getWaterLevel() * 100));
                 sender.sendMessage("§7     Location: §f" + formatLocation(plant.getLocation()));
                 count++;
@@ -345,12 +402,178 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         Plant plant = nearbyPlants.get(0);
-        plant.setGrowthStage(5);
+        int previousStage = plant.getGrowthStage();
+        
+        // Set to max growth stage (3 = Mature/Flowering - fully grown)
+        plant.setGrowthStage(3);
         plant.addQuality(50);
         
-        sender.sendMessage("§a§l[DEBUG] §7Instantly grew plant to stage 5!");
+        // Update the visual appearance to match the new growth stage
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().updatePlantVisual(plant);
+        }
+        
+        sender.sendMessage("§a§l[DEBUG] §7Instantly grew plant to stage 3 (Mature)!");
         sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+        sender.sendMessage("§7Previous Stage: §e" + previousStage + " §7→ §aNow: 3 (Mature)");
         sender.sendMessage("§7Quality: §a" + plant.getQuality());
+        sender.sendMessage("§7The plant is now ready to harvest!");
+    }
+    
+    private void handleSetPlantStage(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug setplantstage <0-3>");
+            sender.sendMessage("§7  0 = Seed, 1 = Sprout, 2 = Growing, 3 = Mature");
+            return;
+        }
+        
+        int stage = parseInt(args[1], -1);
+        if (stage < 0 || stage > 3) {
+            sender.sendMessage("§cStage must be between 0 and 3!");
+            sender.sendMessage("§7  0 = Seed, 1 = Sprout, 2 = Growing, 3 = Mature");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        if (farmingManager == null) {
+            sender.sendMessage("§cFarming manager not initialized!");
+            return;
+        }
+        
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        int previousStage = plant.getGrowthStage();
+        plant.setGrowthStage(stage);
+        
+        // Update the visual appearance
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().updatePlantVisual(plant);
+        }
+        
+        // Use plant's built-in method which handles all edge cases
+        String previousStageName = getPreviousStageName(previousStage);
+        String newStageName = plant.getGrowthStageName();
+        
+        sender.sendMessage("§a§l[DEBUG] §7Set plant stage!");
+        sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+        sender.sendMessage("§7Stage: §e" + previousStage + " (" + previousStageName + ") §7→ §a" + stage + " (" + newStageName + ")");
+    }
+    
+    /**
+     * Gets a stage name for display, handling edge cases.
+     */
+    private String getPreviousStageName(int stage) {
+        return switch (stage) {
+            case 0 -> "Seed";
+            case 1 -> "Sprout";
+            case 2 -> "Growing";
+            case 3 -> "Mature";
+            default -> "Unknown";
+        };
+    }
+    
+    private void handleRefreshPlant(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        if (farmingManager == null) {
+            sender.sendMessage("§cFarming manager not initialized!");
+            return;
+        }
+        
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        
+        // Force refresh the visual
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().updatePlantVisual(plant);
+            sender.sendMessage("§a§l[DEBUG] §7Refreshed plant visualization!");
+            sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+            sender.sendMessage("§7Stage: §e" + plant.getGrowthStage() + " (" + plant.getGrowthStageName() + ")");
+        } else {
+            sender.sendMessage("§cPlant visualization manager not initialized!");
+        }
+    }
+    
+    private void handleWaterPlant(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        if (farmingManager == null) {
+            sender.sendMessage("§cFarming manager not initialized!");
+            return;
+        }
+        
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        double previousWater = plant.getWaterLevel();
+        double previousNutrients = plant.getNutrientLevel();
+        
+        plant.setWaterLevel(1.0);
+        plant.setNutrientLevel(1.0);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Maxed plant water and nutrients!");
+        sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+        sender.sendMessage("§7Water: §b" + String.format("%.0f%%", previousWater * 100) + " §7→ §a100%");
+        sender.sendMessage("§7Nutrients: §e" + String.format("%.0f%%", previousNutrients * 100) + " §7→ §a100%");
+    }
+    
+    private void handleGiveMoney(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug givemoney <amount>");
+            return;
+        }
+        
+        double amount;
+        try {
+            amount = Double.parseDouble(args[1]);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid amount!");
+            return;
+        }
+        
+        if (amount <= 0) {
+            sender.sendMessage("§cAmount must be positive!");
+            return;
+        }
+        
+        plugin.getEconomyManager().addBalance(player, amount);
+        double newBalance = plugin.getEconomyManager().getBalance(player);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Added money to your account!");
+        sender.sendMessage("§7Amount: §a+" + plugin.getEconomyManager().formatMoney(amount));
+        sender.sendMessage("§7New Balance: §a" + plugin.getEconomyManager().formatMoney(newBalance));
     }
 
     private void handleGiveEffect(CommandSender sender, String[] args) {
@@ -464,6 +687,585 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             default -> sender.sendMessage("§cUnknown clear target: " + args[1]);
         }
     }
+    
+    // ═══════════════════════════════════════
+    // NEW COMPREHENSIVE DEBUG COMMANDS
+    // ═══════════════════════════════════════
+    
+    private void handleWeather(CommandSender sender, String[] args) {
+        var weatherManager = plugin.getWeatherManager();
+        if (weatherManager == null) {
+            sender.sendMessage("§cWeather manager not initialized!");
+            return;
+        }
+        
+        if (args.length > 2 && args[1].equalsIgnoreCase("set")) {
+            String weatherType = args[2].toUpperCase();
+            try {
+                var type = com.budlords.weather.WeatherManager.WeatherType.valueOf(weatherType);
+                weatherManager.setWeather(type);
+                sender.sendMessage("§a§l[DEBUG] §7Weather set to: " + type.getColoredDisplay());
+            } catch (IllegalArgumentException e) {
+                sender.sendMessage("§cInvalid weather type! Options: SUNNY, RAINY, STORMY, DROUGHT, FOGGY, WINDY, PERFECT");
+            }
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§b§l  Weather Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7  Current: " + weatherManager.getCurrentWeather().getColoredDisplay());
+        sender.sendMessage("§7  Growth Multiplier: §a" + String.format("%.2fx", weatherManager.getGrowthMultiplier()));
+        sender.sendMessage("§7  Quality Multiplier: §e" + String.format("%.2fx", weatherManager.getQualityMultiplier()));
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug weather set <type> §7to change");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleInfect(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var diseaseManager = plugin.getDiseaseManager();
+        if (diseaseManager == null) {
+            sender.sendMessage("§cDisease manager not initialized!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        diseaseManager.infectPlant(plant.getLocation());
+        sender.sendMessage("§a§l[DEBUG] §7Infected plant at " + formatLocation(plant.getLocation()));
+        sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+    }
+    
+    private void handleCure(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var diseaseManager = plugin.getDiseaseManager();
+        if (diseaseManager == null) {
+            sender.sendMessage("§cDisease manager not initialized!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        diseaseManager.curePlant(plant.getLocation());
+        sender.sendMessage("§a§l[DEBUG] §7Cured plant at " + formatLocation(plant.getLocation()));
+    }
+    
+    private void handleGiveSeed(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug giveseed <strain> [stars]");
+            return;
+        }
+        
+        String strainId = args[1].toLowerCase();
+        Strain strain = plugin.getStrainManager().getStrain(strainId);
+        if (strain == null) {
+            sender.sendMessage("§cStrain not found: " + strainId);
+            return;
+        }
+        
+        int stars = args.length > 2 ? parseInt(args[2], 3) : 3;
+        stars = Math.max(1, Math.min(6, stars));
+        StarRating rating = StarRating.fromValue(stars);
+        
+        org.bukkit.inventory.ItemStack seed = plugin.getStrainManager().createSeedItem(strain, 1, rating);
+        player.getInventory().addItem(seed);
+        sender.sendMessage("§a§l[DEBUG] §7Gave §e" + strain.getName() + " §7seed (" + rating.getDisplay() + "§7)");
+    }
+    
+    private void handleGiveBud(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug givebud <strain> [stars] [amount]");
+            return;
+        }
+        
+        String strainId = args[1].toLowerCase();
+        Strain strain = plugin.getStrainManager().getStrain(strainId);
+        if (strain == null) {
+            sender.sendMessage("§cStrain not found: " + strainId);
+            return;
+        }
+        
+        int stars = args.length > 2 ? parseInt(args[2], 3) : 3;
+        stars = Math.max(1, Math.min(6, stars));
+        int amount = args.length > 3 ? parseInt(args[3], 10) : 10;
+        StarRating rating = StarRating.fromValue(stars);
+        
+        org.bukkit.inventory.ItemStack bud = plugin.getStrainManager().createBudItem(strain, amount, rating);
+        player.getInventory().addItem(bud);
+        sender.sendMessage("§a§l[DEBUG] §7Gave §e" + amount + "x " + strain.getName() + " §7bud (" + rating.getDisplay() + "§7)");
+    }
+    
+    private void handleGiveItem(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug giveitem <pot|lamp|scissors|fertilizer|grinder|papers|phone> [stars]");
+            return;
+        }
+        
+        String itemType = args[1].toLowerCase();
+        int stars = args.length > 2 ? parseInt(args[2], 3) : 3;
+        stars = Math.max(1, Math.min(5, stars));
+        StarRating rating = StarRating.fromValue(stars);
+        
+        var qim = plugin.getQualityItemManager();
+        org.bukkit.inventory.ItemStack item = null;
+        
+        switch (itemType) {
+            case "pot" -> item = com.budlords.quality.GrowingPot.createPotItem(rating, 1);
+            case "lamp" -> item = qim.createLamp(rating, 1);
+            case "scissors" -> item = qim.createScissors(rating, 1);
+            case "fertilizer" -> item = qim.createFertilizer(rating, 1);
+            case "grinder" -> item = qim.createGrinder(rating, 1);
+            case "papers" -> item = qim.createRollingPapers(rating, 1);
+            case "phone" -> item = qim.createDealerPhone(1);
+            default -> {
+                sender.sendMessage("§cUnknown item type: " + itemType);
+                sender.sendMessage("§7Options: pot, lamp, scissors, fertilizer, grinder, papers, phone");
+                return;
+            }
+        }
+        
+        if (item != null) {
+            player.getInventory().addItem(item);
+            sender.sendMessage("§a§l[DEBUG] §7Gave §e" + itemType + " §7(" + rating.getDisplay() + "§7)");
+        }
+    }
+    
+    private void handleReputation(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var repManager = plugin.getReputationManager();
+        if (repManager == null) {
+            sender.sendMessage("§cReputation manager not initialized!");
+            return;
+        }
+        
+        if (args.length > 3 && args[1].equalsIgnoreCase("add")) {
+            String buyerType = args[2].toUpperCase();
+            int amount = parseInt(args[3], 50);
+            repManager.addReputation(player.getUniqueId(), buyerType, amount);
+            sender.sendMessage("§a§l[DEBUG] §7Added §e" + amount + " §7reputation with §f" + buyerType);
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§d§l  Reputation Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        
+        for (com.budlords.npc.NPCManager.NPCType type : com.budlords.npc.NPCManager.NPCType.values()) {
+            if (type == com.budlords.npc.NPCManager.NPCType.NONE) continue;
+            int rep = repManager.getReputation(player.getUniqueId(), type.name());
+            String level = repManager.getReputationLevel(rep);
+            sender.sendMessage("§7  " + type.name() + ": §e" + rep + " §7(" + level + ")");
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug reputation add <buyer> <amount>");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleChallenge(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var challengeManager = plugin.getChallengeManager();
+        if (challengeManager == null) {
+            sender.sendMessage("§cChallenge manager not initialized!");
+            return;
+        }
+        
+        if (args.length > 1 && args[1].equalsIgnoreCase("complete")) {
+            // Complete all active challenges
+            var challenges = challengeManager.getActiveChallenges();
+            for (var challenge : challenges) {
+                challengeManager.completeChallenge(player, challenge);
+            }
+            sender.sendMessage("§a§l[DEBUG] §7Completed all active challenges!");
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Challenge Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        
+        var challenges = challengeManager.getActiveChallenges();
+        if (challenges.isEmpty()) {
+            sender.sendMessage("§7  No active challenges.");
+        } else {
+            for (var challenge : challenges) {
+                sender.sendMessage("§e  " + challenge.getName());
+                sender.sendMessage("§7    Type: " + challenge.getType().name());
+                sender.sendMessage("§7    Target: " + challenge.getTarget());
+                sender.sendMessage("§7    Reward: §a$" + String.format("%.2f", challenge.getReward()));
+            }
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug challenge complete §7to finish all");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleBulkOrder(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var orderManager = plugin.getBulkOrderManager();
+        if (orderManager == null) {
+            sender.sendMessage("§cBulk order manager not initialized!");
+            return;
+        }
+        
+        if (args.length > 1 && args[1].equalsIgnoreCase("generate")) {
+            orderManager.generateOrder(player.getUniqueId());
+            sender.sendMessage("§a§l[DEBUG] §7Generated new bulk order!");
+            return;
+        }
+        
+        var order = orderManager.getActiveOrder(player.getUniqueId());
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Bulk Order Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        
+        if (order == null) {
+            sender.sendMessage("§7  No active bulk order.");
+        } else {
+            sender.sendMessage("§7  Buyer: §f" + order.buyerName);
+            sender.sendMessage("§7  Strain: §e" + order.strainName);
+            sender.sendMessage("§7  Quantity: §e" + order.quantity + "g");
+            sender.sendMessage("§7  Bonus: §a+" + String.format("%.0f%%", (order.priceMultiplier - 1) * 100));
+            sender.sendMessage("§7  Time Left: §e" + order.getTimeRemainingText());
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug bulkorder generate §7for new order");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleCrossbreed(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 3) {
+            sender.sendMessage("§cUsage: /debug crossbreed <strain1> <strain2>");
+            return;
+        }
+        
+        var crossbreedManager = plugin.getCrossbreedManager();
+        if (crossbreedManager == null) {
+            sender.sendMessage("§cCrossbreed manager not initialized!");
+            return;
+        }
+        
+        String strain1Id = args[1].toLowerCase();
+        String strain2Id = args[2].toLowerCase();
+        
+        Strain parent1 = plugin.getStrainManager().getStrain(strain1Id);
+        Strain parent2 = plugin.getStrainManager().getStrain(strain2Id);
+        
+        if (parent1 == null) {
+            sender.sendMessage("§cStrain not found: " + strain1Id);
+            return;
+        }
+        if (parent2 == null) {
+            sender.sendMessage("§cStrain not found: " + strain2Id);
+            return;
+        }
+        
+        Strain result = crossbreedManager.crossbreed(player, parent1, parent2);
+        if (result != null) {
+            sender.sendMessage("§a§l[DEBUG] §7Crossbreed successful!");
+            sender.sendMessage("§7  Parents: §e" + parent1.getName() + " §7x §e" + parent2.getName());
+            sender.sendMessage("§7  Result: §d" + result.getName());
+            sender.sendMessage("§7  Rarity: " + result.getRarity().getDisplayName());
+            sender.sendMessage("§7  Effects: §d" + result.getEffectCount());
+        } else {
+            sender.sendMessage("§c§l[DEBUG] §7Crossbreed failed!");
+        }
+    }
+    
+    private void handleSetQuality(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug setquality <0-100>");
+            return;
+        }
+        
+        int quality = parseInt(args[1], -1);
+        if (quality < 0 || quality > 100) {
+            sender.sendMessage("§cQuality must be between 0 and 100!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        int prevQuality = plant.getQuality();
+        plant.setQuality(quality);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Set plant quality!");
+        sender.sendMessage("§7Quality: §e" + prevQuality + " §7→ §a" + quality);
+    }
+    
+    private void handleRemovePlant(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        Location loc = plant.getLocation();
+        
+        // Remove visualization
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().removeVisualization(loc);
+        }
+        
+        // Remove from manager
+        farmingManager.removePlant(loc);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Removed plant at " + formatLocation(loc));
+    }
+    
+    private void handleSpawnNpc(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug spawnnpc <type>");
+            sender.sendMessage("§7Types: MARKET_JOE, SHADY_STEVE, LUXURY_LAURA, PARTY_PETE, etc.");
+            return;
+        }
+        
+        var npcManager = plugin.getNpcManager();
+        if (npcManager == null) {
+            sender.sendMessage("§cNPC manager not initialized!");
+            return;
+        }
+        
+        String typeName = args[1].toUpperCase();
+        try {
+            var npcType = com.budlords.npc.NPCManager.NPCType.valueOf(typeName);
+            npcManager.spawnNPC(player.getLocation(), npcType);
+            sender.sendMessage("§a§l[DEBUG] §7Spawned NPC: " + npcType.name());
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage("§cInvalid NPC type: " + typeName);
+        }
+    }
+    
+    private void handleSkills(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var skillManager = plugin.getSkillManager();
+        if (skillManager == null) {
+            sender.sendMessage("§cSkill manager not initialized!");
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§a§l  Skills Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        
+        for (com.budlords.skills.Skill skill : com.budlords.skills.Skill.values()) {
+            int level = skillManager.getSkillLevel(player, skill);
+            int xp = skillManager.getSkillXp(player, skill);
+            sender.sendMessage("§7  " + skill.getDisplayName() + ": §eLv" + level + " §7(" + xp + " XP)");
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug addskillxp <skill> <amount>");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleAddSkillXp(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 3) {
+            sender.sendMessage("§cUsage: /debug addskillxp <skill> <amount>");
+            return;
+        }
+        
+        var skillManager = plugin.getSkillManager();
+        if (skillManager == null) {
+            sender.sendMessage("§cSkill manager not initialized!");
+            return;
+        }
+        
+        String skillName = args[1].toUpperCase();
+        int amount = parseInt(args[2], 100);
+        
+        try {
+            var skill = com.budlords.skills.Skill.valueOf(skillName);
+            skillManager.addSkillXp(player, skill, amount);
+            sender.sendMessage("§a§l[DEBUG] §7Added §e" + amount + " §7XP to " + skill.getDisplayName());
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage("§cInvalid skill: " + skillName);
+            sender.sendMessage("§7Skills: GROWING, HARVESTING, BREEDING, PROCESSING, SELLING");
+        }
+    }
+    
+    private void handlePrestige(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var prestigeManager = plugin.getPrestigeManager();
+        if (prestigeManager == null) {
+            sender.sendMessage("§cPrestige manager not initialized!");
+            return;
+        }
+        
+        if (args.length > 2 && args[1].equalsIgnoreCase("set")) {
+            int level = parseInt(args[2], 1);
+            plugin.getStatsManager().getStats(player).setPrestigeLevel(level);
+            sender.sendMessage("§a§l[DEBUG] §7Set prestige level to §d" + level);
+            return;
+        }
+        
+        var stats = plugin.getStatsManager().getStats(player);
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§d§l  Prestige Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7  Current Level: §d" + stats.getPrestigeLevel());
+        sender.sendMessage("§7  Can Prestige: " + (prestigeManager.canPrestige(player) ? "§aYes" : "§cNo"));
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug prestige set <level>");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleMarket(CommandSender sender, String[] args) {
+        var marketManager = plugin.getMarketDemandManager();
+        if (marketManager == null) {
+            sender.sendMessage("§cMarket demand manager not initialized!");
+            return;
+        }
+        
+        if (args.length > 2 && args[1].equalsIgnoreCase("set")) {
+            try {
+                double mult = Double.parseDouble(args[2]);
+                marketManager.setGlobalMultiplier(mult);
+                sender.sendMessage("§a§l[DEBUG] §7Set market multiplier to §e" + String.format("%.2fx", mult));
+            } catch (NumberFormatException e) {
+                sender.sendMessage("§cInvalid multiplier! Must be a number.");
+            }
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Market Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7  Global Multiplier: §e" + String.format("%.2fx", marketManager.getGlobalMultiplier()));
+        sender.sendMessage("§7  Active Event: " + marketManager.getActiveEventDisplay());
+        sender.sendMessage("");
+        sender.sendMessage("§7  Use §e/debug market set <multiplier>");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleJoint(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug joint <give|info> [strain]");
+            return;
+        }
+        
+        if (args[1].equalsIgnoreCase("give")) {
+            String strainId = args.length > 2 ? args[2].toLowerCase() : "og_kush";
+            Strain strain = plugin.getStrainManager().getStrain(strainId);
+            if (strain == null) {
+                sender.sendMessage("§cStrain not found: " + strainId);
+                return;
+            }
+            
+            org.bukkit.inventory.ItemStack joint = com.budlords.joint.JointItems.createJoint(strain, StarRating.FIVE_STAR, 85);
+            player.getInventory().addItem(joint);
+            sender.sendMessage("§a§l[DEBUG] §7Gave §e" + strain.getName() + " §7joint (5★, 85% quality)");
+            return;
+        }
+        
+        if (args[1].equalsIgnoreCase("info")) {
+            var rollingManager = plugin.getJointRollingManager();
+            sender.sendMessage("§8§m════════════════════════════════════════");
+            sender.sendMessage("§e§l  Joint Rolling Debug");
+            sender.sendMessage("§8§m════════════════════════════════════════");
+            sender.sendMessage("§7  Active Sessions: §e" + rollingManager.getActiveSessionCount());
+            sender.sendMessage("§8§m════════════════════════════════════════");
+            return;
+        }
+        
+        sender.sendMessage("§cUsage: /debug joint <give|info> [strain]");
+    }
 
     private String formatLocation(Location loc) {
         return String.format("%d, %d, %d", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
@@ -487,9 +1289,21 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         
         if (args.length == 1) {
             completions.addAll(Arrays.asList(
-                "toggle", "plants", "strains", "player", "effects", "economy",
-                "entity", "growplant", "giveeffect", "testmutation", "reload",
-                "save", "config", "clear"
+                // Plant commands
+                "plants", "growplant", "setplantstage", "refreshplant", "waterplant", 
+                "setquality", "removeplant", "infect", "cure",
+                // Item commands
+                "giveseed", "givebud", "giveitem", "joint",
+                // Economy commands
+                "economy", "givemoney", "market", "reputation", "bulkorder",
+                // Player commands
+                "player", "prestige", "skills", "addskillxp", "challenge", "giveeffect",
+                // World commands
+                "weather", "entity", "spawnnpc",
+                // Strain commands
+                "strains", "effects", "crossbreed", "testmutation",
+                // System commands
+                "toggle", "reload", "save", "config", "clear"
             ));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase()) {
@@ -497,6 +1311,28 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 case "giveeffect" -> Arrays.stream(StrainEffectType.values()).forEach(e -> completions.add(e.name()));
                 case "effects" -> Arrays.stream(StrainEffectType.EffectCategory.values()).forEach(c -> completions.add(c.name()));
                 case "clear" -> completions.add("sessions");
+                case "setplantstage" -> completions.addAll(Arrays.asList("0", "1", "2", "3"));
+                case "setquality" -> completions.addAll(Arrays.asList("0", "25", "50", "75", "100"));
+                case "givemoney" -> completions.addAll(Arrays.asList("1000", "10000", "100000", "1000000"));
+                case "giveseed", "givebud", "crossbreed" -> {
+                    plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
+                }
+                case "giveitem" -> completions.addAll(Arrays.asList("pot", "lamp", "scissors", "fertilizer", "grinder", "papers", "phone"));
+                case "weather" -> completions.addAll(Arrays.asList("set", "SUNNY", "RAINY", "STORMY", "DROUGHT", "FOGGY", "WINDY", "PERFECT"));
+                case "reputation" -> completions.add("add");
+                case "bulkorder" -> completions.add("generate");
+                case "challenge" -> completions.add("complete");
+                case "prestige" -> completions.add("set");
+                case "market" -> completions.add("set");
+                case "joint" -> completions.addAll(Arrays.asList("give", "info"));
+                case "addskillxp" -> completions.addAll(Arrays.asList("GROWING", "HARVESTING", "BREEDING", "PROCESSING", "SELLING"));
+                case "spawnnpc" -> {
+                    for (com.budlords.npc.NPCManager.NPCType type : com.budlords.npc.NPCManager.NPCType.values()) {
+                        if (type != com.budlords.npc.NPCManager.NPCType.NONE) {
+                            completions.add(type.name());
+                        }
+                    }
+                }
                 case "config" -> completions.addAll(Arrays.asList(
                     "crossbreed.mutation-chance",
                     "crossbreed.six-star-mutation-chance",
@@ -506,8 +1342,44 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 ));
             }
         } else if (args.length == 3) {
-            if (args[0].equalsIgnoreCase("giveeffect")) {
-                Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
+            switch (args[0].toLowerCase()) {
+                case "giveeffect" -> Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
+                case "giveseed", "givebud", "giveitem" -> completions.addAll(Arrays.asList("1", "2", "3", "4", "5", "6"));
+                case "crossbreed" -> plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
+                case "weather" -> {
+                    if (args[1].equalsIgnoreCase("set")) {
+                        completions.addAll(Arrays.asList("SUNNY", "RAINY", "STORMY", "DROUGHT", "FOGGY", "WINDY", "PERFECT"));
+                    }
+                }
+                case "reputation" -> {
+                    if (args[1].equalsIgnoreCase("add")) {
+                        for (com.budlords.npc.NPCManager.NPCType type : com.budlords.npc.NPCManager.NPCType.values()) {
+                            if (type != com.budlords.npc.NPCManager.NPCType.NONE) {
+                                completions.add(type.name());
+                            }
+                        }
+                    }
+                }
+                case "prestige", "market" -> {
+                    if (args[1].equalsIgnoreCase("set")) {
+                        completions.addAll(Arrays.asList("1", "2", "3", "5", "10"));
+                    }
+                }
+                case "addskillxp" -> completions.addAll(Arrays.asList("100", "500", "1000", "5000"));
+                case "joint" -> {
+                    if (args[1].equalsIgnoreCase("give")) {
+                        plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
+                    }
+                }
+            }
+        } else if (args.length == 4) {
+            switch (args[0].toLowerCase()) {
+                case "givebud" -> completions.addAll(Arrays.asList("1", "10", "32", "64"));
+                case "reputation" -> {
+                    if (args[1].equalsIgnoreCase("add")) {
+                        completions.addAll(Arrays.asList("50", "100", "200", "500"));
+                    }
+                }
             }
         }
         

@@ -37,6 +37,9 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
     private final Map<UUID, Integer> themePage;
     private final Map<UUID, Integer> budTypePage;
     
+    // Players awaiting head owner input
+    private final Set<UUID> awaitingHeadOwner;
+    
     private static final int ITEMS_PER_PAGE = 14;
     private static final int GUI_SIZE = 54;
 
@@ -45,6 +48,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         this.strainCreatorGUI = strainCreatorGUI;
         this.themePage = new HashMap<>();
         this.budTypePage = new HashMap<>();
+        this.awaitingHeadOwner = new HashSet<>();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -175,7 +179,7 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         
         // Show interesting bud types
         BudType[] specialBuds = {BudType.SKULL, BudType.ZOMBIE, BudType.CREEPER, BudType.WITHER, 
-            BudType.DRAGON, BudType.PIGLIN, BudType.CRYSTAL, BudType.FIRE, BudType.ICE, 
+            BudType.DRAGON, BudType.PLAYER_HEAD, BudType.CRYSTAL, BudType.FIRE, BudType.ICE, 
             BudType.NETHER, BudType.END, BudType.AMETHYST};
         
         int[] budSlots = {29, 30, 31, 32, 33, 34};
@@ -183,15 +187,28 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
             BudType bud = specialBuds[i];
             boolean selected = config.getBudType() == bud;
             
+            List<String> budLore = new ArrayList<>();
+            budLore.add("");
+            budLore.add("§7" + bud.getDescription());
+            budLore.add("");
+            
+            // Special handling for PLAYER_HEAD - show custom owner if set
+            if (bud == BudType.PLAYER_HEAD && config.getCustomHeadOwner() != null) {
+                budLore.add("§7Custom Head: §e" + config.getCustomHeadOwner());
+                budLore.add("");
+            }
+            
+            if (bud == BudType.PLAYER_HEAD) {
+                budLore.add(selected ? "§a✓ Selected" : "§e▶ Click to select");
+                budLore.add("§e▶ Shift-click to set player name");
+            } else {
+                budLore.add(selected ? "§a✓ Selected" : "§e▶ Click to select");
+            }
+            
             inv.setItem(budSlots[i], createItem(
                 bud.getDefaultMaterial(),
                 (selected ? "§a§l✓ " : "§f") + bud.getDisplayName(),
-                Arrays.asList(
-                    "",
-                    "§7" + bud.getDescription(),
-                    "",
-                    selected ? "§a✓ Selected" : "§e▶ Click to select"
-                )));
+                budLore));
         }
 
         // ═══════════════════════════════════════
@@ -399,16 +416,34 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
 
         // Bud type selection (slots 29-34)
         BudType[] specialBuds = {BudType.SKULL, BudType.ZOMBIE, BudType.CREEPER, BudType.WITHER, 
-            BudType.DRAGON, BudType.PIGLIN, BudType.CRYSTAL, BudType.FIRE, BudType.ICE, 
+            BudType.DRAGON, BudType.PLAYER_HEAD, BudType.CRYSTAL, BudType.FIRE, BudType.ICE, 
             BudType.NETHER, BudType.END, BudType.AMETHYST};
         int[] budSlots = {29, 30, 31, 32, 33, 34};
         
         for (int i = 0; i < budSlots.length && i < specialBuds.length; i++) {
             if (slot == budSlots[i]) {
-                config.setBudType(specialBuds[i]);
+                BudType selectedBud = specialBuds[i];
+                
+                // Special handling for PLAYER_HEAD - shift-click to set custom owner
+                if (selectedBud == BudType.PLAYER_HEAD && shift) {
+                    player.closeInventory();
+                    awaitingHeadOwner.add(player.getUniqueId());
+                    player.sendMessage("");
+                    player.sendMessage("§e§l✎ §bEnter a player name for the custom head:");
+                    player.sendMessage("§7Type a Minecraft username in chat (e.g. 'Notch', 'jeb_')");
+                    player.sendMessage("§7The head of that player will be used for the buds.");
+                    player.sendMessage("§7Type §fcancel §7to go back without changes.");
+                    player.sendMessage("");
+                    
+                    // Register chat listener for head owner input
+                    plugin.getServer().getPluginManager().registerEvents(new HeadOwnerChatListener(plugin, player, config, this), plugin);
+                    return;
+                }
+                
+                config.setBudType(selectedBud);
                 updateInventory(event.getInventory(), player);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.5f, 1.3f);
-                player.sendMessage("§aBud type set to: §f" + specialBuds[i].getDisplayName());
+                player.sendMessage("§aBud type set to: §f" + selectedBud.getDisplayName());
                 return;
             }
         }
@@ -572,9 +607,106 @@ public class VisualCustomizerGUI implements InventoryHolder, Listener {
         // Don't do anything - let StrainCreatorGUI handle the builder cleanup
         // This prevents premature removal of the builder when navigating between GUIs
     }
+    
+    /**
+     * Removes a player from the awaiting head owner state.
+     */
+    public void clearAwaitingHeadOwner(UUID playerId) {
+        awaitingHeadOwner.remove(playerId);
+    }
+    
+    /**
+     * Checks if a player is awaiting head owner input.
+     */
+    public boolean isAwaitingHeadOwner(UUID playerId) {
+        return awaitingHeadOwner.contains(playerId);
+    }
 
     @Override
     public Inventory getInventory() {
         return null;
+    }
+    
+    /**
+     * Chat listener for custom player head owner input.
+     */
+    private static class HeadOwnerChatListener implements Listener {
+        
+        private final BudLords plugin;
+        private final Player player;
+        private final StrainVisualConfig config;
+        private final VisualCustomizerGUI gui;
+        private boolean cancelled = false;
+        
+        public HeadOwnerChatListener(BudLords plugin, Player player, StrainVisualConfig config, VisualCustomizerGUI gui) {
+            this.plugin = plugin;
+            this.player = player;
+            this.config = config;
+            this.gui = gui;
+        }
+        
+        @EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
+        public void onChat(org.bukkit.event.player.AsyncPlayerChatEvent event) {
+            if (!event.getPlayer().equals(player)) return;
+            if (!gui.isAwaitingHeadOwner(player.getUniqueId())) return;
+            if (cancelled) return;
+            
+            event.setCancelled(true);
+            String input = event.getMessage().trim();
+            
+            // Check for cancel command
+            if (input.equalsIgnoreCase("cancel")) {
+                cancelled = true;
+                gui.clearAwaitingHeadOwner(player.getUniqueId());
+                player.sendMessage("§c✗ Head owner change cancelled.");
+                
+                // Return to GUI
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    gui.open(player);
+                    org.bukkit.event.HandlerList.unregisterAll(this);
+                });
+                return;
+            }
+            
+            // Validate player name (Minecraft username rules: 3-16 chars, alphanumeric + underscore)
+            if (input.length() < 3 || input.length() > 16) {
+                player.sendMessage("§c✗ Minecraft username must be 3-16 characters!");
+                player.sendMessage("§7Type a valid Minecraft username, or type §fcancel §7to go back.");
+                return;
+            }
+            
+            if (!input.matches("^[a-zA-Z0-9_]+$")) {
+                player.sendMessage("§c✗ Invalid Minecraft username! Only letters, numbers, and underscores allowed.");
+                player.sendMessage("§7Type a valid Minecraft username, or type §fcancel §7to go back.");
+                return;
+            }
+            
+            // Set the custom head owner
+            config.setBudType(BudType.PLAYER_HEAD);
+            config.setCustomHeadOwner(input);
+            
+            gui.clearAwaitingHeadOwner(player.getUniqueId());
+            
+            player.sendMessage("");
+            player.sendMessage("§a✓ Custom head owner set to: §e" + input);
+            player.sendMessage("§7The buds will now use §e" + input + "'s §7head!");
+            player.sendMessage("§7Returning to Visual Customizer...");
+            player.sendMessage("");
+            
+            // Re-open GUI on main thread
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                gui.open(player);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.5f, 1.2f);
+                org.bukkit.event.HandlerList.unregisterAll(this);
+            });
+        }
+        
+        @EventHandler
+        public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+            if (event.getPlayer().equals(player)) {
+                gui.clearAwaitingHeadOwner(player.getUniqueId());
+                org.bukkit.event.HandlerList.unregisterAll(this);
+            }
+        }
     }
 }
