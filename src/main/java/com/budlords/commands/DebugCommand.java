@@ -56,6 +56,10 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             case "economy" -> handleEconomyInfo(sender, args);
             case "entity" -> handleEntityInfo(sender, args);
             case "growplant" -> handleGrowPlant(sender, args);
+            case "setplantstage" -> handleSetPlantStage(sender, args);
+            case "refreshplant" -> handleRefreshPlant(sender, args);
+            case "waterplant" -> handleWaterPlant(sender, args);
+            case "givemoney" -> handleGiveMoney(sender, args);
             case "giveeffect" -> handleGiveEffect(sender, args);
             case "testmutation" -> handleTestMutation(sender, args);
             case "reload" -> handleReload(sender);
@@ -80,7 +84,11 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§e  /debug effects [category] §7- List all effects");
         sender.sendMessage("§e  /debug economy §7- Show economy stats");
         sender.sendMessage("§e  /debug entity §7- Show nearby sellable entities");
-        sender.sendMessage("§e  /debug growplant §7- Instantly grow nearest plant");
+        sender.sendMessage("§e  /debug growplant §7- Instantly grow nearest plant to mature");
+        sender.sendMessage("§e  /debug setplantstage <0-3> §7- Set plant stage manually");
+        sender.sendMessage("§e  /debug refreshplant §7- Refresh visual of nearest plant");
+        sender.sendMessage("§e  /debug waterplant §7- Max water level of nearest plant");
+        sender.sendMessage("§e  /debug givemoney <amount> §7- Give money to yourself");
         sender.sendMessage("§e  /debug giveeffect <effect> [player] §7- Give effect");
         sender.sendMessage("§e  /debug testmutation §7- Test crossbreed mutation");
         sender.sendMessage("§e  /debug reload §7- Reload all data");
@@ -156,7 +164,7 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 String strainName = strain != null ? strain.getName() : plant.getStrainId();
                 
                 sender.sendMessage("§e  " + (count + 1) + ". §f" + strainName);
-                sender.sendMessage("§7     Stage: §a" + plant.getGrowthStage() + "/5 §7| Quality: §a" + plant.getQuality());
+                sender.sendMessage("§7     Stage: §a" + plant.getGrowthStage() + "/3 §7(" + plant.getGrowthStageName() + ") §7| Quality: §a" + plant.getQuality());
                 sender.sendMessage("§7     Pot: " + (plant.hasPot() ? "§a✓" : "§c✗") + " §7| Water: §b" + String.format("%.0f%%", plant.getWaterLevel() * 100));
                 sender.sendMessage("§7     Location: §f" + formatLocation(plant.getLocation()));
                 count++;
@@ -345,12 +353,178 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
         
         Plant plant = nearbyPlants.get(0);
-        plant.setGrowthStage(5);
+        int previousStage = plant.getGrowthStage();
+        
+        // Set to max growth stage (3 = Mature/Flowering - fully grown)
+        plant.setGrowthStage(3);
         plant.addQuality(50);
         
-        sender.sendMessage("§a§l[DEBUG] §7Instantly grew plant to stage 5!");
+        // Update the visual appearance to match the new growth stage
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().updatePlantVisual(plant);
+        }
+        
+        sender.sendMessage("§a§l[DEBUG] §7Instantly grew plant to stage 3 (Mature)!");
         sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+        sender.sendMessage("§7Previous Stage: §e" + previousStage + " §7→ §aNow: 3 (Mature)");
         sender.sendMessage("§7Quality: §a" + plant.getQuality());
+        sender.sendMessage("§7The plant is now ready to harvest!");
+    }
+    
+    private void handleSetPlantStage(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug setplantstage <0-3>");
+            sender.sendMessage("§7  0 = Seed, 1 = Sprout, 2 = Growing, 3 = Mature");
+            return;
+        }
+        
+        int stage = parseInt(args[1], -1);
+        if (stage < 0 || stage > 3) {
+            sender.sendMessage("§cStage must be between 0 and 3!");
+            sender.sendMessage("§7  0 = Seed, 1 = Sprout, 2 = Growing, 3 = Mature");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        if (farmingManager == null) {
+            sender.sendMessage("§cFarming manager not initialized!");
+            return;
+        }
+        
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        int previousStage = plant.getGrowthStage();
+        plant.setGrowthStage(stage);
+        
+        // Update the visual appearance
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().updatePlantVisual(plant);
+        }
+        
+        // Use plant's built-in method which handles all edge cases
+        String previousStageName = getPreviousStageName(previousStage);
+        String newStageName = plant.getGrowthStageName();
+        
+        sender.sendMessage("§a§l[DEBUG] §7Set plant stage!");
+        sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+        sender.sendMessage("§7Stage: §e" + previousStage + " (" + previousStageName + ") §7→ §a" + stage + " (" + newStageName + ")");
+    }
+    
+    /**
+     * Gets a stage name for display, handling edge cases.
+     */
+    private String getPreviousStageName(int stage) {
+        return switch (stage) {
+            case 0 -> "Seed";
+            case 1 -> "Sprout";
+            case 2 -> "Growing";
+            case 3 -> "Mature";
+            default -> "Unknown";
+        };
+    }
+    
+    private void handleRefreshPlant(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        if (farmingManager == null) {
+            sender.sendMessage("§cFarming manager not initialized!");
+            return;
+        }
+        
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        
+        // Force refresh the visual
+        if (plugin.getPlantVisualizationManager() != null) {
+            plugin.getPlantVisualizationManager().updatePlantVisual(plant);
+            sender.sendMessage("§a§l[DEBUG] §7Refreshed plant visualization!");
+            sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+            sender.sendMessage("§7Stage: §e" + plant.getGrowthStage() + " (" + plant.getGrowthStageName() + ")");
+        } else {
+            sender.sendMessage("§cPlant visualization manager not initialized!");
+        }
+    }
+    
+    private void handleWaterPlant(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        FarmingManager farmingManager = plugin.getFarmingManager();
+        if (farmingManager == null) {
+            sender.sendMessage("§cFarming manager not initialized!");
+            return;
+        }
+        
+        List<Plant> nearbyPlants = farmingManager.getNearbyPlants(player.getLocation(), 5);
+        if (nearbyPlants.isEmpty()) {
+            sender.sendMessage("§cNo plants found within 5 blocks!");
+            return;
+        }
+        
+        Plant plant = nearbyPlants.get(0);
+        double previousWater = plant.getWaterLevel();
+        double previousNutrients = plant.getNutrientLevel();
+        
+        plant.setWaterLevel(1.0);
+        plant.setNutrientLevel(1.0);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Maxed plant water and nutrients!");
+        sender.sendMessage("§7Strain: §e" + plant.getStrainId());
+        sender.sendMessage("§7Water: §b" + String.format("%.0f%%", previousWater * 100) + " §7→ §a100%");
+        sender.sendMessage("§7Nutrients: §e" + String.format("%.0f%%", previousNutrients * 100) + " §7→ §a100%");
+    }
+    
+    private void handleGiveMoney(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug givemoney <amount>");
+            return;
+        }
+        
+        double amount;
+        try {
+            amount = Double.parseDouble(args[1]);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid amount!");
+            return;
+        }
+        
+        if (amount <= 0) {
+            sender.sendMessage("§cAmount must be positive!");
+            return;
+        }
+        
+        plugin.getEconomyManager().addBalance(player, amount);
+        double newBalance = plugin.getEconomyManager().getBalance(player);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Added money to your account!");
+        sender.sendMessage("§7Amount: §a+" + plugin.getEconomyManager().formatMoney(amount));
+        sender.sendMessage("§7New Balance: §a" + plugin.getEconomyManager().formatMoney(newBalance));
     }
 
     private void handleGiveEffect(CommandSender sender, String[] args) {
@@ -488,8 +662,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             completions.addAll(Arrays.asList(
                 "toggle", "plants", "strains", "player", "effects", "economy",
-                "entity", "growplant", "giveeffect", "testmutation", "reload",
-                "save", "config", "clear"
+                "entity", "growplant", "setplantstage", "refreshplant", "waterplant",
+                "givemoney", "giveeffect", "testmutation", "reload", "save", "config", "clear"
             ));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase()) {
@@ -497,6 +671,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 case "giveeffect" -> Arrays.stream(StrainEffectType.values()).forEach(e -> completions.add(e.name()));
                 case "effects" -> Arrays.stream(StrainEffectType.EffectCategory.values()).forEach(c -> completions.add(c.name()));
                 case "clear" -> completions.add("sessions");
+                case "setplantstage" -> completions.addAll(Arrays.asList("0", "1", "2", "3"));
+                case "givemoney" -> completions.addAll(Arrays.asList("1000", "10000", "100000"));
                 case "config" -> completions.addAll(Arrays.asList(
                     "crossbreed.mutation-chance",
                     "crossbreed.six-star-mutation-chance",
