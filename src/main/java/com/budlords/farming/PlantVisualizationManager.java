@@ -308,7 +308,8 @@ public class PlantVisualizationManager {
         
         // ===== NODE 1 - BOTTOM FAN LEAVES =====
         double node1Height = 0.18 * heightScale;
-        int node1Leaves = (lod == DetailLevel.LOW) ? 2 : 2;
+        // Always 2 leaves at bottom node for structural integrity
+        int node1Leaves = 2;
         for (int i = 0; i < node1Leaves; i++) {
             double angle = randomRotation + (Math.PI * i);
             double offsetX = Math.cos(angle) * 0.2 * leafScale;
