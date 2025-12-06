@@ -1,4 +1,4 @@
-# 🌿 BudLords - Professional Minecraft Weed Economy Plugin
+# BudLords - Professional Minecraft Weed Economy Plugin
 
 [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/Domkaq/budlords1)
 [![Minecraft](https://img.shields.io/badge/minecraft-1.20.4-blue.svg)](https://www.minecraft.net/)
@@ -8,7 +8,7 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features Overview](#-features-overview)
 - [Core Systems](#-core-systems)
@@ -22,9 +22,9 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 
 ---
 
-## ✨ Features Overview
+## Features Overview
 
-### 🌱 Advanced Farming System
+### Advanced Farming System
 - **3D Plant Visualization** - Realistic armor stand-based plant models with 4 growth stages
 - **Star Quality System** (★☆☆☆☆ to ★★★★★) - Quality affects every aspect of growth and harvest
 - **Growing Pots** - Place pots anywhere, not just on farmland
@@ -33,7 +33,7 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Grow Lamps** - Light systems that buff nearby plants based on star rating
 - **Plant Care Mechanics** - Monitor water, nutrients, light, and quality in real-time
 
-### 🧬 Genetics & Breeding
+### genetics & Breeding
 - **60+ Unique Strains** - From common to legendary with distinct properties
 - **Crossbreeding Lab** - Combine strains to create hybrids with inherited traits
 - **Mutation System** - Random mutations can create powerful new strains
@@ -41,7 +41,7 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Strain Collection Book** - Track and discover all strains
 - **Custom Strain Creator** (Admin) - Design unlimited custom strains with effects
 
-### 💰 Economy & Trading
+### Economy & Trading
 - **Multiple Buyer Types** - Market Joe, BlackMarket Joe, Village Vendors
 - **Reputation System** - 6 levels from Suspicious to ★LEGENDARY★
 - **Dynamic Pricing** - Prices vary based on reputation, rarity, and market events
@@ -51,14 +51,14 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Market Events** - Random events that boost or reduce prices
 - **Dealer Phone** - Modern GUI to manage contacts, orders, and stats
 
-### 📦 Production & Packaging
+### Production & Packaging
 - **Packaging System** - Package buds in 1g, 3g, 5g, or 10g weights
 - **Quality Multipliers** - Larger packages = better sale prices (up to ×2.0)
 - **Drag-and-Drop** - Drop pack on buds for quick packaging
 - **Joint Rolling** - Interactive 4-stage minigame with grinders
 - **Harvest Scissors** - Star-rated tools for better yields and quality
 
-### 🎮 RPG Systems
+### RPG Systems
 - **7 Rank Tiers** - Progress from Novice to BudLord based on earnings
 - **10 Prestige Levels** - Reset progress for permanent bonuses
 - **5 Skill Trees** - Farming, Quality, Trading, Genetics, Effects
@@ -67,14 +67,14 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Challenge System** - Daily and weekly challenges with XP rewards
 - **Statistics Tracking** - Comprehensive stats and leaderboards
 
-### 🌦️ Environmental Systems
+### Environmental Systems
 - **Dynamic Weather** - 6 weather types affecting growth and quality
 - **Seasonal System** - 4 seasons with unique bonuses and effects
 - **Day/Night Cycle** - Time-based effects on plant growth
 - **Disease System** - 12+ diseases with cures and prevention
 - **Random Events** - Drought, crop blight, golden hour, market boom, etc.
 
-### 🎨 Visual Effects
+### Visual Effects
 - **Ambient Particles** - Fireflies, pollen, sparkles around plants
 - **Weather Effects** - Rain, thunder, sunshine particles
 - **Celebration Effects** - Harvest animations based on quality and rarity
@@ -82,7 +82,7 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Visual Themes** - Strain-specific colors, particles, and glowing effects
 - **Performance Optimized** - Scales from 1 to 100+ plants without FPS loss
 
-### 📱 Modern UI/UX
+### Modern UI/UX
 - **Professional GUIs** - Clean, intuitive menus with phone-style design
 - **Dealer Phone App** - Hub for contacts, orders, stats, and market info
 - **Real-time Monitoring** - Plant status, water, nutrients, and quality
@@ -91,7 +91,7 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 
 ---
 
-## 🔧 Core Systems
+## Core Systems
 
 ### Star Quality System
 
@@ -135,17 +135,17 @@ Complete special orders for massive bonus payouts:
 ### Strain Effects (139 Total)
 
 **Categories:**
-- 🔥 Transformation (10) - Werewolf, Ghost Rider, Angel Wings, Demon Horns, etc.
-- 🌈 Visual (15) - Rainbow Aura, Galaxy Portal, Plasma Aura, Void Eyes, etc.
-- 💨 Movement (12) - Speed Demon, Bunny Hop, Rocket Boost, Sonic Boom, etc.
-- 👁 Perception (10) - Third Eye, Thermal Vision, Death Sense, Aura Reading, etc.
-- 🎮 Gameplay (15) - Lucky Drops, Midas Touch, Green Thumb, Merchant Blessing, etc.
-- ⚔ Combat (12) - Berserker, Life Drain, Lightning Fist, Shadow Strike, etc.
-- 🎉 Fun (10) - Disco Fever, Party Mode, Laugh Track, Sparkle Step, etc.
-- 🌿 Nature (15) - Flower Power, Storm Caller, Photosynthesis, Aurora Borealis, etc.
-- 🔮 Mystical (15) - Astral Projection, Time Warp, Oracle Vision, Ether Sight, etc.
-- ⭐ Legendary (10) - Phoenix Rebirth, Dragon Breath, Titan Form, Singularity, etc.
-- 🆕 Unique (15) - Quantum State, Crystalline Body, Gravity Well, Entropy Master, etc.
+- Transformation (10) - Werewolf, Ghost Rider, Angel Wings, Demon Horns, etc.
+- Visual (15) - Rainbow Aura, Galaxy Portal, Plasma Aura, Void Eyes, etc.
+- Movement (12) - Speed Demon, Bunny Hop, Rocket Boost, Sonic Boom, etc.
+- Perception (10) - Third Eye, Thermal Vision, Death Sense, Aura Reading, etc.
+- Gameplay (15) - Lucky Drops, Midas Touch, Green Thumb, Merchant Blessing, etc.
+- Combat (12) - Berserker, Life Drain, Lightning Fist, Shadow Strike, etc.
+- Fun (10) - Disco Fever, Party Mode, Laugh Track, Sparkle Step, etc.
+- Nature (15) - Flower Power, Storm Caller, Photosynthesis, Aurora Borealis, etc.
+- Mystical (15) - Astral Projection, Time Warp, Oracle Vision, Ether Sight, etc.
+- Legendary (10) - Phoenix Rebirth, Dragon Breath, Titan Form, Singularity, etc.
+- Unique (15) - Quantum State, Crystalline Body, Gravity Well, Entropy Master, etc.
 
 ### Weather Types
 
@@ -169,7 +169,7 @@ Complete special orders for massive bonus payouts:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Quick Start Guide
 
@@ -234,7 +234,7 @@ Complete special orders for massive bonus payouts:
 
 ---
 
-## 📥 Installation
+## Installation
 
 ### Requirements
 - Minecraft Server: Paper or Spigot 1.20.4
@@ -362,7 +362,7 @@ custom_strain:
 
 ---
 
-## 🚀 Performance
+##Performance
 
 ### Optimization Features
 
@@ -420,7 +420,7 @@ performance:
 
 ---
 
-## 🔨 Building from Source
+## Building from Source
 
 ### Prerequisites
 - Java 17 JDK or higher
@@ -452,7 +452,7 @@ mvn clean test package
 
 ---
 
-## 💬 Support
+## Support
 
 ### Getting Help
 
@@ -477,26 +477,20 @@ We welcome suggestions! Open an issue with:
 
 ---
 
-## 📜 License
+## License
 
 BudLords is licensed under the MIT License. See [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Credits
+## Credits
 
 **Developer:** Domkaq  
 **Version:** 1.0.0  
 **Last Updated:** December 2024
-
-### Special Thanks
-- Spigot/Paper communities for excellent APIs
-- Beta testers for valuable feedback
-- Contributors for bug reports and suggestions
-
 ---
 
-## 📊 Statistics
+## Statistics
 
 - **139 Unique Effects** - Most comprehensive effect system
 - **60+ Strains** - From common to legendary
@@ -509,7 +503,7 @@ BudLords is licensed under the MIT License. See [LICENSE](LICENSE) file for deta
 
 ---
 
-## 🎯 Roadmap (Future Updates)
+## Roadmap (Future Updates)
 
 Potential features for future versions:
 - [ ] Greenhouse building system
