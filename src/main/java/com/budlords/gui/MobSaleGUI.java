@@ -1169,12 +1169,14 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         final UUID buyerId;
         final NPCManager.NPCType buyerType;
         final ItemStack[] itemsToSell;
+        final Map<Integer, ItemStack> items;
 
         SaleSession(UUID playerId, UUID buyerId, NPCManager.NPCType buyerType) {
             this.playerId = playerId;
             this.buyerId = buyerId;
             this.buyerType = buyerType;
             this.itemsToSell = new ItemStack[4];
+            this.items = new HashMap<>();
         }
     }
 }

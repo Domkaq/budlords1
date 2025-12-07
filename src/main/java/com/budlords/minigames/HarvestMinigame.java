@@ -161,7 +161,8 @@ public class HarvestMinigame {
             String progress = "§a" + "█".repeat(successfulHits) + 
                             "§7" + "█".repeat(Math.max(0, currentRound - successfulHits - 1)) + 
                             "§8" + "█".repeat(Math.max(0, totalRounds - currentRound + 1));
-            player.sendActionBar("§eRound " + currentRound + "/" + totalRounds + " §7| " + progress);
+            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                net.md_5.bungee.api.chat.TextComponent.fromLegacyText("§eRound " + currentRound + "/" + totalRounds + " §7| " + progress));
         }
         
         private void showHitWindow() {
@@ -173,7 +174,8 @@ public class HarvestMinigame {
                 location.clone().add(0.5, 1, 0.5), 20, 0.3, 0.3, 0.3, 0.1);
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.8f, 2.0f);
             
-            player.sendActionBar("§a§l>>> CLICK NOW! <<<");
+            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                net.md_5.bungee.api.chat.TextComponent.fromLegacyText("§a§l>>> CLICK NOW! <<<"));
             
             // Auto-fail if not clicked in time
             new BukkitRunnable() {
@@ -189,7 +191,8 @@ public class HarvestMinigame {
         public void registerClick() {
             if (!isHitWindow) {
                 // Early click - don't penalize but give feedback
-                player.sendActionBar("§c§lToo early! Wait for the signal...");
+                player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                    net.md_5.bungee.api.chat.TextComponent.fromLegacyText("§c§lToo early! Wait for the signal..."));
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 0.5f);
                 return;
             }
@@ -202,7 +205,8 @@ public class HarvestMinigame {
                 // Successful hit!
                 successfulHits++;
                 
-                player.sendActionBar("§a§l✓ PERFECT! §e+" + successfulHits + " bonus");
+                player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                    net.md_5.bungee.api.chat.TextComponent.fromLegacyText("§a§l✓ PERFECT! §e+" + successfulHits + " bonus"));
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 2.0f);
                 location.getWorld().spawnParticle(Particle.TOTEM, 
                     location.clone().add(0.5, 1, 0.5), 15, 0.3, 0.3, 0.3, 0.1);
@@ -222,7 +226,8 @@ public class HarvestMinigame {
         private void registerMiss() {
             isHitWindow = false;
             
-            player.sendActionBar("§c§l✗ MISSED!");
+            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                net.md_5.bungee.api.chat.TextComponent.fromLegacyText("§c§l✗ MISSED!"));
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.7f, 1.0f);
             location.getWorld().spawnParticle(Particle.SMOKE_NORMAL, 
                 location.clone().add(0.5, 1, 0.5), 10, 0.2, 0.2, 0.2, 0.02);

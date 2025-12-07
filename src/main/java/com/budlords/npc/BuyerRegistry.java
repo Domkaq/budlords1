@@ -299,6 +299,16 @@ public class BuyerRegistry {
         saveBuyers();
         return buyer;
     }
+
+    /**
+     * Adds an existing buyer to the registry.
+     */
+    public void addBuyer(IndividualBuyer buyer) {
+        if (buyer != null) {
+            buyers.put(buyer.getId(), buyer);
+            saveBuyers();
+        }
+    }
     
     /**
      * Records a purchase for a buyer.

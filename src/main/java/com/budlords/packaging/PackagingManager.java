@@ -140,6 +140,13 @@ public class PackagingManager {
         return strainManager.getStrainIdFromItem(item);
     }
 
+    /**
+     * Alias for getStrainIdFromPackage for compatibility.
+     */
+    public String getStrainId(ItemStack item) {
+        return getStrainIdFromPackage(item);
+    }
+
     public int getWeightFromPackage(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return 0;
         ItemMeta meta = item.getItemMeta();
@@ -158,6 +165,42 @@ public class PackagingManager {
             }
         }
         return 0;
+    }
+
+    /**
+     * Alias for getWeightFromPackage for compatibility.
+     */
+    public int getPackageSize(ItemStack item) {
+        return getWeightFromPackage(item);
+    }
+
+    /**
+     * Gets the star rating from a packaged item.
+     * Note: Star ratings are stored on the original buds, not packages.
+     * For packages, we need to extract the rating from the bud item metadata if stored.
+     * Returns null if no rating is found.
+     */
+    public com.budlords.quality.StarRating getStarRatingFromPackage(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return null;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return null;
+        
+        List<String> lore = meta.getLore();
+        if (lore == null) return null;
+        
+        // Try to find a star rating in the lore
+        for (String line : lore) {
+            if (line.contains("★")) {
+                // Count the filled stars in the line
+                long stars = line.chars().filter(ch -> ch == '★').count();
+                if (stars > 0 && stars <= 6) {
+                    return com.budlords.quality.StarRating.fromValue((int) stars);
+                }
+            }
+        }
+        
+        // Default to ONE_STAR if not found
+        return com.budlords.quality.StarRating.ONE_STAR;
     }
 
     public double getValueFromPackage(ItemStack item) {
