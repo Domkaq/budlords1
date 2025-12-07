@@ -812,6 +812,14 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         // Apply cooldown to this buyer entity (prevents selling to same entity repeatedly)
         applyEntityCooldown(session.buyerId);
         
+        // Update dynamic buyer demand status if applicable
+        if (plugin.getDynamicBuyerManager() != null) {
+            org.bukkit.entity.Entity buyerEntity = plugin.getServer().getEntity(session.buyerId);
+            if (buyerEntity != null) {
+                plugin.getDynamicBuyerManager().onSuccessfulSale(buyerEntity);
+            }
+        }
+        
         // Get strain info from sold items to apply effects to buyer
         Strain soldStrain = null;
         StarRating soldRating = null;

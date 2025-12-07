@@ -419,6 +419,9 @@ public class BudLords extends JavaPlugin {
         // Register GUI listener for new features
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
         
+        // v3.5.0 - Dynamic Buyer System entity spawn listener
+        getServer().getPluginManager().registerEvents(new com.budlords.listeners.EntityListener(this), this);
+        
         // v3.3.0 - Seed Bag listener
         getServer().getPluginManager().registerEvents(new com.budlords.listeners.SeedBagListener(this, seedBagManager), this);
     }
