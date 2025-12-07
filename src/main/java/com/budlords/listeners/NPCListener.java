@@ -86,7 +86,7 @@ public class NPCListener implements Listener {
         // PRIORITY 1: Check if holding a packaged product or joint - ALWAYS open sale GUI first
         // This ensures selling takes priority over all other interactions
         if (packagingManager.isPackagedProduct(item) || JointItems.isJoint(item)) {
-            // Open the Schedule 1 style sale GUI
+            // Open the sale GUI to negotiate and complete the transaction
             mobSaleGUI.open(player, entity, npcType);
             return;
         }
