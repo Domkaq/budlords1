@@ -38,8 +38,9 @@ public class HarvestMinigame {
     
     /**
      * Starts a harvest mini-game for a player.
+     * @param onComplete Callback to execute when the minigame completes successfully
      */
-    public void startMinigame(Player player, Plant plant, Location plantLocation) {
+    public void startMinigame(Player player, Plant plant, Location plantLocation, Runnable onComplete) {
         if (activeSessions.containsKey(player.getUniqueId())) {
             player.sendMessage("§cYou already have a mini-game in progress!");
             return;
@@ -48,7 +49,7 @@ public class HarvestMinigame {
         StarRating rating = plant.calculateFinalBudRating(null);
         int difficulty = rating != null ? rating.getStars() : 1;
         
-        MinigameSession session = new MinigameSession(player, plant, plantLocation, difficulty);
+        MinigameSession session = new MinigameSession(player, plant, plantLocation, difficulty, onComplete);
         activeSessions.put(player.getUniqueId(), session);
         
         session.start();
@@ -97,6 +98,7 @@ public class HarvestMinigame {
         private final Plant plant;
         private final Location location;
         private final int difficulty;
+        private final Runnable onComplete;
         
         private int currentRound = 0;
         private int successfulHits = 0;
@@ -108,11 +110,12 @@ public class HarvestMinigame {
         private long hitWindowStart = 0;
         private static final long HIT_WINDOW_MS = 500; // 500ms window to click
         
-        public MinigameSession(Player player, Plant plant, Location location, int difficulty) {
+        public MinigameSession(Player player, Plant plant, Location location, int difficulty, Runnable onComplete) {
             this.player = player;
             this.plant = plant;
             this.location = location;
             this.difficulty = difficulty;
+            this.onComplete = onComplete;
             this.totalRounds = 3 + difficulty; // More rounds for higher quality plants
         }
         
@@ -308,6 +311,16 @@ public class HarvestMinigame {
             // Celebratory particles
             location.getWorld().spawnParticle(Particle.TOTEM, 
                 location.clone().add(0.5, 1, 0.5), 50, 0.5, 0.5, 0.5, 0.15);
+            
+            // Trigger the harvest callback after a short delay to let animations play
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (player.isOnline() && onComplete != null) {
+                        onComplete.run();
+                    }
+                }
+            }.runTaskLater(plugin, 40L); // 2 second delay to let results display
         }
         
         public boolean isCompleted() {
