@@ -265,58 +265,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         
         for (ItemStack item : session.itemsToSell) {
             if (item == null) continue;
-            
-            double value = 0;
-            Strain strain = null;
-            String strainId = null;
-            
-            if (packagingManager.isPackagedProduct(item)) {
-                value = packagingManager.getValueFromPackage(item);
-                
-                // Get strain for rarity bonus
-                strainId = packagingManager.getStrainIdFromPackage(item);
-                strain = strainManager.getStrain(strainId);
-            } else if (JointItems.isJoint(item)) {
-                // Calculate joint value
-                strainId = JointItems.getJointStrainId(item);
-                strain = strainManager.getStrain(strainId);
-                int potency = JointItems.getJointPotency(item);
-                StarRating rating = JointItems.getJointRating(item);
-                
-                // Base joint value = potency * quality multiplier * 2 (joints are premium)
-                double qualityMult = rating != null ? rating.getQualityMultiplier() : 1.0;
-                value = potency * qualityMult * 2.0;
-                
-                // Add strain rarity bonus
-                if (strain != null) {
-                    value *= switch (strain.getRarity()) {
-                        case COMMON -> 1.0;
-                        case UNCOMMON -> 1.2;
-                        case RARE -> 1.5;
-                        case LEGENDARY -> 2.5;
-                    };
-                }
-            } else {
-                continue; // Skip non-sellable items
-            }
-            
-            // Apply black market rarity bonus
-            if (strain != null && session.buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
-                value *= switch (strain.getRarity()) {
-                    case COMMON -> 1.0;
-                    case UNCOMMON -> 1.1;
-                    case RARE -> 1.3;
-                    case LEGENDARY -> 1.5;
-                };
-            }
-            
-            // Apply dynamic market demand multiplier
-            if (strainId != null && plugin.getMarketDemandManager() != null) {
-                double demandMultiplier = plugin.getMarketDemandManager().getDemandMultiplier(strainId);
-                value *= demandMultiplier;
-            }
-            
-            total += value * multiplier * item.getAmount();
+            total += calculateItemPrice(item, session.buyerType) * item.getAmount();
         }
         return total;
     }
@@ -394,6 +343,64 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         }
         
         return breakdown.length() > 0 ? breakdown.toString().trim() : "§7No items";
+    }
+    
+    /**
+     * Calculates the price of a single item (used for buyer purchase tracking).
+     */
+    private double calculateItemPrice(ItemStack item, NPCManager.NPCType buyerType) {
+        double multiplier = getPriceMultiplier(buyerType);
+        double value = 0;
+        Strain strain = null;
+        String strainId = null;
+        
+        if (packagingManager.isPackagedProduct(item)) {
+            value = packagingManager.getValueFromPackage(item);
+            
+            // Get strain for rarity bonus
+            strainId = packagingManager.getStrainIdFromPackage(item);
+            strain = strainManager.getStrain(strainId);
+        } else if (JointItems.isJoint(item)) {
+            // Calculate joint value
+            strainId = JointItems.getJointStrainId(item);
+            strain = strainManager.getStrain(strainId);
+            int potency = JointItems.getJointPotency(item);
+            StarRating rating = JointItems.getJointRating(item);
+            
+            // Base joint value = potency * quality multiplier * 2 (joints are premium)
+            double qualityMult = rating != null ? rating.getQualityMultiplier() : 1.0;
+            value = potency * qualityMult * 2.0;
+            
+            // Add strain rarity bonus
+            if (strain != null) {
+                value *= switch (strain.getRarity()) {
+                    case COMMON -> 1.0;
+                    case UNCOMMON -> 1.2;
+                    case RARE -> 1.5;
+                    case LEGENDARY -> 2.5;
+                };
+            }
+        } else {
+            return 0; // Not sellable
+        }
+        
+        // Apply black market rarity bonus
+        if (strain != null && buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
+            value *= switch (strain.getRarity()) {
+                case COMMON -> 1.0;
+                case UNCOMMON -> 1.1;
+                case RARE -> 1.3;
+                case LEGENDARY -> 1.5;
+            };
+        }
+        
+        // Apply dynamic market demand multiplier
+        if (strainId != null && plugin.getMarketDemandManager() != null) {
+            double demandMultiplier = plugin.getMarketDemandManager().getDemandMultiplier(strainId);
+            value *= demandMultiplier;
+        }
+        
+        return value * multiplier;
     }
     
     /**
@@ -659,6 +666,40 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         if (plugin.getReputationManager() != null) {
             int repGain = plugin.getReputationManager().calculateReputationGain(total, true);
             plugin.getReputationManager().addReputation(playerId, buyerTypeName, repGain);
+        }
+        
+        // NEW: Individual Buyer Integration with Intelligent Matching
+        if (plugin.getBuyerRegistry() != null && plugin.getBuyerMatcher() != null) {
+            // Use intelligent matching to find best buyer for this transaction
+            List<ItemStack> itemsList = new ArrayList<>(Arrays.asList(session.itemsToSell));
+            com.budlords.npc.IndividualBuyer buyer = plugin.getBuyerMatcher().findBestMatch(itemsList, playerId);
+            
+            if (buyer != null) {
+                // Record all purchases with this buyer
+                for (ItemStack item : session.items.values()) {
+                    if (item != null && !item.getType().equals(Material.AIR)) {
+                        String strainId = packagingManager.getStrainId(item);
+                        if (strainId != null) {
+                            int amount = packagingManager.getPackageSize(item) * item.getAmount();
+                            double itemPrice = calculateItemPrice(item, session.buyerType) * item.getAmount();
+                            plugin.getBuyerRegistry().recordPurchase(buyer.getId(), strainId, amount, itemPrice);
+                        }
+                    }
+                }
+                
+                // Show buyer's comment
+                String buyerComment = buyer.getPurchaseComment(
+                    session.items.values().stream()
+                        .filter(i -> i != null && !i.getType().equals(Material.AIR))
+                        .findFirst()
+                        .map(i -> packagingManager.getStrainId(i))
+                        .orElse(null)
+                );
+                
+                player.sendMessage("");
+                player.sendMessage("§6§l" + buyer.getName() + ":");
+                player.sendMessage(buyerComment);
+            }
         }
         
         // Count sold items for stats

@@ -91,6 +91,7 @@ public class BudLords extends JavaPlugin {
     
     // v3.4.0 - Individual Buyer System
     private com.budlords.npc.BuyerRegistry buyerRegistry;
+    private com.budlords.npc.BuyerMatcher buyerMatcher;
     private com.budlords.gui.BuyerDetailGUI buyerDetailGUI;
     private com.budlords.gui.BuyerListGUI buyerListGUI;
 
@@ -155,8 +156,9 @@ public class BudLords extends JavaPlugin {
             this.seedBagManager = new com.budlords.quality.SeedBagManager(this);
             this.harvestMinigame = new com.budlords.minigames.HarvestMinigame(this);
             
-            // v3.4.0 - Individual Buyer System
+            // v3.4.0 - Individual Buyer System with Intelligent Matching
             this.buyerRegistry = new com.budlords.npc.BuyerRegistry(this);
+            this.buyerMatcher = new com.budlords.npc.BuyerMatcher(buyerRegistry, packagingManager);
             this.buyerDetailGUI = new com.budlords.gui.BuyerDetailGUI(this, strainManager);
             this.buyerListGUI = new com.budlords.gui.BuyerListGUI(this, buyerRegistry, buyerDetailGUI);
             
@@ -556,6 +558,10 @@ public class BudLords extends JavaPlugin {
     // v3.4.0 New Feature Getters
     public com.budlords.npc.BuyerRegistry getBuyerRegistry() {
         return buyerRegistry;
+    }
+    
+    public com.budlords.npc.BuyerMatcher getBuyerMatcher() {
+        return buyerMatcher;
     }
     
     public com.budlords.gui.BuyerDetailGUI getBuyerDetailGUI() {

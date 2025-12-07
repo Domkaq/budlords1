@@ -340,4 +340,81 @@ public class IndividualBuyer {
         }
         return level;
     }
+    
+    /**
+     * Gets relationship milestones achieved with this buyer.
+     */
+    public List<String> getMilestones() {
+        List<String> milestones = new ArrayList<>();
+        
+        if (totalPurchases >= 1) {
+            milestones.add("§7✓ First Transaction");
+        }
+        if (totalPurchases >= 5) {
+            milestones.add("§e✓ Regular Customer (5 sales)");
+        }
+        if (totalPurchases >= 10) {
+            milestones.add("§a✓ Established Dealer (10 sales)");
+        }
+        if (totalPurchases >= 25) {
+            milestones.add("§9✓ Trusted Partner (25 sales)");
+        }
+        if (totalPurchases >= 50) {
+            milestones.add("§5✓ VIP Relationship (50 sales)");
+        }
+        if (totalPurchases >= 100) {
+            milestones.add("§6✓ §lLEGENDARY STATUS (100 sales)");
+        }
+        
+        if (totalMoneySpent >= 10000) {
+            milestones.add("§a✓ High Roller ($10,000+ spent)");
+        }
+        if (totalMoneySpent >= 50000) {
+            milestones.add("§6✓ Whale Customer ($50,000+ spent)");
+        }
+        if (totalMoneySpent >= 100000) {
+            milestones.add("§6§l✓ PLATINUM TIER ($100,000+ spent)");
+        }
+        
+        // Check for long-term relationship
+        long daysSinceFirstMet = (System.currentTimeMillis() - firstMetTimestamp) / (1000 * 60 * 60 * 24);
+        if (daysSinceFirstMet >= 30) {
+            milestones.add("§b✓ Month-Long Relationship");
+        }
+        if (daysSinceFirstMet >= 90) {
+            milestones.add("§d✓ Quarter-Year Partnership");
+        }
+        
+        return milestones;
+    }
+    
+    /**
+     * Gets the next milestone this buyer is working toward.
+     */
+    public String getNextMilestone() {
+        if (totalPurchases < 5) {
+            return "§e" + (5 - totalPurchases) + " sales until Regular Customer";
+        } else if (totalPurchases < 10) {
+            return "§a" + (10 - totalPurchases) + " sales until Established Dealer";
+        } else if (totalPurchases < 25) {
+            return "§9" + (25 - totalPurchases) + " sales until Trusted Partner";
+        } else if (totalPurchases < 50) {
+            return "§5" + (50 - totalPurchases) + " sales until VIP Status";
+        } else if (totalPurchases < 100) {
+            return "§6" + (100 - totalPurchases) + " sales until LEGENDARY";
+        }
+        
+        if (totalMoneySpent < 10000) {
+            double remaining = 10000 - totalMoneySpent;
+            return "§a$" + String.format("%.2f", remaining) + " until High Roller";
+        } else if (totalMoneySpent < 50000) {
+            double remaining = 50000 - totalMoneySpent;
+            return "§6$" + String.format("%.2f", remaining) + " until Whale Customer";
+        } else if (totalMoneySpent < 100000) {
+            double remaining = 100000 - totalMoneySpent;
+            return "§6$" + String.format("%.2f", remaining) + " until PLATINUM";
+        }
+        
+        return "§6§lAll milestones achieved!";
+    }
 }
