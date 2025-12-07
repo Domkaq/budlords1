@@ -147,6 +147,12 @@ public class BuyerListGUI implements InventoryHolder, Listener {
             inv.setItem(53, next);
         }
         
+        // Analytics button
+        ItemStack analytics = createItem(Material.SPYGLASS,
+            "§d§l📊 Analytics Dashboard",
+            Arrays.asList("§7View insights and recommendations", "§a▶ Click to open"));
+        inv.setItem(48, analytics);
+        
         // Close button
         ItemStack close = createItem(Material.BARRIER, 
             "§c✕ Close", 
@@ -256,6 +262,13 @@ public class BuyerListGUI implements InventoryHolder, Listener {
             }
             updateInventory(event.getInventory(), player);
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
+            return;
+        }
+        
+        // Check for analytics
+        if (clicked.getType() == Material.SPYGLASS) {
+            player.closeInventory();
+            plugin.getBuyerAnalyticsGUI().open(player);
             return;
         }
         

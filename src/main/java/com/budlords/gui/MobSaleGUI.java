@@ -687,6 +687,38 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                     }
                 }
                 
+                // Check if this sale fulfills any requests
+                if (plugin.getBuyerRequestManager() != null) {
+                    for (ItemStack item : session.items.values()) {
+                        if (item != null && !item.getType().equals(Material.AIR)) {
+                            String strainId = packagingManager.getStrainId(item);
+                            if (strainId != null) {
+                                com.budlords.strain.Strain strain = strainManager.getStrain(strainId);
+                                com.budlords.quality.StarRating rating = packagingManager.getStarRatingFromPackage(item);
+                                int quantity = packagingManager.getPackageSize(item) * item.getAmount();
+                                
+                                com.budlords.npc.BuyerRequest fulfilledRequest = 
+                                    plugin.getBuyerRequestManager().checkAndFulfillRequest(
+                                        buyer.getId(), strainId, 
+                                        strain != null ? strain.getRarity() : com.budlords.strain.Strain.Rarity.COMMON,
+                                        rating, quantity
+                                    );
+                                
+                                if (fulfilledRequest != null) {
+                                    // Request fulfilled! Give bonus
+                                    economyManager.addBalance(player, fulfilledRequest.getBonusPayment());
+                                    player.sendMessage("");
+                                    player.sendMessage("§6§l✦ REQUEST FULFILLED! ✦");
+                                    player.sendMessage("§eBonus Payment: §a+$" + String.format("%.2f", fulfilledRequest.getBonusPayment()));
+                                    player.sendMessage("§7" + buyer.getName() + " §7is very pleased!");
+                                    player.sendMessage("");
+                                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 // Show buyer's comment
                 String buyerComment = buyer.getPurchaseComment(
                     session.items.values().stream()

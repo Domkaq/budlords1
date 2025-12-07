@@ -92,8 +92,10 @@ public class BudLords extends JavaPlugin {
     // v3.4.0 - Individual Buyer System
     private com.budlords.npc.BuyerRegistry buyerRegistry;
     private com.budlords.npc.BuyerMatcher buyerMatcher;
+    private com.budlords.npc.BuyerRequestManager buyerRequestManager;
     private com.budlords.gui.BuyerDetailGUI buyerDetailGUI;
     private com.budlords.gui.BuyerListGUI buyerListGUI;
+    private com.budlords.gui.BuyerAnalyticsGUI buyerAnalyticsGUI;
 
     @Override
     public void onEnable() {
@@ -156,11 +158,13 @@ public class BudLords extends JavaPlugin {
             this.seedBagManager = new com.budlords.quality.SeedBagManager(this);
             this.harvestMinigame = new com.budlords.minigames.HarvestMinigame(this);
             
-            // v3.4.0 - Individual Buyer System with Intelligent Matching
+            // v3.4.0 - Individual Buyer System with Intelligent Matching & Requests
             this.buyerRegistry = new com.budlords.npc.BuyerRegistry(this);
             this.buyerMatcher = new com.budlords.npc.BuyerMatcher(buyerRegistry, packagingManager);
+            this.buyerRequestManager = new com.budlords.npc.BuyerRequestManager(this, buyerRegistry);
             this.buyerDetailGUI = new com.budlords.gui.BuyerDetailGUI(this, strainManager);
             this.buyerListGUI = new com.budlords.gui.BuyerListGUI(this, buyerRegistry, buyerDetailGUI);
+            this.buyerAnalyticsGUI = new com.budlords.gui.BuyerAnalyticsGUI(this, buyerRegistry, buyerRequestManager);
             
             // Register commands
             registerCommands();
@@ -294,6 +298,9 @@ public class BudLords extends JavaPlugin {
             // v3.4.0 shutdown
             if (buyerRegistry != null) {
                 buyerRegistry.saveBuyers();
+            }
+            if (buyerRequestManager != null) {
+                buyerRequestManager.shutdown();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -564,11 +571,19 @@ public class BudLords extends JavaPlugin {
         return buyerMatcher;
     }
     
+    public com.budlords.npc.BuyerRequestManager getBuyerRequestManager() {
+        return buyerRequestManager;
+    }
+    
     public com.budlords.gui.BuyerDetailGUI getBuyerDetailGUI() {
         return buyerDetailGUI;
     }
     
     public com.budlords.gui.BuyerListGUI getBuyerListGUI() {
         return buyerListGUI;
+    }
+    
+    public com.budlords.gui.BuyerAnalyticsGUI getBuyerAnalyticsGUI() {
+        return buyerAnalyticsGUI;
     }
 }
