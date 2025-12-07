@@ -192,6 +192,22 @@ public class FormationManager {
         {{0, 1}, {0, 2}, {1, 0}, {-1, 0}, {1, 2}, {-1, 2}, {2, 1}, {-2, 1}}, // Rune of power
         {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 2}, {0, -2}, {2, 0}, {-2, 0}, {0, 0}} // Elder rune
     };
+    
+    // ==================== SECRET 666 FORMATION (HIDDEN) ====================
+    // DEMON FORMATION - Unlocks demonic bonus for plants
+    // Grants +1 star to center pot and plants, enables Blood Moon transformation
+    // Pattern: Inverted quotation marks / devilish shape
+    //     P
+    //   P
+    // [C] ← Center (demon pot)
+    //   P
+    //     P
+    private static final int[][][] DEMON_666_FORMATIONS = {
+        {{1, 2}, {1, 1}, {-1, -1}, {-1, -2}}, // Primary 666 pattern
+        {{-1, 2}, {-1, 1}, {1, -1}, {1, -2}}, // Mirrored 666 pattern
+        {{2, 1}, {1, 1}, {-1, -1}, {-2, -1}}, // Rotated 90°
+        {{2, -1}, {1, -1}, {-1, 1}, {-2, 1}}  // Rotated 270°
+    };
 
     public FormationManager(BudLords plugin, FarmingManager farmingManager) {
         this.plugin = plugin;
@@ -510,6 +526,11 @@ public class FormationManager {
     public FormationType detectFormation(Location plantLoc, String strainId, int farmingXP) {
         // Check formations from highest tier to lowest (mythic first)
         
+        // SECRET: Check for 666 Demon Formation (no XP required, always available but hidden)
+        if (matchesFormation(plantLoc, strainId, DEMON_666_FORMATIONS)) {
+            return FormationType.DEMON_666;
+        }
+        
         // Mythic tier (10000+ XP required)
         if (farmingXP >= XP_TIER_MYTHIC) {
             if (matchesFormation(plantLoc, strainId, CELESTIAL_FORMATIONS)) return FormationType.CELESTIAL;
@@ -713,7 +734,9 @@ public class FormationManager {
         DRAGON(6, 4),
         PHOENIX(6, 4),
         CELESTIAL(6, 5),
-        ANCIENT_RUNE(6, 4);
+        ANCIENT_RUNE(6, 4),
+        // Secret Formation (HIDDEN - No XP requirement but extremely rare)
+        DEMON_666(7, 1); // Tier 7, +1 star (grants demon bonus)
         
         private final int tier;
         private final int baseStarBonus;
