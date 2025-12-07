@@ -515,6 +515,8 @@ public class FormationManager {
             case PHOENIX -> 2.6;
             case CELESTIAL -> 3.0;
             case ANCIENT_RUNE -> 2.7;
+            // Secret tier - Demon 666 (high multiplier due to rarity)
+            case DEMON_666 -> 3.5;
             default -> 0;
         };
     }
@@ -630,7 +632,8 @@ public class FormationManager {
             DIAMOND_FORMATIONS, STAR_FORMATIONS, SPIRAL_FORMATIONS, ARROW_FORMATIONS,
             PENTAGON_FORMATIONS, HEXAGON_FORMATIONS, OCTAGON_FORMATIONS, HEART_FORMATIONS,
             YIN_YANG_FORMATIONS, INFINITY_FORMATIONS, SACRED_GEOMETRY_FORMATIONS, CROWN_FORMATIONS,
-            DRAGON_FORMATIONS, PHOENIX_FORMATIONS, CELESTIAL_FORMATIONS, ANCIENT_RUNE_FORMATIONS
+            DRAGON_FORMATIONS, PHOENIX_FORMATIONS, CELESTIAL_FORMATIONS, ANCIENT_RUNE_FORMATIONS,
+            DEMON_666_FORMATIONS // Secret formation
         };
         
         for (int[][][] patternSet : allPatterns) {
@@ -683,6 +686,8 @@ public class FormationManager {
             case PHOENIX -> "§6🔥 Phoenix Formation";
             case CELESTIAL -> "§d✦ Celestial Formation";
             case ANCIENT_RUNE -> "§5ᚱ Ancient Rune Formation";
+            // Secret
+            case DEMON_666 -> "§4§l⛧ 666 Demon Formation §4§l⛧";
             case NONE -> "§7No Formation";
         };
     }
@@ -698,6 +703,7 @@ public class FormationManager {
             case PENTAGON, HEXAGON, OCTAGON, HEART -> XP_TIER_MASTER;
             case YIN_YANG, INFINITY, SACRED_GEOMETRY, CROWN -> XP_TIER_LEGENDARY;
             case DRAGON, PHOENIX, CELESTIAL, ANCIENT_RUNE -> XP_TIER_MYTHIC;
+            case DEMON_666 -> 0; // Secret formation - no XP requirement
             default -> 0;
         };
     }
