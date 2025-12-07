@@ -176,6 +176,21 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 "§e▶ Tap to open",
                 "§8ID: app_contacts"
             )));
+        
+        // NEW: Buyer Registry app
+        inv.setItem(12, createItem(Material.WRITABLE_BOOK, 
+            "§6§l📋 Buyer Registry",
+            Arrays.asList(
+                "§8━━━━━━━━━━━━━━━━",
+                "",
+                "§7View ALL buyers with",
+                "§7profiles, stats, favorites!",
+                "",
+                "§7Total: §e" + plugin.getBuyerRegistry().getAllBuyers().size() + " §7buyers",
+                "",
+                "§e▶ Tap to open",
+                "§8ID: app_buyer_registry"
+            )));
 
         inv.setItem(13, createItem(Material.PAPER, 
             "§6§l📋 Orders",
@@ -982,6 +997,11 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                     // App navigation
                     if (line.equals("§8ID: app_contacts")) {
                         openContactsPage(player);
+                        return;
+                    }
+                    if (line.equals("§8ID: app_buyer_registry")) {
+                        player.closeInventory();
+                        plugin.getBuyerListGUI().open(player);
                         return;
                     }
                     if (line.equals("§8ID: app_orders")) {

@@ -88,6 +88,11 @@ public class BudLords extends JavaPlugin {
     // v3.3.0 - Seed Bag and Harvest Mini-game
     private com.budlords.quality.SeedBagManager seedBagManager;
     private com.budlords.minigames.HarvestMinigame harvestMinigame;
+    
+    // v3.4.0 - Individual Buyer System
+    private com.budlords.npc.BuyerRegistry buyerRegistry;
+    private com.budlords.gui.BuyerDetailGUI buyerDetailGUI;
+    private com.budlords.gui.BuyerListGUI buyerListGUI;
 
     @Override
     public void onEnable() {
@@ -149,6 +154,11 @@ public class BudLords extends JavaPlugin {
             // v3.3.0 - Seed Bag and Harvest Mini-game
             this.seedBagManager = new com.budlords.quality.SeedBagManager(this);
             this.harvestMinigame = new com.budlords.minigames.HarvestMinigame(this);
+            
+            // v3.4.0 - Individual Buyer System
+            this.buyerRegistry = new com.budlords.npc.BuyerRegistry(this);
+            this.buyerDetailGUI = new com.budlords.gui.BuyerDetailGUI(this, strainManager);
+            this.buyerListGUI = new com.budlords.gui.BuyerListGUI(this, buyerRegistry, buyerDetailGUI);
             
             // Register commands
             registerCommands();
@@ -278,6 +288,10 @@ public class BudLords extends JavaPlugin {
             }
             if (harvestMinigame != null) {
                 harvestMinigame.shutdown();
+            }
+            // v3.4.0 shutdown
+            if (buyerRegistry != null) {
+                buyerRegistry.saveBuyers();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -537,5 +551,18 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.minigames.HarvestMinigame getHarvestMinigame() {
         return harvestMinigame;
+    }
+    
+    // v3.4.0 New Feature Getters
+    public com.budlords.npc.BuyerRegistry getBuyerRegistry() {
+        return buyerRegistry;
+    }
+    
+    public com.budlords.gui.BuyerDetailGUI getBuyerDetailGUI() {
+        return buyerDetailGUI;
+    }
+    
+    public com.budlords.gui.BuyerListGUI getBuyerListGUI() {
+        return buyerListGUI;
     }
 }
