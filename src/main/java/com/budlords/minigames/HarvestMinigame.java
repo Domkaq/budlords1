@@ -157,10 +157,10 @@ public class HarvestMinigame {
                 }
             }.runTaskLater(plugin, delayTicks);
             
-            // Show round indicator
+            // Show round indicator with safe repeat counts
             String progress = "§a" + "█".repeat(successfulHits) + 
-                            "§7" + "█".repeat(currentRound - successfulHits - 1) + 
-                            "§8" + "█".repeat(totalRounds - currentRound + 1);
+                            "§7" + "█".repeat(Math.max(0, currentRound - successfulHits - 1)) + 
+                            "§8" + "█".repeat(Math.max(0, totalRounds - currentRound + 1));
             player.sendActionBar("§eRound " + currentRound + "/" + totalRounds + " §7| " + progress);
         }
         
@@ -183,7 +183,7 @@ public class HarvestMinigame {
                         registerMiss();
                     }
                 }
-            }.runTaskLater(plugin, HIT_WINDOW_MS / 50); // Convert ms to ticks
+            }.runTaskLater(plugin, (HIT_WINDOW_MS * 20L) / 1000L); // Convert ms to ticks properly
         }
         
         public void registerClick() {

@@ -1193,9 +1193,12 @@ public class FarmingListener implements Listener {
         }
         
         if (result.hasRareDropChance()) {
-            StarRating bonusSeedRating = StarRating.fromValue(
-                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + (hadRareDrop ? 2 : 1))
-            );
+            // Calculate bonus seed rating based on existing seed and previous drops
+            int baseSeedStars = plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1;
+            int bonusStars = hadRareDrop ? 2 : 1;
+            int finalStars = Math.min(5, baseSeedStars + bonusStars);
+            StarRating bonusSeedRating = StarRating.fromValue(finalStars);
+            
             ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
             player.getInventory().addItem(bonusSeed);
             player.sendMessage("§d✦ Mini-game Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");

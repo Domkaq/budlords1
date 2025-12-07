@@ -172,10 +172,9 @@ public class MarketShopGUI implements InventoryHolder, Listener {
         
         // Seed Bags (★1-5) - NEW!
         int[] seedBagCapacities = {9, 18, 27, 36, 54};
-        double seedBagBasePrice = 40.0;
         for (int star = 1; star <= 5; star++) {
             StarRating rating = StarRating.fromValue(star);
-            double price = calculatePrice(seedBagBasePrice, star);
+            double price = calculatePrice(SEEDBAG_BASE_PRICE, star);
             int capacity = seedBagCapacities[star - 1];
             inv.setItem(38 + star - 1, createShopItem(
                 Material.BUNDLE,
