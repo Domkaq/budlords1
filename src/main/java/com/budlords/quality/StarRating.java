@@ -46,6 +46,13 @@ public enum StarRating {
         return colorCode;
     }
 
+    /**
+     * Alias for getColorCode for compatibility.
+     */
+    public String getColor() {
+        return colorCode;
+    }
+
     public double getQualityMultiplier() {
         return qualityMultiplier;
     }

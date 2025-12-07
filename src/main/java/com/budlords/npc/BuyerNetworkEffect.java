@@ -87,8 +87,11 @@ public class BuyerNetworkEffect {
             personality = types[ThreadLocalRandom.current().nextInt(types.length)];
         }
         
+        // Generate a unique name for the new buyer
+        String name = generateBuyerName();
+        
         // Create new buyer
-        IndividualBuyer newBuyer = new IndividualBuyer(personality);
+        IndividualBuyer newBuyer = new IndividualBuyer(java.util.UUID.randomUUID(), name, personality);
         
         // If referrer had favorites, new buyer might be interested in same strains
         if (!referrer.getFavoriteStrains().isEmpty() && ThreadLocalRandom.current().nextBoolean()) {
@@ -97,6 +100,17 @@ public class BuyerNetworkEffect {
         }
         
         return newBuyer;
+    }
+
+    /**
+     * Generates a random buyer name.
+     */
+    private String generateBuyerName() {
+        String[] firstNames = {"Marcus", "Tony", "Jake", "Derek", "Chris", "Mike", "Steve", "Johnny"};
+        String[] lastNames = {"Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"};
+        String firstName = firstNames[ThreadLocalRandom.current().nextInt(firstNames.length)];
+        String lastName = lastNames[ThreadLocalRandom.current().nextInt(lastNames.length)];
+        return firstName + " " + lastName;
     }
     
     /**

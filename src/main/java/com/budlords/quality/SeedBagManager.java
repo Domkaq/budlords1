@@ -138,8 +138,8 @@ public class SeedBagManager {
      * Checks if an inventory is a seed bag inventory.
      */
     public boolean isSeedBagInventory(Inventory inventory) {
-        String title = inventory.getTitle();
-        return title != null && title.contains("Seed Bag");
+        // Check if this inventory is tracked as an open seed bag
+        return openBags.containsValue(inventory);
     }
     
     /**
