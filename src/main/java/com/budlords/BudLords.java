@@ -84,6 +84,10 @@ public class BudLords extends JavaPlugin {
     
     // v3.2.0 - Formation bonus system
     private com.budlords.farming.FormationManager formationManager;
+    
+    // v3.3.0 - Seed Bag and Harvest Mini-game
+    private com.budlords.quality.SeedBagManager seedBagManager;
+    private com.budlords.minigames.HarvestMinigame harvestMinigame;
 
     @Override
     public void onEnable() {
@@ -141,6 +145,10 @@ public class BudLords extends JavaPlugin {
             
             // v3.2.0 - Formation bonus system for grouped plants
             this.formationManager = new com.budlords.farming.FormationManager(this, farmingManager);
+            
+            // v3.3.0 - Seed Bag and Harvest Mini-game
+            this.seedBagManager = new com.budlords.quality.SeedBagManager(this);
+            this.harvestMinigame = new com.budlords.minigames.HarvestMinigame(this);
             
             // Register commands
             registerCommands();
@@ -264,6 +272,13 @@ public class BudLords extends JavaPlugin {
             if (plantVisualizationManager != null) {
                 plantVisualizationManager.shutdown();
             }
+            // v3.3.0 shutdown
+            if (seedBagManager != null) {
+                seedBagManager.shutdown();
+            }
+            if (harvestMinigame != null) {
+                harvestMinigame.shutdown();
+            }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "Error during shutdown", e);
@@ -361,6 +376,9 @@ public class BudLords extends JavaPlugin {
         
         // Register GUI listener for new features
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+        
+        // v3.3.0 - Seed Bag listener
+        getServer().getPluginManager().registerEvents(new com.budlords.listeners.SeedBagListener(this, seedBagManager), this);
     }
 
     private void startAutosaveTask() {
@@ -510,5 +528,14 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.farming.FormationManager getFormationManager() {
         return formationManager;
+    }
+    
+    // v3.3.0 New Feature Getters
+    public com.budlords.quality.SeedBagManager getSeedBagManager() {
+        return seedBagManager;
+    }
+    
+    public com.budlords.minigames.HarvestMinigame getHarvestMinigame() {
+        return harvestMinigame;
     }
 }

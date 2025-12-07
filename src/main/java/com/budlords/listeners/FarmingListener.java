@@ -637,12 +637,30 @@ public class FarmingListener implements Listener {
             return;
         }
         
+        // Check if player has an active mini-game
+        if (plugin.getHarvestMinigame().hasActiveGame(player)) {
+            // Register click for mini-game
+            plugin.getHarvestMinigame().handleClick(player);
+            return;
+        }
+        
+        // Check if mini-game is completed
+        com.budlords.minigames.HarvestMinigame.MinigameResult result = 
+            plugin.getHarvestMinigame().getResult(player);
+        
         StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
         if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
         
-        Plant harvested = farmingManager.harvestPlant(player, plantLocation, scissorsRating);
-        if (harvested != null) {
-            giveHarvestWithScissors(player, harvested, scissorsRating);
+        if (result != null) {
+            // Mini-game completed - harvest with scissors AND minigame bonuses
+            Plant harvested = farmingManager.harvestPlant(player, plantLocation, scissorsRating);
+            if (harvested != null) {
+                giveHarvestWithScissorsAndMinigame(player, harvested, scissorsRating, result);
+            }
+            plugin.getHarvestMinigame().cleanupSession(player);
+        } else {
+            // Start harvest mini-game
+            plugin.getHarvestMinigame().startMinigame(player, plant, plantLocation);
         }
     }
 
@@ -652,9 +670,27 @@ public class FarmingListener implements Listener {
             event.setCancelled(true);
             
             if (plant.isFullyGrown()) {
-                Plant harvested = farmingManager.harvestPlant(player, clickedBlock.getLocation());
-                if (harvested != null) {
-                    giveHarvest(player, harvested);
+                // Check if player has an active mini-game
+                if (plugin.getHarvestMinigame().hasActiveGame(player)) {
+                    // Register click for mini-game
+                    plugin.getHarvestMinigame().handleClick(player);
+                    return;
+                }
+                
+                // Check if mini-game is completed
+                com.budlords.minigames.HarvestMinigame.MinigameResult result = 
+                    plugin.getHarvestMinigame().getResult(player);
+                
+                if (result != null) {
+                    // Mini-game completed - harvest with bonuses
+                    Plant harvested = farmingManager.harvestPlant(player, clickedBlock.getLocation());
+                    if (harvested != null) {
+                        giveHarvestWithMinigameBonus(player, harvested, result);
+                    }
+                    plugin.getHarvestMinigame().cleanupSession(player);
+                } else {
+                    // Start harvest mini-game
+                    plugin.getHarvestMinigame().startMinigame(player, plant, clickedBlock.getLocation());
                 }
             } else {
                 // Show plant status with star info
@@ -1062,5 +1098,122 @@ public class FarmingListener implements Listener {
                 com.budlords.skills.Skill.SkillTree.FARMING);
         }
         return 0;
+    }
+    
+    /**
+     * Gives harvest with minigame bonuses only (no scissors).
+     */
+    private void giveHarvestWithMinigameBonus(Player player, Plant plant, 
+                                              com.budlords.minigames.HarvestMinigame.MinigameResult result) {
+        Strain strain = strainManager.getStrain(plant.getStrainId());
+        if (strain == null) {
+            player.sendMessage("§cError: Strain not found!");
+            return;
+        }
+
+        // Calculate actual yield with minigame multiplier
+        int baseYield = strain.getYield();
+        double qualityMultiplier = 0.5 + (plant.getQuality() / 100.0);
+        int yieldWithQuality = Math.max(1, (int) Math.round(baseYield * qualityMultiplier));
+        int actualYield = (int) Math.round(yieldWithQuality * result.getYieldMultiplier());
+
+        // Apply quality bonus from minigame
+        int enhancedQuality = Math.min(100, plant.getQuality() + result.getQualityBonus());
+        
+        // Calculate final bud star rating with enhanced quality
+        StarRating finalRating = plant.calculateFinalBudRating(null);
+        
+        // Check for rare drop from minigame
+        if (result.hasRareDropChance()) {
+            StarRating bonusSeedRating = StarRating.fromValue(
+                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + 1)
+            );
+            ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
+            player.getInventory().addItem(bonusSeed);
+            player.sendMessage("§d✦ Mini-game Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");
+        }
+
+        ItemStack buds = strainManager.createBudItem(strain, actualYield, finalRating);
+        HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(buds);
+        if (!leftover.isEmpty()) {
+            leftover.values().forEach(item -> 
+                player.getWorld().dropItemNaturally(player.getLocation(), item)
+            );
+        }
+        
+        // Update stats and challenges
+        updateHarvestStatsAndChallenges(player, plant, strain, finalRating);
+
+        player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");
+        player.sendMessage("§7Quality: " + getQualityDisplay(enhancedQuality));
+    }
+    
+    /**
+     * Gives harvest with both scissors AND minigame bonuses.
+     */
+    private void giveHarvestWithScissorsAndMinigame(Player player, Plant plant, StarRating scissorsRating,
+                                                    com.budlords.minigames.HarvestMinigame.MinigameResult result) {
+        Strain strain = strainManager.getStrain(plant.getStrainId());
+        if (strain == null) {
+            player.sendMessage("§cError: Strain not found!");
+            return;
+        }
+        
+        HarvestScissors scissors = new HarvestScissors(scissorsRating);
+
+        // Calculate yield with both scissors and minigame multipliers
+        int baseYield = strain.getYield();
+        double qualityMultiplier = 0.5 + (plant.getQuality() / 100.0);
+        int yieldWithQuality = Math.max(1, (int) Math.round(baseYield * qualityMultiplier));
+        int yieldWithScissors = scissors.calculateFinalYield(yieldWithQuality);
+        int actualYield = (int) Math.round(yieldWithScissors * result.getYieldMultiplier());
+
+        // Apply quality bonus from minigame
+        int enhancedQuality = Math.min(100, plant.getQuality() + result.getQualityBonus());
+
+        // Calculate final bud star rating
+        StarRating finalRating = plant.calculateFinalBudRating(scissorsRating);
+        
+        // Check for quality upgrade from scissors
+        if (scissors.triggersQualityUpgrade() && finalRating.getStars() < 5) {
+            finalRating = StarRating.fromValue(finalRating.getStars() + 1);
+            player.sendMessage("§6✦ Quality Upgrade! §7Scissors improved the bud quality!");
+        }
+        
+        // Check for rare drops (both scissors and minigame)
+        boolean hadRareDrop = false;
+        if (scissors.triggersRareDrop()) {
+            StarRating bonusSeedRating = StarRating.fromValue(
+                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + 1)
+            );
+            ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
+            player.getInventory().addItem(bonusSeed);
+            player.sendMessage("§d✦ Scissors Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");
+            hadRareDrop = true;
+        }
+        
+        if (result.hasRareDropChance()) {
+            StarRating bonusSeedRating = StarRating.fromValue(
+                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + (hadRareDrop ? 2 : 1))
+            );
+            ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
+            player.getInventory().addItem(bonusSeed);
+            player.sendMessage("§d✦ Mini-game Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");
+        }
+
+        ItemStack buds = strainManager.createBudItem(strain, actualYield, finalRating);
+        HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(buds);
+        if (!leftover.isEmpty()) {
+            leftover.values().forEach(item -> 
+                player.getWorld().dropItemNaturally(player.getLocation(), item)
+            );
+        }
+        
+        // Update stats and challenges
+        updateHarvestStatsAndChallenges(player, plant, strain, finalRating);
+
+        player.sendMessage("§aHarvested §e" + actualYield + "x §a" + strain.getName() + " Buds " + finalRating.getDisplay() + "!");
+        player.sendMessage("§7Quality: " + getQualityDisplay(enhancedQuality));
+        player.sendMessage("§a§lCOMBO BONUS! §7Scissors + Perfect Mini-game!");
     }
 }
