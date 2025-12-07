@@ -84,6 +84,21 @@ public class BudLords extends JavaPlugin {
     
     // v3.2.0 - Formation bonus system
     private com.budlords.farming.FormationManager formationManager;
+    
+    // v3.3.0 - Seed Bag and Harvest Mini-game
+    private com.budlords.quality.SeedBagManager seedBagManager;
+    private com.budlords.minigames.HarvestMinigame harvestMinigame;
+    
+    // v3.4.0 - Individual Buyer System
+    private com.budlords.npc.BuyerRegistry buyerRegistry;
+    private com.budlords.npc.BuyerMatcher buyerMatcher;
+    private com.budlords.npc.BuyerRequestManager buyerRequestManager;
+    private com.budlords.npc.BuyerLeaderboard buyerLeaderboard;
+    private com.budlords.npc.BuyerNetworkEffect buyerNetworkEffect;
+    private com.budlords.npc.SpecialBuyerEvent specialBuyerEvent;
+    private com.budlords.gui.BuyerDetailGUI buyerDetailGUI;
+    private com.budlords.gui.BuyerListGUI buyerListGUI;
+    private com.budlords.gui.BuyerAnalyticsGUI buyerAnalyticsGUI;
 
     @Override
     public void onEnable() {
@@ -141,6 +156,21 @@ public class BudLords extends JavaPlugin {
             
             // v3.2.0 - Formation bonus system for grouped plants
             this.formationManager = new com.budlords.farming.FormationManager(this, farmingManager);
+            
+            // v3.3.0 - Seed Bag and Harvest Mini-game
+            this.seedBagManager = new com.budlords.quality.SeedBagManager(this);
+            this.harvestMinigame = new com.budlords.minigames.HarvestMinigame(this);
+            
+            // v3.4.0 - Individual Buyer System with Intelligent Matching, Requests & Advanced Features
+            this.buyerRegistry = new com.budlords.npc.BuyerRegistry(this);
+            this.buyerMatcher = new com.budlords.npc.BuyerMatcher(buyerRegistry, packagingManager);
+            this.buyerRequestManager = new com.budlords.npc.BuyerRequestManager(this, buyerRegistry);
+            this.buyerLeaderboard = new com.budlords.npc.BuyerLeaderboard(buyerRegistry);
+            this.buyerNetworkEffect = new com.budlords.npc.BuyerNetworkEffect(this, buyerRegistry);
+            this.specialBuyerEvent = new com.budlords.npc.SpecialBuyerEvent(this, buyerRegistry);
+            this.buyerDetailGUI = new com.budlords.gui.BuyerDetailGUI(this, strainManager);
+            this.buyerListGUI = new com.budlords.gui.BuyerListGUI(this, buyerRegistry, buyerDetailGUI);
+            this.buyerAnalyticsGUI = new com.budlords.gui.BuyerAnalyticsGUI(this, buyerRegistry, buyerRequestManager);
             
             // Register commands
             registerCommands();
@@ -264,6 +294,23 @@ public class BudLords extends JavaPlugin {
             if (plantVisualizationManager != null) {
                 plantVisualizationManager.shutdown();
             }
+            // v3.3.0 shutdown
+            if (seedBagManager != null) {
+                seedBagManager.shutdown();
+            }
+            if (harvestMinigame != null) {
+                harvestMinigame.shutdown();
+            }
+            // v3.4.0 shutdown
+            if (buyerRegistry != null) {
+                buyerRegistry.saveBuyers();
+            }
+            if (buyerRequestManager != null) {
+                buyerRequestManager.shutdown();
+            }
+            if (specialBuyerEvent != null) {
+                specialBuyerEvent.shutdown();
+            }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "Error during shutdown", e);
@@ -361,6 +408,9 @@ public class BudLords extends JavaPlugin {
         
         // Register GUI listener for new features
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+        
+        // v3.3.0 - Seed Bag listener
+        getServer().getPluginManager().registerEvents(new com.budlords.listeners.SeedBagListener(this, seedBagManager), this);
     }
 
     private void startAutosaveTask() {
@@ -510,5 +560,51 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.farming.FormationManager getFormationManager() {
         return formationManager;
+    }
+    
+    // v3.3.0 New Feature Getters
+    public com.budlords.quality.SeedBagManager getSeedBagManager() {
+        return seedBagManager;
+    }
+    
+    public com.budlords.minigames.HarvestMinigame getHarvestMinigame() {
+        return harvestMinigame;
+    }
+    
+    // v3.4.0 New Feature Getters
+    public com.budlords.npc.BuyerRegistry getBuyerRegistry() {
+        return buyerRegistry;
+    }
+    
+    public com.budlords.npc.BuyerMatcher getBuyerMatcher() {
+        return buyerMatcher;
+    }
+    
+    public com.budlords.npc.BuyerRequestManager getBuyerRequestManager() {
+        return buyerRequestManager;
+    }
+    
+    public com.budlords.npc.BuyerLeaderboard getBuyerLeaderboard() {
+        return buyerLeaderboard;
+    }
+    
+    public com.budlords.npc.BuyerNetworkEffect getBuyerNetworkEffect() {
+        return buyerNetworkEffect;
+    }
+    
+    public com.budlords.npc.SpecialBuyerEvent getSpecialBuyerEvent() {
+        return specialBuyerEvent;
+    }
+    
+    public com.budlords.gui.BuyerDetailGUI getBuyerDetailGUI() {
+        return buyerDetailGUI;
+    }
+    
+    public com.budlords.gui.BuyerListGUI getBuyerListGUI() {
+        return buyerListGUI;
+    }
+    
+    public com.budlords.gui.BuyerAnalyticsGUI getBuyerAnalyticsGUI() {
+        return buyerAnalyticsGUI;
     }
 }
