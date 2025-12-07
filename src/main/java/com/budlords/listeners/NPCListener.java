@@ -62,6 +62,18 @@ public class NPCListener implements Listener {
         Entity entity = event.getRightClicked();
 
         NPCManager.NPCType npcType = npcManager.getNPCType(entity);
+        
+        // Try to generate/get dynamic buyer profile for configurable mobs
+        if (npcType == NPCManager.NPCType.CONFIGURABLE_MOB || npcType == NPCManager.NPCType.NONE) {
+            if (plugin.getDynamicBuyerManager() != null) {
+                com.budlords.npc.IndividualBuyer buyer = plugin.getDynamicBuyerManager().getOrCreateBuyer(entity);
+                if (buyer != null) {
+                    // Successfully created/retrieved buyer - treat as configurable mob
+                    npcType = NPCManager.NPCType.CONFIGURABLE_MOB;
+                }
+            }
+        }
+        
         if (npcType == NPCManager.NPCType.NONE) return;
 
         event.setCancelled(true);
@@ -108,6 +120,29 @@ public class NPCListener implements Listener {
         
         // Configurable mobs (enabled in config) - show message about what they buy
         if (npcType == NPCManager.NPCType.CONFIGURABLE_MOB) {
+            // Check if this mob has a dynamic buyer profile
+            if (plugin.getDynamicBuyerManager() != null) {
+                com.budlords.npc.IndividualBuyer buyer = plugin.getDynamicBuyerManager().getBuyer(entity);
+                if (buyer != null) {
+                    // Show buyer greeting
+                    player.sendMessage("");
+                    player.sendMessage(buyer.getGreeting());
+                    player.sendMessage("§7Personality: §e" + buyer.getPersonality().name().replace("_", " "));
+                    
+                    // Show demand indicator
+                    if (plugin.getDynamicBuyerManager().hasDemand(entity)) {
+                        player.sendMessage("§a✦ §7Looking to buy right now!");
+                    } else {
+                        player.sendMessage("§7Not interested in buying at the moment.");
+                    }
+                    
+                    player.sendMessage("§7Hold a packaged product or joint to sell!");
+                    player.sendMessage("");
+                    return;
+                }
+            }
+            
+            // Default message for non-dynamic buyers
             String entityName = entity.getCustomName() != null ? entity.getCustomName() : entity.getType().name().replace("_", " ");
             player.sendMessage("");
             player.sendMessage("§e§l" + entityName);
