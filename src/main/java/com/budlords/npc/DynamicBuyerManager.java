@@ -32,11 +32,9 @@ public class DynamicBuyerManager {
     // Track entities with demand indicators (UUID -> last update time)
     private final Map<UUID, Long> demandIndicators;
     
-    // Demand cooldown in milliseconds (configurable)
-    private static final long DEMAND_COOLDOWN_MS = 300000; // 5 minutes default
-    
-    // Chance for a mob to become a buyer (configurable)
+    // Configurable values loaded from config
     private double buyerGenerationChance = 0.3; // 30% by default
+    private long demandCooldownMs = 300000; // 5 minutes default
     
     public DynamicBuyerManager(BudLords plugin, BuyerRegistry buyerRegistry) {
         this.plugin = plugin;
@@ -58,6 +56,8 @@ public class DynamicBuyerManager {
      */
     private void loadConfig() {
         buyerGenerationChance = plugin.getConfig().getDouble("trading.buyer-generation-chance", 0.3);
+        int cooldownMinutes = plugin.getConfig().getInt("trading.buyer-demand-cooldown-minutes", 5);
+        demandCooldownMs = cooldownMinutes * 60 * 1000L; // Convert minutes to milliseconds
     }
     
     /**
@@ -185,7 +185,7 @@ public class DynamicBuyerManager {
         long lastUpdate = pdc.getOrDefault(lastDemandUpdateKey, PersistentDataType.LONG, 0L);
         long elapsed = System.currentTimeMillis() - lastUpdate;
         
-        if (elapsed > DEMAND_COOLDOWN_MS) {
+        if (elapsed > demandCooldownMs) {
             // Demand expired, randomly refresh
             boolean newDemand = ThreadLocalRandom.current().nextDouble() < 0.5; // 50% chance
             updateDemand(entity, newDemand);
@@ -197,6 +197,8 @@ public class DynamicBuyerManager {
     
     /**
      * Updates the name tag for a buyer entity.
+     * Uses deprecated setCustomName() for Bukkit/Spigot compatibility.
+     * Paper servers can replace with Adventure API's customName(Component) method.
      */
     @SuppressWarnings("deprecation")
     private void updateNameTag(Entity entity, IndividualBuyer buyer) {

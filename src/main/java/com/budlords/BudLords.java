@@ -625,8 +625,4 @@ public class BudLords extends JavaPlugin {
     public com.budlords.npc.DynamicBuyerManager getDynamicBuyerManager() {
         return dynamicBuyerManager;
     }
-    
-    public com.budlords.gui.BuyerAnalyticsGUI getBuyerAnalyticsGUI() {
-        return buyerAnalyticsGUI;
-    }
 }
