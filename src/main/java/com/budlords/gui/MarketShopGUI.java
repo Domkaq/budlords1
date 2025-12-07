@@ -39,6 +39,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
     private static final double POT_BASE_PRICE = 50.0;
     private static final double WATERING_CAN_BASE_PRICE = 30.0;
     private static final double SCISSORS_BASE_PRICE = 75.0;
+    private static final double SEEDBAG_BASE_PRICE = 40.0;
     private static final double PHONE_PRICE = 150.0;
 
     public MarketShopGUI(BudLords plugin, EconomyManager economyManager, QualityItemManager qualityItemManager) {
@@ -98,6 +99,9 @@ public class MarketShopGUI implements InventoryHolder, Listener {
         
         inv.setItem(28, createItem(Material.SHEARS, "§e§l✂ Harvest Scissors",
             Arrays.asList("", "§7Better harvests", "§7Higher ★ = Better yields")));
+        
+        inv.setItem(37, createItem(Material.BUNDLE, "§d§l🎒 Seed Bags",
+            Arrays.asList("", "§7Store seeds safely", "§7Higher ★ = More capacity")));
 
         // Growing Pots (★1-5)
         for (int star = 1; star <= 5; star++) {
@@ -165,6 +169,31 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 "scissors_" + star
             ));
         }
+        
+        // Seed Bags (★1-5) - NEW!
+        int[] seedBagCapacities = {9, 18, 27, 36, 54};
+        double seedBagBasePrice = 40.0;
+        for (int star = 1; star <= 5; star++) {
+            StarRating rating = StarRating.fromValue(star);
+            double price = calculatePrice(seedBagBasePrice, star);
+            int capacity = seedBagCapacities[star - 1];
+            inv.setItem(38 + star - 1, createShopItem(
+                Material.BUNDLE,
+                rating.getColorCode() + "Seed Bag " + rating.getDisplay(),
+                price,
+                Arrays.asList(
+                    "§7Quality: " + rating.getDisplay(),
+                    "",
+                    "§7Capacity: §e" + capacity + " slots",
+                    "§7Special: §dOnly stores seeds!",
+                    "",
+                    "§7Price: §e" + economyManager.formatMoney(price),
+                    "",
+                    canAfford(player, price) ? "§a▶ Click to buy" : "§c✗ Not enough money"
+                ),
+                "seedbag_" + star
+            ));
+        }
 
         // Info panel
         inv.setItem(40, createItem(Material.BOOK, "§e§lShopping Tips",
@@ -180,7 +209,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
             )));
         
         // Phone - special item for viewing buyer profiles
-        inv.setItem(38, createShopItem(Material.ECHO_SHARD, 
+        inv.setItem(44, createShopItem(Material.ECHO_SHARD, 
             "§b§l📱 Dealer Phone",
             PHONE_PRICE,
             Arrays.asList(
@@ -379,6 +408,16 @@ public class MarketShopGUI implements InventoryHolder, Listener {
                 itemName = "Harvest Scissors " + rating.getDisplay();
             } catch (NumberFormatException e) {
                 plugin.getLogger().warning("Failed to parse scissors rating from item ID: " + itemId);
+                return;
+            }
+        } else if (itemId.startsWith("seedbag_")) {
+            try {
+                int star = Integer.parseInt(itemId.substring(8));
+                StarRating rating = StarRating.fromValue(star);
+                purchasedItem = com.budlords.quality.SeedBag.createSeedBagItem(rating);
+                itemName = "Seed Bag " + rating.getDisplay();
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Failed to parse seed bag rating from item ID: " + itemId);
                 return;
             }
         } else if (itemId.startsWith("cure_")) {
