@@ -23,6 +23,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class NPCListener implements Listener {
 
+    // Helpful hint message shown to players about phone usage
+    private static final String PHONE_HINT = "§b§l📱 §7Use your phone to view reputation!";
+
     private final BudLords plugin;
     private final NPCManager npcManager;
     private final EconomyManager economyManager;
@@ -139,7 +142,7 @@ public class NPCListener implements Listener {
                     }
                     
                     player.sendMessage("§7Hold a packaged product or joint to sell!");
-                    player.sendMessage("§b§l📱 §7Or use your phone to view reputation!");
+                    player.sendMessage(PHONE_HINT);
                     player.sendMessage("");
                     return;
                 }
@@ -151,7 +154,7 @@ public class NPCListener implements Listener {
             player.sendMessage("§e§l" + entityName);
             player.sendMessage("§7This buyer is interested in your products!");
             player.sendMessage("§7Hold a packaged product or joint to sell!");
-            player.sendMessage("§b§l📱 §7Or use your phone to view reputation!");
+            player.sendMessage(PHONE_HINT);
             player.sendMessage("");
             return;
         }
@@ -170,7 +173,7 @@ public class NPCListener implements Listener {
         player.sendMessage("§7Hold a packaged product or joint to sell!");
         player.sendMessage("§7Use §f/package <amount>§7 to package buds.");
         player.sendMessage("");
-        player.sendMessage("§b§l📱 §7Use your phone to view reputation!");
+        player.sendMessage(PHONE_HINT);
         player.sendMessage("");
 
         if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {
