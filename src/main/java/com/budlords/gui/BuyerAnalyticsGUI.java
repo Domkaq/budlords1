@@ -76,6 +76,47 @@ public class BuyerAnalyticsGUI implements InventoryHolder, Listener {
             ));
         inv.setItem(4, header);
         
+        // Special Event Display (if active)
+        if (plugin.getSpecialBuyerEvent() != null && plugin.getSpecialBuyerEvent().isEventActive()) {
+            com.budlords.npc.SpecialBuyerEvent.SpecialBuyer event = plugin.getSpecialBuyerEvent().getCurrentEvent();
+            ItemStack eventItem = createItem(Material.DRAGON_HEAD,
+                "§6§l⚡ SPECIAL EVENT ACTIVE!",
+                Arrays.asList(
+                    "",
+                    event.getName(),
+                    "",
+                    "§aPrice Multiplier: §6" + String.format("%.1fx", event.getPriceMultiplier()),
+                    "§7Time Remaining: §e" + plugin.getSpecialBuyerEvent().getTimeRemainingFormatted(),
+                    "",
+                    "§6§lSell now for maximum profit!",
+                    ""
+                ));
+            inv.setItem(0, eventItem);
+        }
+        
+        // Network Stats
+        if (plugin.getBuyerLeaderboard() != null && plugin.getBuyerNetworkEffect() != null) {
+            com.budlords.npc.BuyerLeaderboard.NetworkTier tier = 
+                plugin.getBuyerLeaderboard().getNetworkTier(player.getUniqueId());
+            int networkSize = plugin.getBuyerNetworkEffect().getNetworkSize();
+            int referrals = plugin.getBuyerNetworkEffect().getReferralCount();
+            
+            ItemStack networkItem = createItem(Material.NETHER_STAR,
+                "§d§l🌐 Your Network",
+                Arrays.asList(
+                    "",
+                    "§7Tier: " + tier.getDisplay(),
+                    "§7" + tier.getDescription(),
+                    "",
+                    "§7Network Size: §e" + networkSize + " buyers",
+                    "§7Referrals Made: §a" + referrals,
+                    "",
+                    "§8Next tier: " + tier.getNext().getDisplay(),
+                    ""
+                ));
+            inv.setItem(8, networkItem);
+        }
+        
         // Active Requests Section
         List<BuyerRequest> urgentRequests = requestManager.getUrgentRequests();
         List<BuyerRequest> highValueRequests = requestManager.getHighValueRequests();

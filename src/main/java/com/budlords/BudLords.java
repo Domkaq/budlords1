@@ -93,6 +93,9 @@ public class BudLords extends JavaPlugin {
     private com.budlords.npc.BuyerRegistry buyerRegistry;
     private com.budlords.npc.BuyerMatcher buyerMatcher;
     private com.budlords.npc.BuyerRequestManager buyerRequestManager;
+    private com.budlords.npc.BuyerLeaderboard buyerLeaderboard;
+    private com.budlords.npc.BuyerNetworkEffect buyerNetworkEffect;
+    private com.budlords.npc.SpecialBuyerEvent specialBuyerEvent;
     private com.budlords.gui.BuyerDetailGUI buyerDetailGUI;
     private com.budlords.gui.BuyerListGUI buyerListGUI;
     private com.budlords.gui.BuyerAnalyticsGUI buyerAnalyticsGUI;
@@ -158,10 +161,13 @@ public class BudLords extends JavaPlugin {
             this.seedBagManager = new com.budlords.quality.SeedBagManager(this);
             this.harvestMinigame = new com.budlords.minigames.HarvestMinigame(this);
             
-            // v3.4.0 - Individual Buyer System with Intelligent Matching & Requests
+            // v3.4.0 - Individual Buyer System with Intelligent Matching, Requests & Advanced Features
             this.buyerRegistry = new com.budlords.npc.BuyerRegistry(this);
             this.buyerMatcher = new com.budlords.npc.BuyerMatcher(buyerRegistry, packagingManager);
             this.buyerRequestManager = new com.budlords.npc.BuyerRequestManager(this, buyerRegistry);
+            this.buyerLeaderboard = new com.budlords.npc.BuyerLeaderboard(buyerRegistry);
+            this.buyerNetworkEffect = new com.budlords.npc.BuyerNetworkEffect(this, buyerRegistry);
+            this.specialBuyerEvent = new com.budlords.npc.SpecialBuyerEvent(this, buyerRegistry);
             this.buyerDetailGUI = new com.budlords.gui.BuyerDetailGUI(this, strainManager);
             this.buyerListGUI = new com.budlords.gui.BuyerListGUI(this, buyerRegistry, buyerDetailGUI);
             this.buyerAnalyticsGUI = new com.budlords.gui.BuyerAnalyticsGUI(this, buyerRegistry, buyerRequestManager);
@@ -301,6 +307,9 @@ public class BudLords extends JavaPlugin {
             }
             if (buyerRequestManager != null) {
                 buyerRequestManager.shutdown();
+            }
+            if (specialBuyerEvent != null) {
+                specialBuyerEvent.shutdown();
             }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
@@ -573,6 +582,18 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.npc.BuyerRequestManager getBuyerRequestManager() {
         return buyerRequestManager;
+    }
+    
+    public com.budlords.npc.BuyerLeaderboard getBuyerLeaderboard() {
+        return buyerLeaderboard;
+    }
+    
+    public com.budlords.npc.BuyerNetworkEffect getBuyerNetworkEffect() {
+        return buyerNetworkEffect;
+    }
+    
+    public com.budlords.npc.SpecialBuyerEvent getSpecialBuyerEvent() {
+        return specialBuyerEvent;
     }
     
     public com.budlords.gui.BuyerDetailGUI getBuyerDetailGUI() {

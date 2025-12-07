@@ -728,9 +728,41 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                         .orElse(null)
                 );
                 
+                // Check for network effect (referral opportunity)
+                if (plugin.getBuyerNetworkEffect() != null) {
+                    plugin.getBuyerNetworkEffect().checkForReferral(buyer, playerId);
+                }
+                
+                // Check for special event bonus
+                double eventBonus = 0;
+                if (plugin.getSpecialBuyerEvent() != null && plugin.getSpecialBuyerEvent().isEventActive()) {
+                    com.budlords.npc.SpecialBuyerEvent.SpecialBuyer specialBuyer = 
+                        plugin.getSpecialBuyerEvent().getCurrentEvent();
+                    if (specialBuyer != null) {
+                        double baseTotal = total / reputationMultiplier; // Remove reputation to get base
+                        eventBonus = baseTotal * (specialBuyer.getPriceMultiplier() - 1.0);
+                        economyManager.addBalance(player, eventBonus);
+                        
+                        player.sendMessage("");
+                        player.sendMessage("§6§l✦ SPECIAL EVENT BONUS! ✦");
+                        player.sendMessage("§e" + specialBuyer.getName());
+                        player.sendMessage("§aEvent Bonus: +$" + String.format("%.2f", eventBonus));
+                        player.sendMessage("§7Time Remaining: §e" + plugin.getSpecialBuyerEvent().getTimeRemainingFormatted());
+                        player.sendMessage("");
+                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
+                    }
+                }
+                
                 player.sendMessage("");
                 player.sendMessage("§6§l" + buyer.getName() + ":");
                 player.sendMessage(buyerComment);
+                
+                // Show network tier progress
+                if (plugin.getBuyerLeaderboard() != null) {
+                    com.budlords.npc.BuyerLeaderboard.NetworkTier tier = 
+                        plugin.getBuyerLeaderboard().getNetworkTier(playerId);
+                    player.sendMessage("§7Your Network Tier: " + tier.getDisplay());
+                }
             }
         }
         
