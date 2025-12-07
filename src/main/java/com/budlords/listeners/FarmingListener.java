@@ -659,8 +659,21 @@ public class FarmingListener implements Listener {
             }
             plugin.getHarvestMinigame().cleanupSession(player);
         } else {
-            // Start harvest mini-game
-            plugin.getHarvestMinigame().startMinigame(player, plant, plantLocation);
+            // Start harvest mini-game with auto-harvest callback
+            final StarRating finalScissorsRating = scissorsRating;
+            plugin.getHarvestMinigame().startMinigame(player, plant, plantLocation, () -> {
+                // This callback is triggered when minigame completes successfully
+                com.budlords.minigames.HarvestMinigame.MinigameResult minigameResult = 
+                    plugin.getHarvestMinigame().getResult(player);
+                
+                if (minigameResult != null) {
+                    Plant harvested = farmingManager.harvestPlant(player, plantLocation, finalScissorsRating);
+                    if (harvested != null) {
+                        giveHarvestWithScissorsAndMinigame(player, harvested, finalScissorsRating, minigameResult);
+                    }
+                    plugin.getHarvestMinigame().cleanupSession(player);
+                }
+            });
         }
     }
 
@@ -689,8 +702,21 @@ public class FarmingListener implements Listener {
                     }
                     plugin.getHarvestMinigame().cleanupSession(player);
                 } else {
-                    // Start harvest mini-game
-                    plugin.getHarvestMinigame().startMinigame(player, plant, clickedBlock.getLocation());
+                    // Start harvest mini-game with auto-harvest callback
+                    Location plantLocation = clickedBlock.getLocation();
+                    plugin.getHarvestMinigame().startMinigame(player, plant, plantLocation, () -> {
+                        // This callback is triggered when minigame completes successfully
+                        com.budlords.minigames.HarvestMinigame.MinigameResult minigameResult = 
+                            plugin.getHarvestMinigame().getResult(player);
+                        
+                        if (minigameResult != null) {
+                            Plant harvested = farmingManager.harvestPlant(player, plantLocation);
+                            if (harvested != null) {
+                                giveHarvestWithMinigameBonus(player, harvested, minigameResult);
+                            }
+                            plugin.getHarvestMinigame().cleanupSession(player);
+                        }
+                    });
                 }
             } else {
                 // Show plant status with star info

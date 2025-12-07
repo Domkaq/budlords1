@@ -206,6 +206,14 @@ public class IndividualBuyer {
     }
     
     /**
+     * Updates the last seen timestamp to current time.
+     */
+    public void updateLastSeen() {
+        this.lastSeenTimestamp = System.currentTimeMillis();
+        updateMood();
+    }
+    
+    /**
      * Adds contextual dialogue based on purchases.
      */
     private void addMemoryDialogue(String strainId, int amount) {

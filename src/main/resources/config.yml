@@ -63,8 +63,15 @@ trading:
   # Per-entity cooldown (prevents selling to same entity repeatedly)
   entity-cooldown-seconds: 30
   
+  # Dynamic buyer system
+  # When enabled, mobs can become individual buyers with personalities
+  # Buyers will have name tags and show demand indicators
+  buyer-generation-chance: 0.3  # 30% chance for allowed mobs to become buyers
+  buyer-demand-cooldown-minutes: 5  # Time before a buyer wants to buy again
+  
   # Configurable mobs that can be sold to
   # Server admins can enable/disable which mobs accept sales
+  # When enabled, these mobs can become dynamic buyers with profiles
   allowed-mobs:
     villager: true
     wandering_trader: true

@@ -99,6 +99,9 @@ public class BudLords extends JavaPlugin {
     private com.budlords.gui.BuyerDetailGUI buyerDetailGUI;
     private com.budlords.gui.BuyerListGUI buyerListGUI;
     private com.budlords.gui.BuyerAnalyticsGUI buyerAnalyticsGUI;
+    
+    // v3.5.0 - Dynamic Mob Buyer System
+    private com.budlords.npc.DynamicBuyerManager dynamicBuyerManager;
 
     @Override
     public void onEnable() {
@@ -171,6 +174,9 @@ public class BudLords extends JavaPlugin {
             this.buyerDetailGUI = new com.budlords.gui.BuyerDetailGUI(this, strainManager);
             this.buyerListGUI = new com.budlords.gui.BuyerListGUI(this, buyerRegistry, buyerDetailGUI);
             this.buyerAnalyticsGUI = new com.budlords.gui.BuyerAnalyticsGUI(this, buyerRegistry, buyerRequestManager);
+            
+            // v3.5.0 - Dynamic Mob Buyer System
+            this.dynamicBuyerManager = new com.budlords.npc.DynamicBuyerManager(this, buyerRegistry);
             
             // Register commands
             registerCommands();
@@ -311,6 +317,10 @@ public class BudLords extends JavaPlugin {
             if (specialBuyerEvent != null) {
                 specialBuyerEvent.shutdown();
             }
+            // v3.5.0 shutdown
+            if (dynamicBuyerManager != null) {
+                dynamicBuyerManager.shutdown();
+            }
             getLogger().info("BudLords has been disabled.");
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "Error during shutdown", e);
@@ -408,6 +418,9 @@ public class BudLords extends JavaPlugin {
         
         // Register GUI listener for new features
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+        
+        // v3.5.0 - Dynamic Buyer System entity spawn listener
+        getServer().getPluginManager().registerEvents(new com.budlords.listeners.EntityListener(this), this);
         
         // v3.3.0 - Seed Bag listener
         getServer().getPluginManager().registerEvents(new com.budlords.listeners.SeedBagListener(this, seedBagManager), this);
@@ -606,5 +619,10 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.gui.BuyerAnalyticsGUI getBuyerAnalyticsGUI() {
         return buyerAnalyticsGUI;
+    }
+    
+    // v3.5.0 New Feature Getters
+    public com.budlords.npc.DynamicBuyerManager getDynamicBuyerManager() {
+        return dynamicBuyerManager;
     }
 }
