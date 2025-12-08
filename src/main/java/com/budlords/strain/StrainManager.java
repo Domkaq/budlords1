@@ -635,27 +635,6 @@ public class StrainManager {
             
             // ===== SECRET 666 FORMATION STRAINS =====
             
-            // BLOOD MOON - Required for Vampire Seed transformation
-            Strain bloodMoon = new Strain("blood_moon", "§c§lBlood Moon", Strain.Rarity.LEGENDARY, 95, 18, 95);
-            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VAMPIRE, 5));
-            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BLOOD_TRAIL, 4));
-            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.NIGHT_VISION, 5));
-            // Blood Moon - Crimson red appearance with blood-like effects
-            StrainVisualConfig bmVisual = new StrainVisualConfig();
-            bmVisual.setLeafMaterial(Material.RED_CONCRETE);
-            bmVisual.setBudMaterial(Material.REDSTONE_BLOCK);
-            bmVisual.setBudType(StrainVisualConfig.BudType.CRYSTAL);
-            bmVisual.setLeafColorPrimary(org.bukkit.Color.fromRGB(139, 0, 0)); // Dark red
-            bmVisual.setAmbientParticle(org.bukkit.Particle.REDSTONE);
-            bmVisual.setGlowing(true);
-            bmVisual.setGlowColor(org.bukkit.Color.RED);
-            bmVisual.setAnimationStyle(StrainVisualConfig.AnimationStyle.PULSE);
-            bmVisual.setHeightScale(1.4);
-            bloodMoon.setIconMaterial(Material.RED_DYE);
-            bloodMoon.setVisualConfig(bmVisual);
-            bloodMoon.setAdminCreated(true); // Special strain
-            registerStrain(bloodMoon);
-            
             // VAMPIRE SEED - Ultimate 666 formation reward (6-star guaranteed!)
             Strain vampireSeed = new Strain("vampire_seed", "§4§l§k||§r §4§lVAMPIRE SEED§r §4§l§k||§r", Strain.Rarity.LEGENDARY, 100, 20, 100);
             vampireSeed.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VAMPIRE, 10));
