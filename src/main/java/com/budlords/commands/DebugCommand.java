@@ -16,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -799,7 +800,7 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         Plant plant = nearbyPlants.get(0);
         // Use the recommended cure for whatever disease the plant has
         boolean cured = diseaseManager.curePlant(player, plant.getLocation(), 
-            com.budlords.diseases.PlantDisease.Cure.HEALING_SALVE);
+            com.budlords.diseases.PlantDisease.Cure.UNIVERSAL_CURE);
         if (cured) {
             sender.sendMessage("§a§l[DEBUG] §7Cured plant at " + formatLocation(plant.getLocation()));
         } else {
@@ -1300,8 +1301,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             case "give" -> {
                 Strain vampireSeed = plugin.getStrainManager().getStrain("vampire_seed");
                 if (vampireSeed == null) {
-                    sender.sendMessage("§c§l[666] Vampire Seed not found! Initializing...");
-                    plugin.getStrainManager().initializeDefaultStrains();
+                    sender.sendMessage("§c§l[666] Vampire Seed not found!");
+                    // Note: Default strains are already ensured in StrainManager constructor
                     vampireSeed = plugin.getStrainManager().getStrain("vampire_seed");
                 }
                 
@@ -1347,7 +1348,7 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 }
                 
                 Location loc = player.getLocation().add(0, 0, 2);
-                plugin.getFarmingManager().plantSeed(player, vampireSeed, loc, StarRating.SIX_STAR);
+                plugin.getFarmingManager().plantSeed(player, loc, vampireSeed.getId(), StarRating.SIX_STAR, StarRating.SIX_STAR);
                 sender.sendMessage("§4§l[666] §cVampire plant spawned!");
                 player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.5f);
             }
@@ -1641,7 +1642,10 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             PlayerStats stats = plugin.getStatsManager().getStats(player);
             if (stats != null) {
                 stats.recordSale(500);
-                stats.recordHarvest(500);
+                // Increment plants harvested multiple times for boosting
+                for (int i = 0; i < 500; i++) {
+                    stats.incrementPlantsHarvested();
+                }
                 sender.sendMessage("§a  ✓ Stats boosted");
             }
         }

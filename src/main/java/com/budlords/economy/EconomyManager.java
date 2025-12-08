@@ -131,6 +131,20 @@ public class EconomyManager {
     public boolean hasBalance(Player player, double amount) {
         return hasBalance(player.getUniqueId(), amount);
     }
+    
+    /**
+     * Deposits money into a player's account (alias for addBalance).
+     */
+    public void deposit(Player player, double amount) {
+        addBalance(player, amount);
+    }
+    
+    /**
+     * Deposits money into a player's account (alias for addBalance).
+     */
+    public void deposit(Player player, int amount) {
+        addBalance(player, (double) amount);
+    }
 
     public boolean transfer(UUID from, UUID to, double amount) {
         if (!hasBalance(from, amount)) {
