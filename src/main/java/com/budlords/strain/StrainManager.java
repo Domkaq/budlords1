@@ -633,6 +633,52 @@ public class StrainManager {
             multiverseEcho.setVisualConfig(meVisual);
             registerStrain(multiverseEcho);
             
+            // ===== SECRET 666 FORMATION STRAINS =====
+            
+            // BLOOD MOON - Required for Vampire Seed transformation
+            Strain bloodMoon = new Strain("blood_moon", "§c§lBlood Moon", Strain.Rarity.LEGENDARY, 95, 18, 95);
+            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VAMPIRE, 5));
+            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BLOOD_TRAIL, 4));
+            bloodMoon.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.NIGHT_VISION, 5));
+            // Blood Moon - Crimson red appearance with blood-like effects
+            StrainVisualConfig bmVisual = new StrainVisualConfig();
+            bmVisual.setLeafMaterial(Material.RED_CONCRETE);
+            bmVisual.setBudMaterial(Material.REDSTONE_BLOCK);
+            bmVisual.setBudType(StrainVisualConfig.BudType.CRYSTAL);
+            bmVisual.setLeafColorPrimary(org.bukkit.Color.fromRGB(139, 0, 0)); // Dark red
+            bmVisual.setAmbientParticle(org.bukkit.Particle.REDSTONE);
+            bmVisual.setGlowing(true);
+            bmVisual.setGlowColor(org.bukkit.Color.RED);
+            bmVisual.setAnimationStyle(StrainVisualConfig.AnimationStyle.PULSE);
+            bmVisual.setHeightScale(1.4);
+            bloodMoon.setIconMaterial(Material.RED_DYE);
+            bloodMoon.setVisualConfig(bmVisual);
+            bloodMoon.setAdminCreated(true); // Special strain
+            registerStrain(bloodMoon);
+            
+            // VAMPIRE SEED - Ultimate 666 formation reward (6-star guaranteed!)
+            Strain vampireSeed = new Strain("vampire_seed", "§4§l§k||§r §4§lVAMPIRE SEED§r §4§l§k||§r", Strain.Rarity.LEGENDARY, 100, 20, 100);
+            vampireSeed.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.VAMPIRE, 10));
+            vampireSeed.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.SPEED_DEMON, 10));
+            vampireSeed.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.BLOOD_TRAIL, 10));
+            vampireSeed.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.TANK_MODE, 10));
+            vampireSeed.addEffect(new com.budlords.effects.StrainEffect(com.budlords.effects.StrainEffectType.NIGHT_VISION, 10));
+            // Vampire Seed - Ultimate dark appearance with demonic effects
+            StrainVisualConfig vsVisual = new StrainVisualConfig();
+            vsVisual.setLeafMaterial(Material.CRIMSON_HYPHAE);
+            vsVisual.setBudMaterial(Material.NETHERITE_BLOCK);
+            vsVisual.setBudType(StrainVisualConfig.BudType.DEMON);
+            vsVisual.setLeafColorPrimary(org.bukkit.Color.fromRGB(75, 0, 0)); // Deep blood red
+            vsVisual.setAmbientParticle(org.bukkit.Particle.SOUL_FIRE_FLAME);
+            vsVisual.setGlowing(true);
+            vsVisual.setGlowColor(org.bukkit.Color.fromRGB(139, 0, 0));
+            vsVisual.setAnimationStyle(StrainVisualConfig.AnimationStyle.AGGRESSIVE);
+            vsVisual.setHeightScale(1.8);
+            vampireSeed.setIconMaterial(Material.WITHER_ROSE);
+            vampireSeed.setVisualConfig(vsVisual);
+            vampireSeed.setAdminCreated(true); // Ultra-special strain
+            registerStrain(vampireSeed);
+            
             saveStrains();
         }
     }

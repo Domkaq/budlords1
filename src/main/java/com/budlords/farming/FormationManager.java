@@ -194,19 +194,22 @@ public class FormationManager {
     };
     
     // ==================== SECRET 666 FORMATION (HIDDEN) ====================
-    // DEMON FORMATION - Unlocks demonic bonus for plants
+    // DEMON FORMATION - Unlocks demonic bonus for plants (HARDER VERSION)
     // Grants +1 star to center pot and plants, enables Blood Moon transformation
-    // Pattern: Inverted quotation marks / devilish shape
+    // Pattern: Extended inverted commas forming 666 shape (7 pots total - HARDER!)
+    //       P
     //     P
     //   P
     // [C] ← Center (demon pot)
     //   P
     //     P
+    //       P
+    // Requires precise placement and more resources - much harder to achieve!
     private static final int[][][] DEMON_666_FORMATIONS = {
-        {{1, 2}, {1, 1}, {-1, -1}, {-1, -2}}, // Primary 666 pattern
-        {{-1, 2}, {-1, 1}, {1, -1}, {1, -2}}, // Mirrored 666 pattern
-        {{2, 1}, {1, 1}, {-1, -1}, {-2, -1}}, // Rotated 90°
-        {{2, -1}, {1, -1}, {-1, 1}, {-2, 1}}  // Rotated 270°
+        {{1, 3}, {1, 2}, {1, 1}, {-1, -1}, {-1, -2}, {-1, -3}}, // Extended 666 pattern (harder!)
+        {{-1, 3}, {-1, 2}, {-1, 1}, {1, -1}, {1, -2}, {1, -3}}, // Mirrored extended pattern
+        {{3, 1}, {2, 1}, {1, 1}, {-1, -1}, {-2, -1}, {-3, -1}}, // Rotated 90° extended
+        {{3, -1}, {2, -1}, {1, -1}, {-1, 1}, {-2, 1}, {-3, 1}}  // Rotated 270° extended
     };
 
     public FormationManager(BudLords plugin, FarmingManager farmingManager) {
