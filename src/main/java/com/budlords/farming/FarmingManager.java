@@ -580,26 +580,13 @@ public class FarmingManager {
         if (isPotPlanting && plugin.getFormationManager() != null) {
             FormationManager formationManager = plugin.getFormationManager();
             if (formationManager.checkAndApplyDemonBonus(location, strainId)) {
-                // Upgrade pot rating by +1 star if 666 formation detected
-                StarRating upgradedRating = StarRating.fromValue(Math.min(MAX_STAR_RATING, potRating.getStars() + 1));
-                plant.setPotRating(upgradedRating);
-                
-                // Update pot in registry
-                GrowingPot pot = getPotAt(location);
-                if (pot != null) {
-                    // Create a new pot with upgraded rating
-                    String key = getLocationKey(location);
-                    GrowingPot upgradedPot = new GrowingPot(pot.getId(), upgradedRating, location, player.getUniqueId());
-                    upgradedPot.setPlantedStrainId(strainId);
-                    upgradedPot.setSeedRating(seedRating);
-                    pots.put(key, upgradedPot);
-                }
+                // Apply demon formation bonus
+                StarRating upgradedRating = applyDemonFormationBonus(plant, location, potRating, strainId, seedRating, player);
                 
                 // Visual feedback
-                location.getWorld().spawnParticle(Particle.FLAME, location.clone().add(0.5, 0.5, 0.5), 30, 0.3, 0.3, 0.3, 0.05);
-                location.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, location.clone().add(0.5, 0.5, 0.5), 20, 0.2, 0.2, 0.2, 0.03);
-                location.getWorld().playSound(location, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 1.8f);
+                spawnDemonFormationEffects(location);
                 
+                // Notify player
                 player.sendMessage("");
                 player.sendMessage("§4§l⛧ ⛧ ⛧ DEMON FORMATION DETECTED ⛧ ⛧ ⛧");
                 player.sendMessage("§c§lThe 666 formation awakens dark power!");
@@ -1208,6 +1195,57 @@ public class FarmingManager {
         }, 100L, 100L);
     }
 
+    /**
+     * Applies the demon formation bonus by upgrading the pot rating.
+     * Updates both the plant and pot registry.
+     * 
+     * @param plant The plant being affected
+     * @param location The location of the pot
+     * @param originalRating The original pot rating before bonus
+     * @param strainId The strain ID being planted
+     * @param seedRating The seed rating (can be null)
+     * @param player The player planting the seed
+     * @return The upgraded star rating
+     */
+    private StarRating applyDemonFormationBonus(Plant plant, Location location, StarRating originalRating,
+                                                  String strainId, StarRating seedRating, Player player) {
+        // Calculate upgraded rating (+1 star, max 6)
+        StarRating upgradedRating = StarRating.fromValue(Math.min(MAX_STAR_RATING, originalRating.getStars() + 1));
+        
+        // Update plant with new rating
+        plant.setPotRating(upgradedRating);
+        
+        // Update pot in registry
+        GrowingPot pot = getPotAt(location);
+        if (pot != null) {
+            String key = getLocationKey(location);
+            GrowingPot upgradedPot = new GrowingPot(pot.getId(), upgradedRating, location, player.getUniqueId());
+            upgradedPot.setPlantedStrainId(strainId);
+            upgradedPot.setSeedRating(seedRating);
+            pots.put(key, upgradedPot);
+        }
+        
+        return upgradedRating;
+    }
+    
+    /**
+     * Spawns visual effects for demon formation activation.
+     * 
+     * @param location The location to spawn effects at
+     */
+    private void spawnDemonFormationEffects(Location location) {
+        Location effectLoc = location.clone().add(0.5, 0.5, 0.5);
+        
+        // Flame particles
+        location.getWorld().spawnParticle(Particle.FLAME, effectLoc, 30, 0.3, 0.3, 0.3, 0.05);
+        
+        // Soul fire flames
+        location.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, effectLoc, 20, 0.2, 0.2, 0.2, 0.03);
+        
+        // Ominous sound
+        location.getWorld().playSound(location, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 1.8f);
+    }
+    
     public void shutdown() {
         if (growthTask != null) {
             growthTask.cancel();

@@ -424,8 +424,8 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
         java.util.List<com.budlords.npc.IndividualBuyer> allBuyers = 
             plugin.getBuyerRegistry().getBuyersSortedByRecency();
         for (com.budlords.npc.IndividualBuyer buyer : allBuyers) {
-            // Skip fixed NPCs (already shown above)
-            if (buyer.equals(marketJoe) || buyer.equals(blackMarketJoe)) continue;
+            // Skip fixed NPCs (already shown above) - use Objects.equals for null safety
+            if (java.util.Objects.equals(buyer, marketJoe) || java.util.Objects.equals(buyer, blackMarketJoe)) continue;
             if (slotIdx >= contactSlots.length) break;
             
             List<String> lore = new ArrayList<>();
