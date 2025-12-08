@@ -637,6 +637,22 @@ public class FarmingListener implements Listener {
             return;
         }
         
+        StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
+        if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
+        
+        // Check if player has Fast Harvest skill (skips minigame)
+        boolean hasFastHarvest = plugin.getSkillManager() != null && 
+            plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.FAST_HARVEST);
+        
+        if (hasFastHarvest) {
+            // Fast Harvest - skip minigame, harvest directly with scissors bonus
+            Plant harvested = farmingManager.harvestPlant(player, plantLocation, scissorsRating);
+            if (harvested != null) {
+                giveHarvestWithScissors(player, harvested, scissorsRating);
+            }
+            return;
+        }
+        
         // Check if player has an active mini-game
         if (plugin.getHarvestMinigame().hasActiveGame(player)) {
             // Register click for mini-game
@@ -647,9 +663,6 @@ public class FarmingListener implements Listener {
         // Check if mini-game is completed
         com.budlords.minigames.HarvestMinigame.MinigameResult result = 
             plugin.getHarvestMinigame().getResult(player);
-        
-        StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
-        if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
         
         if (result != null) {
             // Mini-game completed - harvest with scissors AND minigame bonuses
@@ -683,6 +696,19 @@ public class FarmingListener implements Listener {
             event.setCancelled(true);
             
             if (plant.isFullyGrown()) {
+                // Check if player has Fast Harvest skill (skips minigame)
+                boolean hasFastHarvest = plugin.getSkillManager() != null && 
+                    plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.FAST_HARVEST);
+                
+                if (hasFastHarvest) {
+                    // Fast Harvest - skip minigame, harvest directly
+                    Plant harvested = farmingManager.harvestPlant(player, clickedBlock.getLocation());
+                    if (harvested != null) {
+                        giveHarvest(player, harvested);
+                    }
+                    return;
+                }
+                
                 // Check if player has an active mini-game
                 if (plugin.getHarvestMinigame().hasActiveGame(player)) {
                     // Register click for mini-game

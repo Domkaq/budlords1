@@ -10,16 +10,20 @@ public enum Skill {
     
     // ===== FARMING TREE =====
     // Tier 1
+    FAST_HARVEST("Fast Harvest", "§a", Material.DIAMOND_HOE,
+        "Skip harvest minigame completely", SkillTree.FARMING, 1, 0, 1,
+        new SkillBonus(BonusType.SKIP_MINIGAME, 1)),
+    
     QUICK_HANDS("Quick Hands", "§a", Material.GOLDEN_HOE,
-        "Harvest 10% faster", SkillTree.FARMING, 1, 0, 1,
+        "Harvest 10% faster", SkillTree.FARMING, 1, 0, 2,
         new SkillBonus(BonusType.HARVEST_SPEED, 0.10)),
     
     GREEN_FINGERS("Green Fingers", "§a", Material.GREEN_DYE,
-        "Plants grow 5% faster", SkillTree.FARMING, 1, 0, 2,
+        "Plants grow 5% faster", SkillTree.FARMING, 1, 0, 3,
         new SkillBonus(BonusType.GROWTH_SPEED, 0.05)),
     
     WATER_EFFICIENCY("Water Efficiency", "§b", Material.WATER_BUCKET,
-        "Plants need 15% less water", SkillTree.FARMING, 1, 0, 3,
+        "Plants need 15% less water", SkillTree.FARMING, 1, 0, 4,
         new SkillBonus(BonusType.WATER_EFFICIENCY, 0.15)),
     
     // Tier 2
@@ -297,6 +301,7 @@ public enum Skill {
      * Types of skill bonuses.
      */
     public enum BonusType {
+        SKIP_MINIGAME,          // Skips harvest minigame
         HARVEST_SPEED,
         GROWTH_SPEED,
         WATER_EFFICIENCY,

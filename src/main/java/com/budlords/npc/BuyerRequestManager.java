@@ -114,14 +114,18 @@ public class BuyerRequestManager {
             activeRequests.put(request.getRequestId(), request);
             buyerRequests.computeIfAbsent(buyer.getId(), k -> new ArrayList<>()).add(request.getRequestId());
             
-            // Notify online players
+            // Only notify players who have sold to this buyer before (have relationship)
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.sendMessage("");
-                player.sendMessage("§6§l📋 NEW REQUEST!");
-                player.sendMessage("§e" + buyer.getName() + "§7: " + request.getRequestMessage());
-                player.sendMessage("§7Bonus: §a+$" + String.format("%.2f", request.getBonusPayment()));
-                player.sendMessage("§7Expires in: §e" + request.getHoursRemaining() + " hours");
-                player.sendMessage("");
+                // Check if player has purchase history with this buyer
+                if (buyer.getTotalPurchases() > 0) {
+                    player.sendMessage("");
+                    player.sendMessage("§6§l📋 NEW REQUEST!");
+                    player.sendMessage("§e" + buyer.getName() + "§7: " + request.getRequestMessage());
+                    player.sendMessage("§7Bonus: §a+$" + String.format("%.2f", request.getBonusPayment()));
+                    player.sendMessage("§7Expires in: §e" + request.getHoursRemaining() + " hours");
+                    player.sendMessage("");
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.7f, 1.5f);
+                }
             }
         }
     }

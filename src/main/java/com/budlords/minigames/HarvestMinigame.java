@@ -200,7 +200,12 @@ public class HarvestMinigame {
                 return;
             }
             
-            isHitWindow = false;
+            // Prevent double-clicking/spam clicking
+            if (isHitWindow) {
+                isHitWindow = false; // Close window immediately to prevent spam
+            } else {
+                return; // Already processed this click
+            }
             
             long clickTime = System.currentTimeMillis() - hitWindowStart;
             
