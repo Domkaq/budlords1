@@ -27,6 +27,10 @@ public class BuyerRegistry {
     private final File buyersFile;
     private FileConfiguration buyersConfig;
     
+    // Fixed UUIDs for permanent NPCs to ensure they persist across restarts
+    private static final UUID MARKET_JOE_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID BLACKMARKET_JOE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    
     // Name generation lists for creating diverse, realistic buyers
     private static final String[] FIRST_NAMES = {
         "Marcus", "Tony", "Jake", "Derek", "Chris", "Mike", "Steve", "Johnny",
@@ -70,21 +74,17 @@ public class BuyerRegistry {
      * These are permanent buyers that should always exist.
      */
     private void initializeFixedNPCs() {
-        // Fixed UUIDs for permanent NPCs to ensure they persist
-        UUID marketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        UUID blackMarketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000002");
-        
         // Check if Market Joe exists, if not create him
-        if (!buyers.containsKey(marketJoeId)) {
-            IndividualBuyer marketJoe = new IndividualBuyer(marketJoeId, "Market Joe", CustomerType.CASUAL_USER);
-            buyers.put(marketJoeId, marketJoe);
+        if (!buyers.containsKey(MARKET_JOE_ID)) {
+            IndividualBuyer marketJoe = new IndividualBuyer(MARKET_JOE_ID, "Market Joe", CustomerType.CASUAL_USER);
+            buyers.put(MARKET_JOE_ID, marketJoe);
             plugin.getLogger().info("Initialized Market Joe in buyer registry");
         }
         
         // Check if BlackMarket Joe exists, if not create him
-        if (!buyers.containsKey(blackMarketJoeId)) {
-            IndividualBuyer blackMarketJoe = new IndividualBuyer(blackMarketJoeId, "BlackMarket Joe", CustomerType.VIP_CLIENT);
-            buyers.put(blackMarketJoeId, blackMarketJoe);
+        if (!buyers.containsKey(BLACKMARKET_JOE_ID)) {
+            IndividualBuyer blackMarketJoe = new IndividualBuyer(BLACKMARKET_JOE_ID, "BlackMarket Joe", CustomerType.VIP_CLIENT);
+            buyers.put(BLACKMARKET_JOE_ID, blackMarketJoe);
             plugin.getLogger().info("Initialized BlackMarket Joe in buyer registry");
         }
         
@@ -96,16 +96,14 @@ public class BuyerRegistry {
      * Gets Market Joe buyer instance (fixed NPC).
      */
     public IndividualBuyer getMarketJoe() {
-        UUID marketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        return buyers.get(marketJoeId);
+        return buyers.get(MARKET_JOE_ID);
     }
     
     /**
      * Gets BlackMarket Joe buyer instance (fixed NPC).
      */
     public IndividualBuyer getBlackMarketJoe() {
-        UUID blackMarketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000002");
-        return buyers.get(blackMarketJoeId);
+        return buyers.get(BLACKMARKET_JOE_ID);
     }
     
     /**

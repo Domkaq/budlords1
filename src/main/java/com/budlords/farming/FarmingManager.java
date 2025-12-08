@@ -34,6 +34,9 @@ public class FarmingManager {
     private BukkitTask particleTask;
     private BukkitTask careDecayTask;
     private BukkitTask lampEffectTask;
+    
+    // Maximum star rating for pots and plants (including demon formation bonus)
+    private static final int MAX_STAR_RATING = 6;
 
     public FarmingManager(BudLords plugin, DataManager dataManager, StrainManager strainManager) {
         this.plugin = plugin;
@@ -578,7 +581,7 @@ public class FarmingManager {
             FormationManager formationManager = plugin.getFormationManager();
             if (formationManager.checkAndApplyDemonBonus(location, strainId)) {
                 // Upgrade pot rating by +1 star if 666 formation detected
-                StarRating upgradedRating = StarRating.fromValue(Math.min(6, potRating.getStars() + 1));
+                StarRating upgradedRating = StarRating.fromValue(Math.min(MAX_STAR_RATING, potRating.getStars() + 1));
                 plant.setPotRating(upgradedRating);
                 
                 // Update pot in registry
