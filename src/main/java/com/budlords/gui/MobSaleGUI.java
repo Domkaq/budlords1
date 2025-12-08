@@ -192,16 +192,54 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         double successChance = calculateSuccessChance(player, session);
         String chanceColor = getSuccessChanceColor(successChance);
         
-        // Price display
-        inv.setItem(13, createItem(Material.GOLD_INGOT, 
-            "§e§lTotal Value",
-            Arrays.asList(
-                "",
-                "§7Items: §e" + countItems(session),
-                "§7Total: §a" + economyManager.formatMoney(totalValue),
-                "",
-                getPriceBreakdown(session)
-            )));
+        // Price display with detailed bonuses
+        List<String> priceInfo = new ArrayList<>();
+        priceInfo.add("");
+        priceInfo.add("§7Items: §e" + countItems(session));
+        priceInfo.add("§7Base Total: §e" + economyManager.formatMoney(calculateBaseTotalValue(session)));
+        priceInfo.add("");
+        
+        // Show active bonuses
+        UUID playerId = player.getUniqueId();
+        boolean hasBonuses = false;
+        
+        if (plugin.getSkillManager() != null) {
+            double skillBonus = plugin.getSkillManager().getTotalBonus(playerId, 
+                com.budlords.skills.Skill.BonusType.PRICE_BONUS);
+            if (skillBonus > 0) {
+                priceInfo.add("§a✦ Skills: §e+" + String.format("%.0f%%", skillBonus * 100));
+                hasBonuses = true;
+            }
+        }
+        
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null && stats.getPrestigeLevel() > 0) {
+                double prestigeBonus = (plugin.getPrestigeManager().getEarningsMultiplier(stats.getPrestigeLevel()) - 1.0);
+                priceInfo.add("§d✦ Prestige: §e+" + String.format("%.0f%%", prestigeBonus * 100));
+                hasBonuses = true;
+            }
+        }
+        
+        if (plugin.getReputationManager() != null) {
+            int rep = plugin.getReputationManager().getReputation(playerId, session.buyerType.name());
+            double repBonus = (plugin.getReputationManager().getReputationMultiplier(rep) - 1.0);
+            if (repBonus != 0) {
+                String repColor = repBonus > 0 ? "§a" : "§c";
+                priceInfo.add(repColor + "✦ Reputation: §e" + (repBonus > 0 ? "+" : "") + String.format("%.0f%%", repBonus * 100));
+                hasBonuses = true;
+            }
+        }
+        
+        if (hasBonuses) {
+            priceInfo.add("");
+        }
+        
+        priceInfo.add("§7Final Total: §a§l" + economyManager.formatMoney(totalValue));
+        priceInfo.add("");
+        priceInfo.add(getPriceBreakdown(session));
+        
+        inv.setItem(13, createItem(Material.GOLD_INGOT, "§e§lTotal Value", priceInfo));
 
         // Confirm button
         boolean hasItems = totalValue > 0;
@@ -259,6 +297,17 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         };
     }
 
+    private double calculateBaseTotalValue(SaleSession session) {
+        double total = 0;
+        double multiplier = getPriceMultiplier(session.buyerType);
+        
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            total += calculateItemPrice(item, session.buyerType) * item.getAmount();
+        }
+        return total;
+    }
+    
     private double calculateTotalValue(SaleSession session) {
         double total = 0;
         double multiplier = getPriceMultiplier(session.buyerType);
