@@ -209,11 +209,11 @@ public class FarmingManager {
     
     /**
      * Calculates cooperative farming bonus based on nearby online players.
-     * HARDENED: Radius reduced from 20 to 15 blocks, max bonus reduced from 50% to 20%
+     * More players nearby = faster growth and better quality!
      * @param location The plant location
-     * @return Multiplier for growth speed (1.0 to 1.2)
+     * @return Multiplier for growth speed (1.0 to 1.5)
      */
-    private static final int COOPERATIVE_FARMING_RADIUS = 15; // blocks (reduced from 20)
+    private static final int COOPERATIVE_FARMING_RADIUS = 20; // blocks
     
     private double getCooperativeFarmingBonus(Location location) {
         if (location.getWorld() == null) return 1.0;
@@ -226,14 +226,14 @@ public class FarmingManager {
             }
         }
         
-        // HARDENED: Bonus caps at 4 players for max 20% boost (was 50%)
-        // 1 player: +3%, 2 players: +7%, 3 players: +12%, 4+ players: +20%
+        // Bonus caps at 4 players for max 50% boost
+        // 1 player: +10%, 2 players: +20%, 3 players: +35%, 4+ players: +50%
         return switch (nearbyPlayers) {
             case 0 -> 1.0;
-            case 1 -> 1.03;
-            case 2 -> 1.07;
-            case 3 -> 1.12;
-            default -> 1.20;
+            case 1 -> 1.10;
+            case 2 -> 1.20;
+            case 3 -> 1.35;
+            default -> 1.50;
         };
     }
 
@@ -247,11 +247,10 @@ public class FarmingManager {
         }, intervalTicks, intervalTicks);
     }
     
-    // Decay rate constants for plant care system - HARDENED DIFFICULTY
+    // Decay rate constants for plant care system
     // These values determine how quickly water and nutrients deplete per minute
-    // INCREASED for much harder gameplay - plants require constant attention
-    private static final double WATER_DECAY_RATE = 0.05;    // 5% per minute (was 2%)
-    private static final double NUTRIENT_DECAY_RATE = 0.03; // 3% per minute (was 1%)
+    private static final double WATER_DECAY_RATE = 0.02;    // 2% per minute
+    private static final double NUTRIENT_DECAY_RATE = 0.01; // 1% per minute
     private static final long DECAY_INTERVAL_TICKS = 1200L; // 1 minute in ticks
     
     private void startCareDecayTask() {
@@ -273,65 +272,60 @@ public class FarmingManager {
             return;
         }
 
-        // Calculate quality modifiers - HARDENED DIFFICULTY
+        // Calculate quality modifiers
         int qualityBonus = 0;
 
-        // Light level bonus (enhanced by lamp rating) - STRICTER REQUIREMENTS
+        // Light level bonus (enhanced by lamp rating)
         int lightLevel = loc.getBlock().getLightLevel();
         if (plant.getLampRating() != null) {
             lightLevel = Math.min(15, lightLevel + plant.getLampRating().getStars());
         }
         
-        // HARDENED: Must have excellent light (13+) for bonus, harsh penalty for poor light
-        if (lightLevel >= 13) {
-            qualityBonus += 3; // Reduced from 5
-        } else if (lightLevel < 10) {
-            qualityBonus -= 8; // Increased penalty from -5
+        if (lightLevel >= 12) {
+            qualityBonus += 5;
+        } else if (lightLevel < 8) {
+            qualityBonus -= 5;
         }
 
-        // Water and nutrient bonus (pot-based system) - MUCH STRICTER
+        // Water and nutrient bonus (pot-based system)
         if (plant.hasPot()) {
-            // HARDENED: Need 80%+ water for bonus, harsh penalty below 40%
-            if (plant.getWaterLevel() >= 0.8) {
-                qualityBonus += 3; // Reduced from 5
-            } else if (plant.getWaterLevel() < 0.4) {
-                qualityBonus -= 8; // Increased penalty from -5
+            if (plant.getWaterLevel() >= 0.7) {
+                qualityBonus += 5;
+            } else if (plant.getWaterLevel() < 0.3) {
+                qualityBonus -= 5;
             }
             
-            // HARDENED: Need 80%+ nutrients for bonus, penalty below 50%
-            if (plant.getNutrientLevel() >= 0.8) {
-                qualityBonus += 3; // Reduced from 5
-            } else if (plant.getNutrientLevel() < 0.5) {
-                qualityBonus -= 5; // New penalty
+            if (plant.getNutrientLevel() >= 0.7) {
+                qualityBonus += 5;
             }
             
-            // Pot rating bonus - reduced effectiveness (half of star rating, rounded up)
+            // Pot rating bonus
             if (plant.getPotRating() != null) {
-                qualityBonus += (int) Math.ceil(plant.getPotRating().getStars() / 2.0);
+                qualityBonus += plant.getPotRating().getStars();
             }
             
-            // Fertilizer rating bonus - reduced effectiveness
+            // Fertilizer rating bonus
             if (plant.getFertilizerRating() != null) {
-                qualityBonus += plant.getFertilizerRating().getStars(); // Was *2, now *1
+                qualityBonus += plant.getFertilizerRating().getStars() * 2;
             }
         } else {
-            // Legacy farmland support - also stricter
+            // Legacy farmland support
             Block below = loc.getBlock().getRelative(BlockFace.DOWN);
             if (below.getType() == Material.FARMLAND) {
                 if (below.getBlockData() instanceof Farmland farmland) {
                     if (farmland.getMoisture() == farmland.getMaximumMoisture()) {
-                        qualityBonus += 3; // Reduced from 5
+                        qualityBonus += 5;
                     }
                 }
             }
         }
 
-        // Wall bonus (enclosed growing) - reduced benefit
+        // Wall bonus (enclosed growing)
         int wallCount = countSurroundingWalls(loc);
         if (wallCount >= 3) {
-            qualityBonus += 6; // Reduced from 10
+            qualityBonus += 10;
         } else if (wallCount >= 2) {
-            qualityBonus += 3; // Reduced from 5
+            qualityBonus += 5;
         }
         
         // Apply prestige quality bonus
