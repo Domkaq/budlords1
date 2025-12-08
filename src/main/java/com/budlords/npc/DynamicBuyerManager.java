@@ -5,6 +5,7 @@ import com.budlords.economy.CustomerType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -196,7 +197,8 @@ public class DynamicBuyerManager {
     }
     
     /**
-     * Updates the name tag for a buyer entity.
+     * Updates the name tag for a buyer entity with enhanced visual indicators.
+     * Shows: name, demand status, reputation level, and purchase satisfaction.
      * Uses deprecated setCustomName() for Bukkit/Spigot compatibility.
      * Paper servers can replace with Adventure API's customName(Component) method.
      */
@@ -204,20 +206,59 @@ public class DynamicBuyerManager {
     private void updateNameTag(Entity entity, IndividualBuyer buyer) {
         if (!(entity instanceof LivingEntity livingEntity)) return;
         
-        String displayName = "§e" + buyer.getName();
+        StringBuilder displayName = new StringBuilder();
         
-        // Add reputation indicator if they have purchase history
-        if (buyer.getTotalPurchases() > 0) {
-            if (buyer.getTotalPurchases() >= 10) {
-                displayName = "§6⭐ " + displayName; // Regular customer
-            }
-            if (buyer.getTotalPurchases() >= 50) {
-                displayName = "§5⭐⭐ " + displayName; // VIP customer
+        // Add demand indicator if buyer wants to buy
+        if (hasDemand(entity)) {
+            displayName.append("§a§l💰 "); // Money bag emoji = wants to buy
+        }
+        
+        // Add reputation level stars
+        int totalPurchases = buyer.getTotalPurchases();
+        if (totalPurchases >= 50) {
+            displayName.append("§5⭐⭐⭐ "); // VIP customer (3 stars)
+        } else if (totalPurchases >= 25) {
+            displayName.append("§d⭐⭐ "); // Premium customer (2 stars)
+        } else if (totalPurchases >= 10) {
+            displayName.append("§6⭐ "); // Regular customer (1 star)
+        }
+        
+        // Add buyer name with personality color
+        String nameColor = getPersonalityColor(buyer.getPersonality());
+        displayName.append(nameColor).append(buyer.getName());
+        
+        // Add mood indicator based on recent interactions
+        String mood = buyer.getCurrentMood();
+        if (mood != null) {
+            switch (mood) {
+                case "happy" -> displayName.append(" §a😊"); // Happy face
+                case "satisfied" -> displayName.append(" §e✓"); // Check mark
+                case "neutral" -> { } // No indicator
+                case "disappointed" -> displayName.append(" §7😐"); // Neutral face
+                case "angry" -> displayName.append(" §c😠"); // Angry face
             }
         }
         
-        livingEntity.setCustomName(displayName);
+        livingEntity.setCustomName(displayName.toString());
         livingEntity.setCustomNameVisible(true);
+    }
+    
+    /**
+     * Gets the color code for a buyer's personality type.
+     */
+    private String getPersonalityColor(CustomerType personality) {
+        return switch (personality) {
+            case CONNOISSEUR -> "§b"; // Aqua - refined
+            case VIP_CLIENT -> "§d"; // Light purple - exclusive
+            case BULK_BUYER -> "§6"; // Gold - business
+            case MYSTERY_BUYER -> "§5"; // Dark purple - mysterious
+            case COLLECTOR -> "§3"; // Dark aqua - rare
+            case MEDICAL_USER -> "§a"; // Green - health
+            case PARTY_ANIMAL -> "§c"; // Red - energetic
+            case RUSH_CUSTOMER -> "§e"; // Yellow - urgent
+            case SKEPTIC -> "§7"; // Gray - cautious
+            default -> "§f"; // White - default
+        };
     }
     
     /**
@@ -325,36 +366,135 @@ public class DynamicBuyerManager {
     }
     
     /**
-     * Shows visual demand indicator above an entity.
+     * Shows enhanced visual demand indicator above an entity.
+     * Multiple animations and particles to make it very noticeable.
      */
     private void showDemandIndicator(Entity entity) {
         if (!(entity instanceof LivingEntity livingEntity)) return;
         
-        Location loc = livingEntity.getEyeLocation().add(0, 0.5, 0);
+        Location loc = livingEntity.getEyeLocation().add(0, 0.8, 0);
+        World world = entity.getWorld();
         
-        // Show exclamation mark using particles
-        // We'll use VILLAGER_HAPPY particles in an exclamation pattern
-        entity.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, 
-            loc, 3, 0.1, 0.1, 0.1, 0);
+        // Animated circle of happy particles (buyer wants to buy!)
+        double time = System.currentTimeMillis() / 1000.0;
+        double radius = 0.5;
+        for (int i = 0; i < 8; i++) {
+            double angle = (time + i * 0.785) % (Math.PI * 2); // 8 particles rotating
+            double x = Math.cos(angle) * radius;
+            double z = Math.sin(angle) * radius;
+            world.spawnParticle(Particle.VILLAGER_HAPPY, 
+                loc.clone().add(x, 0, z), 1, 0, 0, 0, 0);
+        }
+        
+        // Money/emerald sparkles above head
+        world.spawnParticle(Particle.END_ROD, 
+            loc.clone().add(0, 0.3, 0), 2, 0.1, 0.1, 0.1, 0.02);
             
-        // Also show some sparkle particles to make it more noticeable
-        entity.getWorld().spawnParticle(Particle.END_ROD, 
-            loc.clone().add(0, 0.3, 0), 1, 0.05, 0.05, 0.05, 0);
+        // Green sparkles (ready to buy)
+        world.spawnParticle(Particle.COMPOSTER, 
+            loc, 1, 0.15, 0.15, 0.15, 0);
     }
     
     /**
      * Called when a player successfully sells to a buyer entity.
-     * Updates demand status.
+     * Updates demand status, mood, and shows visual feedback.
      */
-    public void onSuccessfulSale(Entity entity) {
+    public void onSuccessfulSale(Entity entity, double saleValue, int qualityRating) {
         // After a sale, remove demand temporarily
         updateDemand(entity, false);
         
-        // Update buyer's last seen timestamp
+        // Update buyer's last seen timestamp and mood
         IndividualBuyer buyer = getBuyer(entity);
         if (buyer != null) {
             buyer.updateLastSeen();
+            
+            // Set mood based on sale quality
+            if (qualityRating >= 5) {
+                buyer.setCurrentMood("happy"); // 5-star = very happy
+            } else if (qualityRating >= 3) {
+                buyer.setCurrentMood("satisfied"); // 3-4 star = satisfied
+            } else {
+                buyer.setCurrentMood("neutral"); // 1-2 star = neutral
+            }
+            
+            // Update name tag to reflect new mood
+            updateNameTag(entity, buyer);
+            
             buyerRegistry.saveBuyers();
+            
+            // Show visual feedback for successful purchase
+            showPurchaseFeedback(entity, qualityRating);
+        }
+    }
+    
+    /**
+     * Legacy method for backward compatibility.
+     */
+    public void onSuccessfulSale(Entity entity) {
+        onSuccessfulSale(entity, 0, 3); // Default to satisfied
+    }
+    
+    /**
+     * Shows visual feedback after a purchase based on quality.
+     */
+    private void showPurchaseFeedback(Entity entity, int qualityRating) {
+        if (!(entity instanceof LivingEntity)) return;
+        
+        Location loc = entity.getLocation().add(0, 2, 0);
+        World world = entity.getWorld();
+        
+        if (qualityRating >= 5) {
+            // Excellent quality - hearts and sparkles
+            world.spawnParticle(Particle.HEART, loc, 5, 0.5, 0.3, 0.5, 0);
+            world.spawnParticle(Particle.VILLAGER_HAPPY, loc, 10, 0.5, 0.5, 0.5, 0);
+            world.spawnParticle(Particle.END_ROD, loc, 8, 0.3, 0.3, 0.3, 0.05);
+        } else if (qualityRating >= 3) {
+            // Good quality - happy particles
+            world.spawnParticle(Particle.VILLAGER_HAPPY, loc, 6, 0.4, 0.4, 0.4, 0);
+            world.spawnParticle(Particle.COMPOSTER, loc, 3, 0.3, 0.3, 0.3, 0);
+        } else {
+            // Low quality - neutral particles
+            world.spawnParticle(Particle.SMOKE_NORMAL, loc, 3, 0.2, 0.2, 0.2, 0.01);
+        }
+    }
+    
+    /**
+     * Updates buyer's reputation status and shows visual indicator.
+     */
+    public void updateReputationStatus(Entity entity, boolean increased) {
+        IndividualBuyer buyer = getBuyer(entity);
+        if (buyer == null) return;
+        
+        // Update name tag immediately
+        updateNameTag(entity, buyer);
+        
+        // Show reputation change particles
+        showReputationChangeParticles(entity, increased);
+    }
+    
+    /**
+     * Shows particles indicating reputation change.
+     */
+    private void showReputationChangeParticles(Entity entity, boolean increased) {
+        if (!(entity instanceof LivingEntity)) return;
+        
+        Location loc = entity.getLocation().add(0, 2.5, 0);
+        World world = entity.getWorld();
+        
+        if (increased) {
+            // Reputation increased - green upward particles
+            for (int i = 0; i < 5; i++) {
+                world.spawnParticle(Particle.COMPOSTER, 
+                    loc.clone().add(0, i * 0.2, 0), 1, 0.1, 0, 0.1, 0);
+            }
+            world.spawnParticle(Particle.VILLAGER_HAPPY, loc, 3, 0.2, 0.2, 0.2, 0);
+        } else {
+            // Reputation decreased - red downward particles
+            for (int i = 0; i < 5; i++) {
+                world.spawnParticle(Particle.SMOKE_NORMAL, 
+                    loc.clone().add(0, -i * 0.2, 0), 1, 0.1, 0, 0.1, 0);
+            }
+            world.spawnParticle(Particle.VILLAGER_ANGRY, loc, 3, 0.2, 0.2, 0.2, 0);
         }
     }
     
