@@ -374,34 +374,72 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 "§8━━━━━━━━━━━━━━━━━━━━━━"
             )));
 
-        // Contact cards for each buyer type
+        // Contact cards - Show fixed NPCs from BuyerRegistry
         int[] contactSlots = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24};
         int slotIdx = 0;
         
-        for (NPCManager.NPCType type : NPCManager.NPCType.values()) {
-            if (type == NPCManager.NPCType.NONE) continue;
-            if (slotIdx >= contactSlots.length) break;
-
-            int rep = repManager != null ? repManager.getReputation(player.getUniqueId(), type.name()) : 0;
-            String repDisplay = repManager != null ? repManager.getReputationDisplay(rep) : "§7Unknown";
-            String repBonus = repManager != null ? repManager.getReputationBonusText(rep) : "§7N/A";
-
-            Material icon = getBuyerIcon(type);
-            String displayName = getBuyerDisplayName(type);
-            String colorCode = getBuyerColor(type);
-
+        // Get Market Joe and BlackMarket Joe from unified BuyerRegistry
+        com.budlords.npc.IndividualBuyer marketJoe = plugin.getBuyerRegistry().getMarketJoe();
+        com.budlords.npc.IndividualBuyer blackMarketJoe = plugin.getBuyerRegistry().getBlackMarketJoe();
+        
+        // Show Market Joe
+        if (marketJoe != null && slotIdx < contactSlots.length) {
             List<String> lore = new ArrayList<>();
             lore.add("§8━━━━━━━━━━━━━━━━");
             lore.add("");
-            lore.add("§7Status: " + repDisplay);
-            lore.add("§7Rep: §f" + rep + " §8| " + repBonus);
+            lore.add("§7Status: " + marketJoe.getRelationshipSummary());
+            lore.add("§7Purchases: §f" + marketJoe.getTotalPurchases());
+            lore.add("§7Total Spent: §a$" + String.format("%.2f", marketJoe.getTotalMoneySpent()));
             lore.add("");
-            lore.add("§8" + getBuyerDescription(type).substring(2));
+            lore.add("§8Your friendly neighborhood dealer");
+            lore.add("§8Buys at standard market prices");
+            lore.add("");
+            lore.add("§e▶ Tap to view full profile");
+            lore.add("§8ID: contact_market_joe");
+
+            inv.setItem(contactSlots[slotIdx], createItem(Material.EMERALD, "§a§lMarket Joe", lore));
+            slotIdx++;
+        }
+        
+        // Show BlackMarket Joe
+        if (blackMarketJoe != null && slotIdx < contactSlots.length) {
+            List<String> lore = new ArrayList<>();
+            lore.add("§8━━━━━━━━━━━━━━━━");
+            lore.add("");
+            lore.add("§7Status: " + blackMarketJoe.getRelationshipSummary());
+            lore.add("§7Purchases: §f" + blackMarketJoe.getTotalPurchases());
+            lore.add("§7Total Spent: §a$" + String.format("%.2f", blackMarketJoe.getTotalMoneySpent()));
+            lore.add("");
+            lore.add("§8Deals in premium product only");
+            lore.add("§8Pays +50% for rare goods");
+            lore.add("");
+            lore.add("§e▶ Tap to view full profile");
+            lore.add("§8ID: contact_blackmarket_joe");
+
+            inv.setItem(contactSlots[slotIdx], createItem(Material.NETHER_STAR, "§5§lBlackMarket Joe", lore));
+            slotIdx++;
+        }
+        
+        // Show dynamic buyers (up to remaining slots)
+        java.util.List<com.budlords.npc.IndividualBuyer> allBuyers = 
+            plugin.getBuyerRegistry().getBuyersSortedByRecency();
+        for (com.budlords.npc.IndividualBuyer buyer : allBuyers) {
+            // Skip fixed NPCs (already shown above)
+            if (buyer.equals(marketJoe) || buyer.equals(blackMarketJoe)) continue;
+            if (slotIdx >= contactSlots.length) break;
+            
+            List<String> lore = new ArrayList<>();
+            lore.add("§8━━━━━━━━━━━━━━━━");
+            lore.add("");
+            lore.add("§7Status: " + buyer.getRelationshipSummary());
+            lore.add("§7Personality: " + buyer.getPersonality().getDisplayName());
+            lore.add("§7Purchases: §f" + buyer.getTotalPurchases());
             lore.add("");
             lore.add("§e▶ Tap to view profile");
-            lore.add("§8ID: contact_" + type.name());
-
-            inv.setItem(contactSlots[slotIdx], createItem(icon, colorCode + displayName, lore));
+            lore.add("§8ID: contact_buyer_" + buyer.getId());
+            
+            inv.setItem(contactSlots[slotIdx], createItem(buyer.getHeadMaterial(), 
+                buyer.getPersonality().getColorCode() + buyer.getName(), lore));
             slotIdx++;
         }
 

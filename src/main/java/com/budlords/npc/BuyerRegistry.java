@@ -58,8 +58,54 @@ public class BuyerRegistry {
         this.buyersFile = new File(plugin.getDataFolder(), "buyers.yml");
         loadBuyers();
         
+        // Initialize fixed NPCs if they don't exist
+        initializeFixedNPCs();
+        
         // Don't generate fake buyers - only real dynamic buyers (villagers) and fixed NPCs
-        plugin.getLogger().info("Buyer registry initialized with " + buyers.size() + " existing buyers");
+        plugin.getLogger().info("Buyer registry initialized with " + buyers.size() + " buyers (including fixed NPCs)");
+    }
+    
+    /**
+     * Initializes fixed NPCs (Market Joe, BlackMarket Joe) in the registry.
+     * These are permanent buyers that should always exist.
+     */
+    private void initializeFixedNPCs() {
+        // Fixed UUIDs for permanent NPCs to ensure they persist
+        UUID marketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID blackMarketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        
+        // Check if Market Joe exists, if not create him
+        if (!buyers.containsKey(marketJoeId)) {
+            IndividualBuyer marketJoe = new IndividualBuyer(marketJoeId, "Market Joe", CustomerType.CASUAL_USER);
+            buyers.put(marketJoeId, marketJoe);
+            plugin.getLogger().info("Initialized Market Joe in buyer registry");
+        }
+        
+        // Check if BlackMarket Joe exists, if not create him
+        if (!buyers.containsKey(blackMarketJoeId)) {
+            IndividualBuyer blackMarketJoe = new IndividualBuyer(blackMarketJoeId, "BlackMarket Joe", CustomerType.VIP_CLIENT);
+            buyers.put(blackMarketJoeId, blackMarketJoe);
+            plugin.getLogger().info("Initialized BlackMarket Joe in buyer registry");
+        }
+        
+        // Save after initialization
+        saveBuyers();
+    }
+    
+    /**
+     * Gets Market Joe buyer instance (fixed NPC).
+     */
+    public IndividualBuyer getMarketJoe() {
+        UUID marketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return buyers.get(marketJoeId);
+    }
+    
+    /**
+     * Gets BlackMarket Joe buyer instance (fixed NPC).
+     */
+    public IndividualBuyer getBlackMarketJoe() {
+        UUID blackMarketJoeId = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        return buyers.get(blackMarketJoeId);
     }
     
     /**

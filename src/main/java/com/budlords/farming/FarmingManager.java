@@ -572,6 +572,39 @@ public class FarmingManager {
         }
         
         plants.put(plant.getLocationString(), plant);
+        
+        // Check for 666 Demon Formation and apply bonus if detected
+        if (isPotPlanting && plugin.getFormationManager() != null) {
+            FormationManager formationManager = plugin.getFormationManager();
+            if (formationManager.checkAndApplyDemonBonus(location, strainId)) {
+                // Upgrade pot rating by +1 star if 666 formation detected
+                StarRating upgradedRating = StarRating.fromValue(Math.min(6, potRating.getStars() + 1));
+                plant.setPotRating(upgradedRating);
+                
+                // Update pot in registry
+                GrowingPot pot = getPotAt(location);
+                if (pot != null) {
+                    // Create a new pot with upgraded rating
+                    String key = getLocationKey(location);
+                    GrowingPot upgradedPot = new GrowingPot(pot.getId(), upgradedRating, location, player.getUniqueId());
+                    upgradedPot.setPlantedStrainId(strainId);
+                    upgradedPot.setSeedRating(seedRating);
+                    pots.put(key, upgradedPot);
+                }
+                
+                // Visual feedback
+                location.getWorld().spawnParticle(Particle.FLAME, location.clone().add(0.5, 0.5, 0.5), 30, 0.3, 0.3, 0.3, 0.05);
+                location.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, location.clone().add(0.5, 0.5, 0.5), 20, 0.2, 0.2, 0.2, 0.03);
+                location.getWorld().playSound(location, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 1.8f);
+                
+                player.sendMessage("");
+                player.sendMessage("§4§l⛧ ⛧ ⛧ DEMON FORMATION DETECTED ⛧ ⛧ ⛧");
+                player.sendMessage("§c§lThe 666 formation awakens dark power!");
+                player.sendMessage("§7Your pot has been upgraded to " + upgradedRating.getDisplay() + "§7!");
+                player.sendMessage("§4§l⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧ ⛧");
+                player.sendMessage("");
+            }
+        }
 
         // Set initial visual - only set WHEAT block if 3D visualization is disabled
         PlantVisualizationManager vizManager = plugin.getPlantVisualizationManager();

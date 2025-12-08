@@ -102,6 +102,7 @@ public class BudLordsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§7  /budlords guide selling §8- §fHow to sell products");
         sender.sendMessage("§7  /budlords guide quality §8- §fStar quality system");
         sender.sendMessage("§7  /budlords guide crossbreed §8- §fHow to crossbreed");
+        sender.sendMessage("§7  /budlords guide formations §8- §fPlant formations");
         sender.sendMessage("§8§m                                          ");
     }
     
@@ -112,6 +113,7 @@ public class BudLordsCommand implements CommandExecutor, TabCompleter {
             case "selling", "sell", "trade" -> showSellingGuide(sender);
             case "quality", "star", "stars" -> showQualityGuide(sender);
             case "crossbreed", "breed" -> showCrossbreedGuide(sender);
+            case "formations", "formation", "666" -> showFormationsGuide(sender);
             default -> showGuideMenu(sender);
         }
     }
@@ -231,6 +233,42 @@ public class BudLordsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§7  - Legendary parents have bonus mutation chance");
         sender.sendMessage("§8§m                                          ");
     }
+    
+    private void showFormationsGuide(CommandSender sender) {
+        sender.sendMessage("§8§m                                          ");
+        sender.sendMessage("§5§l  Plant Formation Bonuses");
+        sender.sendMessage("");
+        sender.sendMessage("§7  When you plant §asame-strain plants §7in");
+        sender.sendMessage("§7  specific patterns, they gain §eformation bonuses§7!");
+        sender.sendMessage("");
+        sender.sendMessage("§e  Formation Tiers:");
+        sender.sendMessage("§7  §7Basic (0 XP) §8- Line, Corner, L-Shape");
+        sender.sendMessage("§e  §eMedium (500 XP) §8- T-Shape, Cross, Square");
+        sender.sendMessage("§b  §bAdvanced (1500 XP) §8- Diamond, Star, Spiral");
+        sender.sendMessage("§d  §dMaster (3000 XP) §8- Pentagon, Hexagon");
+        sender.sendMessage("§6  §6Legendary (5000 XP) §8- Yin-Yang, Infinity");
+        sender.sendMessage("§c  §cMythic (10000 XP) §8- Dragon, Phoenix");
+        sender.sendMessage("");
+        sender.sendMessage("§4§l  SECRET: 666 Demon Formation");
+        sender.sendMessage("§7  §7Plant §c6 pots §7in the §4666 pattern§7:");
+        sender.sendMessage("§7    §c    P");
+        sender.sendMessage("§7    §c  P");
+        sender.sendMessage("§7    §cP");
+        sender.sendMessage("§7  §f[C] §8← §7Center pot");
+        sender.sendMessage("§7    §cP");
+        sender.sendMessage("§7    §c  P");
+        sender.sendMessage("§7    §c    P");
+        sender.sendMessage("");
+        sender.sendMessage("§4  Effect: §7Center pot upgraded §a+1 star§7!");
+        sender.sendMessage("§7  §7Pattern must be exact same strain");
+        sender.sendMessage("§7  §7No farming XP required - always available!");
+        sender.sendMessage("");
+        sender.sendMessage("§e  Tips:");
+        sender.sendMessage("§7  - Formations grant §a+star bonuses §7on harvest");
+        sender.sendMessage("§7  - Higher XP = more formations unlocked");
+        sender.sendMessage("§7  - Special effects trigger randomly!");
+        sender.sendMessage("§8§m                                          ");
+    }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -252,7 +290,7 @@ public class BudLordsCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("guide")) {
             String input = args[1].toLowerCase();
-            List<String> guides = Arrays.asList("growing", "joint", "selling", "quality", "crossbreed");
+            List<String> guides = Arrays.asList("growing", "joint", "selling", "quality", "crossbreed", "formations");
             List<String> filtered = new ArrayList<>();
             for (String guide : guides) {
                 if (guide.startsWith(input)) filtered.add(guide);
