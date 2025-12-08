@@ -9,21 +9,29 @@ import org.bukkit.Material;
 public enum Skill {
     
     // ===== FARMING TREE =====
-    // Tier 1
-    FAST_HARVEST("Fast Harvest", "§a", Material.DIAMOND_HOE,
-        "Skip harvest minigame completely", SkillTree.FARMING, 1, 0, 1,
+    // Tier 1 - Harvest Speed Progression
+    QUICK_HARVEST("Quick Harvest", "§a", Material.GOLDEN_HOE,
+        "20% faster harvest (20% fewer minigame rounds)", SkillTree.FARMING, 1, 0, 1,
+        new SkillBonus(BonusType.MINIGAME_SPEED, 0.20)),
+    
+    RAPID_HARVEST("Rapid Harvest", "§a", Material.IRON_HOE,
+        "55% faster harvest (55% fewer minigame rounds)", SkillTree.FARMING, 1, 0, 2,
+        new SkillBonus(BonusType.MINIGAME_SPEED, 0.55)),
+    
+    INSTANT_HARVEST("Instant Harvest", "§6", Material.DIAMOND_HOE,
+        "Skip harvest minigame completely", SkillTree.FARMING, 1, 0, 3,
         new SkillBonus(BonusType.SKIP_MINIGAME, 1)),
     
-    QUICK_HANDS("Quick Hands", "§a", Material.GOLDEN_HOE,
-        "Harvest 10% faster", SkillTree.FARMING, 1, 0, 2,
-        new SkillBonus(BonusType.HARVEST_SPEED, 0.10)),
+    HARVEST_BONUS("Harvest Bonus", "§e", Material.GOLD_INGOT,
+        "+5% sale price from all harvests", SkillTree.FARMING, 1, 0, 4,
+        new SkillBonus(BonusType.PRICE_BONUS, 0.05)),
     
     GREEN_FINGERS("Green Fingers", "§a", Material.GREEN_DYE,
-        "Plants grow 5% faster", SkillTree.FARMING, 1, 0, 3,
+        "Plants grow 5% faster", SkillTree.FARMING, 1, 0, 5,
         new SkillBonus(BonusType.GROWTH_SPEED, 0.05)),
     
     WATER_EFFICIENCY("Water Efficiency", "§b", Material.WATER_BUCKET,
-        "Plants need 15% less water", SkillTree.FARMING, 1, 0, 4,
+        "Plants need 15% less water", SkillTree.FARMING, 1, 0, 6,
         new SkillBonus(BonusType.WATER_EFFICIENCY, 0.15)),
     
     // Tier 2
@@ -301,6 +309,7 @@ public enum Skill {
      * Types of skill bonuses.
      */
     public enum BonusType {
+        MINIGAME_SPEED,         // Reduces minigame round count
         SKIP_MINIGAME,          // Skips harvest minigame
         HARVEST_SPEED,
         GROWTH_SPEED,

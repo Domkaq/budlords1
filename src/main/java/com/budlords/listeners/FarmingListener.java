@@ -640,12 +640,12 @@ public class FarmingListener implements Listener {
         StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
         if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
         
-        // Check if player has Fast Harvest skill (skips minigame)
-        boolean hasFastHarvest = plugin.getSkillManager() != null && 
-            plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.FAST_HARVEST);
+        // Check if player has Instant Harvest skill (skips minigame)
+        boolean hasInstantHarvest = plugin.getSkillManager() != null && 
+            plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.INSTANT_HARVEST);
         
-        if (hasFastHarvest) {
-            // Fast Harvest - skip minigame, harvest directly with scissors bonus
+        if (hasInstantHarvest) {
+            // Instant Harvest - skip minigame, harvest directly with scissors bonus
             Plant harvested = farmingManager.harvestPlant(player, plantLocation, scissorsRating);
             if (harvested != null) {
                 giveHarvestWithScissors(player, harvested, scissorsRating);
@@ -696,12 +696,12 @@ public class FarmingListener implements Listener {
             event.setCancelled(true);
             
             if (plant.isFullyGrown()) {
-                // Check if player has Fast Harvest skill (skips minigame)
-                boolean hasFastHarvest = plugin.getSkillManager() != null && 
-                    plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.FAST_HARVEST);
+                // Check if player has Instant Harvest skill (skips minigame)
+                boolean hasInstantHarvest = plugin.getSkillManager() != null && 
+                    plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.INSTANT_HARVEST);
                 
-                if (hasFastHarvest) {
-                    // Fast Harvest - skip minigame, harvest directly
+                if (hasInstantHarvest) {
+                    // Instant Harvest - skip minigame, harvest directly
                     Plant harvested = farmingManager.harvestPlant(player, clickedBlock.getLocation());
                     if (harvested != null) {
                         giveHarvest(player, harvested);

@@ -49,7 +49,14 @@ public class HarvestMinigame {
         StarRating rating = plant.calculateFinalBudRating(null);
         int difficulty = rating != null ? rating.getStars() : 1;
         
-        MinigameSession session = new MinigameSession(player, plant, plantLocation, difficulty, onComplete);
+        // Apply minigame speed bonus from skills
+        double speedBonus = 0;
+        if (plugin.getSkillManager() != null) {
+            speedBonus = plugin.getSkillManager().getTotalBonus(player.getUniqueId(), 
+                com.budlords.skills.Skill.BonusType.MINIGAME_SPEED);
+        }
+        
+        MinigameSession session = new MinigameSession(player, plant, plantLocation, difficulty, speedBonus, onComplete);
         activeSessions.put(player.getUniqueId(), session);
         
         session.start();
@@ -110,13 +117,16 @@ public class HarvestMinigame {
         private long hitWindowStart = 0;
         private static final long HIT_WINDOW_MS = 500; // 500ms window to click
         
-        public MinigameSession(Player player, Plant plant, Location location, int difficulty, Runnable onComplete) {
+        public MinigameSession(Player player, Plant plant, Location location, int difficulty, double speedBonus, Runnable onComplete) {
             this.player = player;
             this.plant = plant;
             this.location = location;
             this.difficulty = difficulty;
             this.onComplete = onComplete;
-            this.totalRounds = 3 + difficulty; // More rounds for higher quality plants
+            
+            // Calculate rounds with speed bonus applied
+            int baseRounds = 3 + difficulty; // More rounds for higher quality plants
+            this.totalRounds = Math.max(1, (int) Math.round(baseRounds * (1.0 - speedBonus)));
         }
         
         public void start() {
