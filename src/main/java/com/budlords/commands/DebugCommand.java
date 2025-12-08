@@ -85,6 +85,22 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             case "prestige" -> handlePrestige(sender, args);
             case "market" -> handleMarket(sender, args);
             case "joint" -> handleJoint(sender, args);
+            // New comprehensive admin commands
+            case "vampire" -> handleVampire(sender, args);
+            case "666" -> handleVampire(sender, args);
+            case "buyers" -> handleBuyers(sender, args);
+            case "formations" -> handleFormations(sender, args);
+            case "teleport" -> handleTeleport(sender, args);
+            case "speed" -> handleSpeed(sender, args);
+            case "heal" -> handleHeal(sender, args);
+            case "clearinv" -> handleClearInventory(sender, args);
+            case "time" -> handleTime(sender, args);
+            case "god" -> handleGodMode(sender, args);
+            case "fly" -> handleFly(sender, args);
+            case "unlock" -> handleUnlockAll(sender, args);
+            case "maxout" -> handleMaxOut(sender, args);
+            case "analytics" -> handleAnalytics(sender);
+            case "dump" -> handleDump(sender, args);
             default -> showDebugHelp(sender);
         }
 
@@ -144,6 +160,25 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§e  /debug save §7- Force save all data");
         sender.sendMessage("§e  /debug config <key> §7- View config values");
         sender.sendMessage("§e  /debug clear <plants|sessions> §7- Clear data");
+        sender.sendMessage("");
+        sender.sendMessage("§4§l🔥 Secret/Admin Commands:");
+        sender.sendMessage("§c  /debug vampire [give|info|spawn] §7- 666 Vampire Seed");
+        sender.sendMessage("§c  /debug 666 [give|info|spawn] §7- Same as vampire");
+        sender.sendMessage("§e  /debug buyers [list|stats] §7- Buyer registry info");
+        sender.sendMessage("§e  /debug formations §7- Formation detection info");
+        sender.sendMessage("§e  /debug analytics §7- Full system analytics");
+        sender.sendMessage("§e  /debug dump <type> §7- Dump data (json)");
+        sender.sendMessage("");
+        sender.sendMessage("§d§lUtility Commands:");
+        sender.sendMessage("§e  /debug teleport <x> <y> <z> §7- Teleport");
+        sender.sendMessage("§e  /debug speed <0-10> §7- Set speed");
+        sender.sendMessage("§e  /debug heal §7- Full heal");
+        sender.sendMessage("§e  /debug clearinv §7- Clear inventory");
+        sender.sendMessage("§e  /debug time <set|add> <value> §7- Time control");
+        sender.sendMessage("§e  /debug god §7- Toggle god mode");
+        sender.sendMessage("§e  /debug fly §7- Toggle fly");
+        sender.sendMessage("§e  /debug unlock §7- Unlock all skills");
+        sender.sendMessage("§e  /debug maxout §7- Max everything");
         sender.sendMessage("");
         sender.sendMessage("§8§m════════════════════════════════════════");
     }
@@ -1246,6 +1281,455 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             return Integer.parseInt(str);
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // NEW COMPREHENSIVE ADMIN COMMANDS
+    // ═══════════════════════════════════════════════════════════════
+    
+    private void handleVampire(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        String action = args.length > 1 ? args[1].toLowerCase() : "info";
+        
+        switch (action) {
+            case "give" -> {
+                Strain vampireSeed = plugin.getStrainManager().getStrain("vampire_seed");
+                if (vampireSeed == null) {
+                    sender.sendMessage("§c§l[666] Vampire Seed not found! Initializing...");
+                    plugin.getStrainManager().initializeDefaultStrains();
+                    vampireSeed = plugin.getStrainManager().getStrain("vampire_seed");
+                }
+                
+                if (vampireSeed != null) {
+                    ItemStack seed = plugin.getStrainManager().createSeedItem(vampireSeed, 1, StarRating.SIX_STAR);
+                    player.getInventory().addItem(seed);
+                    sender.sendMessage("§4§l[666] §cYou have received the §4§lVAMPIRE SEED§c!");
+                    sender.sendMessage("§7This is a §6LEGENDARY §76-star guaranteed strain!");
+                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f);
+                } else {
+                    sender.sendMessage("§cFailed to create Vampire Seed!");
+                }
+            }
+            case "info" -> {
+                sender.sendMessage("§8§m════════════════════════════════════════");
+                sender.sendMessage("§4§l  666 - VAMPIRE SEED");
+                sender.sendMessage("§8§m════════════════════════════════════════");
+                sender.sendMessage("");
+                sender.sendMessage("§7The ultimate reward from §c666 Formation§7!");
+                sender.sendMessage("§7Rarity: §6§lLEGENDARY");
+                sender.sendMessage("§7Stars: §d§l★★★★★★ §7(6-Star Guaranteed!)");
+                sender.sendMessage("§7Potency: §c100");
+                sender.sendMessage("");
+                sender.sendMessage("§4§lEffects:");
+                sender.sendMessage("§c  • VAMPIRE §7- Life steal on hit");
+                sender.sendMessage("§c  • SPEED DEMON §7- Maximum speed");
+                sender.sendMessage("§c  • BLOOD TRAIL §7- Bloody particle trail");
+                sender.sendMessage("§c  • TANK MODE §7- Damage reduction");
+                sender.sendMessage("§c  • NIGHT VISION §7- See in darkness");
+                sender.sendMessage("");
+                sender.sendMessage("§7Visual: §4Deep blood red with soul flames");
+                sender.sendMessage("§7Admin: §aYes §7(Unlimited effect slots)");
+                sender.sendMessage("");
+                sender.sendMessage("§e/debug vampire give §7- Get Vampire Seed");
+                sender.sendMessage("§e/debug vampire spawn §7- Spawn Vampire plant");
+                sender.sendMessage("§8§m════════════════════════════════════════");
+            }
+            case "spawn" -> {
+                Strain vampireSeed = plugin.getStrainManager().getStrain("vampire_seed");
+                if (vampireSeed == null) {
+                    sender.sendMessage("§cVampire Seed not found!");
+                    return;
+                }
+                
+                Location loc = player.getLocation().add(0, 0, 2);
+                plugin.getFarmingManager().plantSeed(player, vampireSeed, loc, StarRating.SIX_STAR);
+                sender.sendMessage("§4§l[666] §cVampire plant spawned!");
+                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.5f);
+            }
+            default -> sender.sendMessage("§cUsage: /debug vampire [give|info|spawn]");
+        }
+    }
+    
+    private void handleBuyers(CommandSender sender, String[] args) {
+        String action = args.length > 1 ? args[1].toLowerCase() : "list";
+        
+        if (plugin.getBuyerRegistry() == null) {
+            sender.sendMessage("§cBuyer registry not initialized!");
+            return;
+        }
+        
+        switch (action) {
+            case "list" -> {
+                sender.sendMessage("§8§m════════════════════════════════════════");
+                sender.sendMessage("§6§l  Buyer Registry");
+                sender.sendMessage("§8§m════════════════════════════════════════");
+                
+                var buyers = plugin.getBuyerRegistry().getAllBuyers();
+                sender.sendMessage("§7Total buyers: §e" + buyers.size());
+                sender.sendMessage("");
+                
+                buyers.stream().limit(10).forEach(buyer -> {
+                    sender.sendMessage("§e" + buyer.getName() + 
+                        " §7(" + buyer.getPersonality().getDisplayName() + "§7)");
+                    sender.sendMessage("  §7Purchases: §e" + buyer.getTotalPurchases() + 
+                        " §7| Spent: §a$" + String.format("%.2f", buyer.getTotalMoneySpent()));
+                });
+                
+                if (buyers.size() > 10) {
+                    sender.sendMessage("§7... and §e" + (buyers.size() - 10) + " §7more");
+                }
+            }
+            case "stats" -> {
+                sender.sendMessage("§8§m════════════════════════════════════════");
+                sender.sendMessage("§6§l  Buyer Statistics");
+                sender.sendMessage("§8§m════════════════════════════════════════");
+                
+                var stats = plugin.getBuyerRegistry().getStatistics();
+                sender.sendMessage("§7Total Buyers: §e" + stats.get("total_buyers"));
+                sender.sendMessage("§7Total Purchases: §e" + stats.get("total_purchases"));
+                sender.sendMessage("§7Total Money: §a$" + String.format("%.2f", (Double)stats.get("total_money")));
+                sender.sendMessage("§7Top Customer: §e" + stats.get("most_purchases"));
+                sender.sendMessage("§7Highest Value: §e" + stats.get("highest_value"));
+            }
+            default -> sender.sendMessage("§cUsage: /debug buyers [list|stats]");
+        }
+    }
+    
+    private void handleFormations(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (plugin.getFormationManager() == null) {
+            sender.sendMessage("§cFormation manager not initialized!");
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§5§l  Formation Detection");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("");
+        sender.sendMessage("§7Formation system enabled!");
+        sender.sendMessage("§7Create patterns with same-strain plants:");
+        sender.sendMessage("");
+        sender.sendMessage("§a• 3 plants §7= +1 star bonus");
+        sender.sendMessage("§e• 5 plants §7= +2 star bonus");
+        sender.sendMessage("§6• 7 plants §7= +3 star bonus");
+        sender.sendMessage("§4• 6-6-6 formation §7= §4§lVAMPIRE SEED");
+        sender.sendMessage("");
+        sender.sendMessage("§7To trigger §c666§7: Create triangle of 6 plants");
+        sender.sendMessage("§7positioned in a specific demonic pattern.");
+    }
+    
+    private void handleTeleport(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 4) {
+            sender.sendMessage("§cUsage: /debug teleport <x> <y> <z>");
+            return;
+        }
+        
+        try {
+            double x = Double.parseDouble(args[1]);
+            double y = Double.parseDouble(args[2]);
+            double z = Double.parseDouble(args[3]);
+            
+            Location loc = new Location(player.getWorld(), x, y, z);
+            player.teleport(loc);
+            sender.sendMessage("§a§l[TP] §7Teleported to §e" + x + ", " + y + ", " + z);
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid coordinates!");
+        }
+    }
+    
+    private void handleSpeed(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug speed <0-10>");
+            return;
+        }
+        
+        try {
+            float speed = Float.parseFloat(args[1]) / 10f;
+            if (speed < 0) speed = 0;
+            if (speed > 1) speed = 1;
+            
+            player.setWalkSpeed(speed);
+            player.setFlySpeed(speed);
+            sender.sendMessage("§a§l[SPEED] §7Set to §e" + (speed * 10));
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid speed value!");
+        }
+    }
+    
+    private void handleHeal(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        player.setHealth(20.0);
+        player.setFoodLevel(20);
+        player.setSaturation(20.0f);
+        player.setFireTicks(0);
+        player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+        
+        sender.sendMessage("§a§l[HEAL] §7Fully healed!");
+        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+    }
+    
+    private void handleClearInventory(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        player.getInventory().clear();
+        sender.sendMessage("§c§l[CLEAR] §7Inventory cleared!");
+        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 0.5f);
+    }
+    
+    private void handleTime(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (args.length < 3) {
+            sender.sendMessage("§cUsage: /debug time <set|add> <value>");
+            sender.sendMessage("§7Examples: day=1000, noon=6000, night=13000, midnight=18000");
+            return;
+        }
+        
+        String action = args[1].toLowerCase();
+        long value;
+        
+        try {
+            value = switch (args[2].toLowerCase()) {
+                case "day" -> 1000L;
+                case "noon" -> 6000L;
+                case "night" -> 13000L;
+                case "midnight" -> 18000L;
+                default -> Long.parseLong(args[2]);
+            };
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid time value!");
+            return;
+        }
+        
+        if (action.equals("set")) {
+            player.getWorld().setTime(value);
+            sender.sendMessage("§a§l[TIME] §7Set to §e" + value);
+        } else if (action.equals("add")) {
+            player.getWorld().setTime(player.getWorld().getTime() + value);
+            sender.sendMessage("§a§l[TIME] §7Added §e" + value);
+        }
+    }
+    
+    private void handleGodMode(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (player.isInvulnerable()) {
+            player.setInvulnerable(false);
+            sender.sendMessage("§c§l[GOD] §7God mode §cDISABLED");
+        } else {
+            player.setInvulnerable(true);
+            sender.sendMessage("§a§l[GOD] §7God mode §aENABLED");
+        }
+        player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.5f);
+    }
+    
+    private void handleFly(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (player.getAllowFlight()) {
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            sender.sendMessage("§c§l[FLY] §7Flight §cDISABLED");
+        } else {
+            player.setAllowFlight(true);
+            player.setFlying(true);
+            sender.sendMessage("§a§l[FLY] §7Flight §aENABLED");
+        }
+        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_BAT_TAKEOFF, 1.0f, 1.5f);
+    }
+    
+    private void handleUnlockAll(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        if (plugin.getSkillManager() == null) {
+            sender.sendMessage("§cSkill manager not initialized!");
+            return;
+        }
+        
+        UUID uuid = player.getUniqueId();
+        int unlocked = 0;
+        
+        for (com.budlords.skills.Skill skill : com.budlords.skills.Skill.values()) {
+            if (!plugin.getSkillManager().hasSkill(uuid, skill)) {
+                plugin.getSkillManager().unlockSkill(player, skill);
+                unlocked++;
+            }
+        }
+        
+        sender.sendMessage("§a§l[UNLOCK] §7Unlocked §e" + unlocked + " §7skills!");
+        player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
+    }
+    
+    private void handleMaxOut(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        UUID uuid = player.getUniqueId();
+        
+        sender.sendMessage("§6§l[MAXOUT] §7Maxing out everything...");
+        
+        // Max money
+        if (plugin.getEconomyManager() != null) {
+            plugin.getEconomyManager().setBalance(player, 999999999.0);
+            sender.sendMessage("§a  ✓ Money: $999,999,999");
+        }
+        
+        // Max skills
+        if (plugin.getSkillManager() != null) {
+            for (com.budlords.skills.Skill skill : com.budlords.skills.Skill.values()) {
+                plugin.getSkillManager().unlockSkill(player, skill);
+            }
+            for (com.budlords.skills.Skill.SkillTree tree : com.budlords.skills.Skill.SkillTree.values()) {
+                plugin.getSkillManager().addTreeXP(uuid, tree, 10000);
+            }
+            sender.sendMessage("§a  ✓ All skills unlocked + 10k XP per tree");
+        }
+        
+        // Max prestige
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null) {
+                stats.setPrestigeLevel(10);
+                sender.sendMessage("§a  ✓ Prestige level 10");
+            }
+        }
+        
+        // Max stats
+        if (plugin.getStatsManager() != null) {
+            PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null) {
+                stats.recordSale(500);
+                stats.recordHarvest(500);
+                sender.sendMessage("§a  ✓ Stats boosted");
+            }
+        }
+        
+        sender.sendMessage("§6§l[MAXOUT] §a§lCOMPLETE!");
+        player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 0.5f);
+    }
+    
+    private void handleAnalytics(CommandSender sender) {
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  System Analytics");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("");
+        
+        // Players
+        sender.sendMessage("§e§lPlayers:");
+        sender.sendMessage("§7  Online: §a" + Bukkit.getOnlinePlayers().size());
+        sender.sendMessage("§7  Total: §a" + Bukkit.getOfflinePlayers().length);
+        
+        // Strains
+        if (plugin.getStrainManager() != null) {
+            sender.sendMessage("");
+            sender.sendMessage("§e§lStrains:");
+            sender.sendMessage("§7  Total: §a" + plugin.getStrainManager().getAllStrains().size());
+        }
+        
+        // Plants
+        if (plugin.getFarmingManager() != null) {
+            sender.sendMessage("");
+            sender.sendMessage("§e§lPlants:");
+            sender.sendMessage("§7  Active: §a" + plugin.getFarmingManager().getPlantCount());
+        }
+        
+        // Buyers
+        if (plugin.getBuyerRegistry() != null) {
+            var stats = plugin.getBuyerRegistry().getStatistics();
+            sender.sendMessage("");
+            sender.sendMessage("§e§lBuyers:");
+            sender.sendMessage("§7  Total: §a" + stats.get("total_buyers"));
+            sender.sendMessage("§7  Purchases: §a" + stats.get("total_purchases"));
+        }
+        
+        // Economy
+        if (plugin.getEconomyManager() != null) {
+            sender.sendMessage("");
+            sender.sendMessage("§e§lEconomy:");
+            double totalMoney = 0;
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                totalMoney += plugin.getEconomyManager().getBalance(p);
+            }
+            sender.sendMessage("§7  Online player money: §a$" + String.format("%.2f", totalMoney));
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private void handleDump(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug dump <strains|buyers|plants|skills>");
+            return;
+        }
+        
+        String type = args[1].toLowerCase();
+        
+        sender.sendMessage("§7Dumping §e" + type + "§7 data...");
+        
+        switch (type) {
+            case "strains" -> {
+                if (plugin.getStrainManager() != null) {
+                    sender.sendMessage("§8[JSON] Strains:");
+                    plugin.getStrainManager().getAllStrains().stream().limit(5).forEach(s -> {
+                        sender.sendMessage("§7  {\"id\": \"" + s.getId() + "\", \"name\": \"" + 
+                            s.getName() + "\", \"rarity\": \"" + s.getRarity() + "\"}");
+                    });
+                    sender.sendMessage("§7... (showing 5/" + plugin.getStrainManager().getAllStrains().size() + ")");
+                }
+            }
+            case "buyers" -> {
+                if (plugin.getBuyerRegistry() != null) {
+                    sender.sendMessage("§8[JSON] Buyers:");
+                    plugin.getBuyerRegistry().getAllBuyers().stream().limit(5).forEach(b -> {
+                        sender.sendMessage("§7  {\"name\": \"" + b.getName() + "\", \"purchases\": " + 
+                            b.getTotalPurchases() + ", \"spent\": " + b.getTotalMoneySpent() + "}");
+                    });
+                }
+            }
+            default -> sender.sendMessage("§cInvalid dump type!");
         }
     }
 

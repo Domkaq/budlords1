@@ -197,15 +197,10 @@ public enum PlantDisease {
 
     /**
      * Gets the recommended cure for this disease.
+     * Now returns universal cure for all diseases.
      */
     public Cure getRecommendedCure() {
-        return switch (category) {
-            case FUNGAL -> Cure.FUNGICIDE;
-            case BACTERIAL -> Cure.ANTIBACTERIAL_SPRAY;
-            case PEST -> Cure.PESTICIDE;
-            case ENVIRONMENTAL -> Cure.NUTRIENT_FLUSH;
-            case MYSTICAL -> Cure.GOLDEN_ELIXIR;
-        };
+        return Cure.UNIVERSAL_CURE;
     }
 
     /**
@@ -263,28 +258,12 @@ public enum PlantDisease {
 
     /**
      * Cures for different disease types.
+     * Updated to use a single universal cure that works for all diseases.
      */
     public enum Cure {
-        FUNGICIDE("Fungicide", "§5🧪", Material.POTION, 100, 0.85,
-            "Treats fungal infections"),
-        
-        ANTIBACTERIAL_SPRAY("Antibacterial Spray", "§3💨", Material.SPLASH_POTION, 120, 0.80,
-            "Kills bacterial growth"),
-        
-        PESTICIDE("Pesticide", "§8☠", Material.FERMENTED_SPIDER_EYE, 80, 0.90,
-            "Eliminates pest infestations"),
-        
-        NUTRIENT_FLUSH("Nutrient Flush", "§6💧", Material.WATER_BUCKET, 50, 0.75,
-            "Resets nutrient levels"),
-        
-        NEEM_OIL("Neem Oil", "§a🌿", Material.LIME_DYE, 150, 0.70,
-            "Natural treatment for multiple issues"),
-        
-        GOLDEN_ELIXIR("Golden Elixir", "§6✨", Material.GOLDEN_APPLE, 1000, 0.95,
-            "Magical cure for mystical diseases"),
-        
-        HEALING_SALVE("Healing Salve", "§d💜", Material.MAGENTA_DYE, 200, 0.85,
-            "General purpose plant medicine");
+        UNIVERSAL_CURE("Universal Plant Cure", "§a🌿", Material.LIME_DYE, 150, 0.90,
+            "Effective treatment for all plant diseases");
+        // Note: Golden Elixir removed - single cure now works for all diseases including mystical
 
         private final String displayName;
         private final String symbol;

@@ -1,10 +1,12 @@
 # BudLords - Professional Minecraft Weed Economy Plugin
 
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/Domkaq/budlords1)
+[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](https://github.com/Domkaq/budlords1)
 [![Minecraft](https://img.shields.io/badge/minecraft-1.20.4-blue.svg)](https://www.minecraft.net/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A comprehensive, high-performance weed farming RPG with black market economy, advanced genetics system, and immersive visual effects for Minecraft Paper/Spigot 1.20.4.
+A comprehensive, high-performance weed farming RPG with black market economy, advanced genetics system, spectacular visual effects, and addictive game loop systems for Minecraft Paper/Spigot 1.20.4.
+
+**New in v2.0:** Daily quests, login streaks, timed events, progressive harvest skills, massively enhanced joint effects, and comprehensive admin tools!
 
 ---
 
@@ -24,14 +26,24 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 
 ## Features Overview
 
-### Advanced Farming System
+### 🎮 Addictive Game Loop (NEW v2.0!)
+- **Daily Quest System** - 3 randomized quests daily with progress tracking ($500-1,500 per quest)
+- **Login Streak System** - Track consecutive logins with weekly bonuses (up to $5,000 rewards)
+- **Timed Event System** - Random server events (2x Money, 3x XP, 2x Drops, etc.)
+- **Progressive Rewards** - Complete all daily quests for 2x earnings multiplier!
+- **Real-Time Progress** - Visual progress bars and instant celebration effects
+- **Automatic Tracking** - All actions automatically contribute to quest progress
+
+### 🌾 Advanced Farming System
 - **3D Plant Visualization** - Realistic armor stand-based plant models with 4 growth stages
 - **Star Quality System** (★☆☆☆☆ to ★★★★★) - Quality affects every aspect of growth and harvest
+- **Progressive Harvest Skills** - 20% faster → 55% faster → Instant harvest → +5% price bonus
 - **Growing Pots** - Place pots anywhere, not just on farmland
 - **Smart Watering System** - Watering cans with capacity and quality bonuses
 - **Fertilizer System** - Boost nutrients and growth speed with star-rated fertilizers
 - **Grow Lamps** - Light systems that buff nearby plants based on star rating
 - **Plant Care Mechanics** - Monitor water, nutrients, light, and quality in real-time
+- **Balanced Progression** - Seed star ratings tied to farming XP for proper progression
 
 ### genetics & Breeding
 - **60+ Unique Strains** - From common to legendary with distinct properties
@@ -41,15 +53,17 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Strain Collection Book** - Track and discover all strains
 - **Custom Strain Creator** (Admin) - Design unlimited custom strains with effects
 
-### Economy & Trading
-- **Multiple Buyer Types** - Market Joe, BlackMarket Joe, Village Vendors
-- **Reputation System** - 6 levels from Suspicious to ★LEGENDARY★
-- **Dynamic Pricing** - Prices vary based on reputation, rarity, and market events
+### 💼 Economy & Trading
+- **Buyer Card System** - 20+ unique buyers with personalities and purchase history
+- **Individual Relationships** - Track purchases with each buyer (Stranger → VIP progression)
+- **Enhanced Sale GUI** - See all active bonuses (skills, prestige, reputation) with totals
+- **Dynamic Pricing** - Prices vary based on relationships, rarity, and market events
 - **Bulk Orders** - Complete special orders for massive bonus payouts (up to +200%)
 - **Customer Tips** - Earn tips up to 25% based on reputation
 - **10 Customer Types** - Each with unique preferences and price modifiers
 - **Market Events** - Random events that boost or reduce prices
-- **Dealer Phone** - Modern GUI to manage contacts, orders, and stats
+- **Dealer Phone** - Modern GUI to manage contacts, orders, and stats with working buttons
+- **Private Notifications** - Personal sales and actions only notify you (no chat spam)
 
 ### Production & Packaging
 - **Packaging System** - Package buds in 1g, 3g, 5g, or 10g weights
@@ -58,28 +72,38 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Joint Rolling** - Interactive 4-stage minigame with grinders
 - **Harvest Scissors** - Star-rated tools for better yields and quality
 
-### RPG Systems
+### 🎯 RPG Systems
+- **Daily Quest System** - 3 quests per day with $500-1,500 rewards + completion bonus
+- **Login Streaks** - Track consecutive logins with weekly bonuses (every 7 days)
 - **7 Rank Tiers** - Progress from Novice to BudLord based on earnings
 - **10 Prestige Levels** - Reset progress for permanent bonuses
-- **5 Skill Trees** - Farming, Quality, Trading, Genetics, Effects
+- **5 Skill Trees** - Farming (progressive harvest skills!), Quality, Trading, Genetics, Effects
 - **40+ Achievements** - Unlock rewards across 9 categories
-- **Daily Rewards** - Login streaks with milestone bonuses
+- **Timed Events** - Random server events (2x Money, 3x XP, 2x Drops, 1.5x Growth)
 - **Challenge System** - Daily and weekly challenges with XP rewards
 - **Statistics Tracking** - Comprehensive stats and leaderboards
 
-### Environmental Systems
+### 🌍 Environmental Systems
 - **Dynamic Weather** - 6 weather types affecting growth and quality
 - **Seasonal System** - 4 seasons with unique bonuses and effects
 - **Day/Night Cycle** - Time-based effects on plant growth
-- **Disease System** - 12+ diseases with cures and prevention
+- **Disease System** - 12+ diseases with universal cure (simplified from 7 cure types)
+- **Private Disease Alerts** - Owner-only notifications with phone sounds (no chat spam)
 - **Random Events** - Drought, crop blight, golden hour, market boom, etc.
 
-### Visual Effects
+### 🎨 Visual Effects (MASSIVELY ENHANCED v2.0!)
+- **Spectacular Joint Effects** - 60+ transformation effects with 2-5x more particles
+- **Ghost Rider** - Full hellfire skull with 20-35 flames, blazing eyes, 360° aura, explosion flares
+- **Angel Wings** - Majestic feathered wings with flapping animation, halo, holy aura
+- **Demon Horns** - Tall curved horns (0.6m) with demonic aura, hell smoke, glowing red eyes
+- **Rainbow Aura** - Full body spirals at multiple heights, double particle density, sparkles
+- **Shadow Walker** - Dense smoke envelopment, dark tendrils, void particles, disappearing effect
+- **Galaxy Portal** - Cosmic vortex (3x particles), dimensional tears, dragon breath effects
+- **Dramatic Sounds** - Unique activation sounds for each transformation (wither, bells, blaze, portal)
+- **Movement Trails** - Dynamic particle trails when moving with active effects
 - **Ambient Particles** - Fireflies, pollen, sparkles around plants
 - **Weather Effects** - Rain, thunder, sunshine particles
 - **Celebration Effects** - Harvest animations based on quality and rarity
-- **Smooth Animations** - Swaying plants with customizable animation styles
-- **Visual Themes** - Strain-specific colors, particles, and glowing effects
 - **Performance Optimized** - Scales from 1 to 100+ plants without FPS loss
 
 ### Modern UI/UX
@@ -88,6 +112,44 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 - **Real-time Monitoring** - Plant status, water, nutrients, and quality
 - **Sound Effects** - Immersive audio feedback for all interactions
 - **Color-Coded Systems** - Easy-to-understand visual indicators
+
+---
+
+## 🎉 What's New in v2.0
+
+### Addictive Game Loop
+- **Daily Quests** - 3 randomized objectives per day across 8 quest types
+- **Login Streaks** - Consecutive day tracking with weekly milestone bonuses
+- **Timed Events** - Random server-wide bonus events every 1-3 hours
+- **Completion Bonuses** - Finish all daily quests for $5,000 + 2x earnings for 30 minutes!
+
+### Progressive Harvest Skills
+- **Quick Harvest** (Tier 1): Reduces minigame rounds by 20%
+- **Rapid Harvest** (Tier 2): Reduces minigame rounds by 55%
+- **Instant Harvest** (Tier 3): Completely skips harvest minigame
+- **Harvest Bonus** (Tier 4): +5% sale price on all harvests
+
+### Spectacular Joint Effects
+- **2-5x More Particles** for all major transformation effects
+- **Animated Patterns** - Wings flap, spirals rotate, horns curve
+- **Movement Trails** - Dynamic particle effects when moving
+- **Dramatic Sounds** - Unique activation sounds for each transformation
+- Enhanced effects: Ghost Rider, Angel Wings, Demon Horns, Rainbow Aura, Shadow Walker, Galaxy Portal
+
+### Enhanced Systems
+- **Sale GUI** - Now displays all active bonuses with clear breakdown
+- **Buyer Tracking** - Fixed joint purchase tracking and phone updates
+- **Disease Notifications** - Private alerts to plant owner only (no chat spam)
+- **Seed Progression** - Star ratings properly tied to farming XP
+- **Minigame Fix** - Removed click spam exploit
+
+### Admin Tools
+- **666 Vampire Seed Commands** - /debug vampire (give/info/spawn)
+- **Comprehensive Debug** - Teleport, speed, heal, god mode, fly, time control
+- **Analytics Dashboard** - /debug analytics for full system overview
+- **Utility Commands** - /debug maxout, /debug unlock (all skills instantly)
+
+See [GAME_DESIGN.md](GAME_DESIGN.md) for complete game loop analysis and retention mechanics.
 
 ---
 
@@ -271,6 +333,7 @@ Default configuration works out of the box. Customize as needed.
 | `/bal` | Check balance and rank | `budlords.balance` |
 | `/pay <player> <amount>` | Send money to player | `budlords.pay` |
 | `/package <amount>` | Package buds (1/3/5/10g) | `budlords.package` |
+| `/daily` | **NEW!** View daily quests and progress | `budlords.use` |
 | `/stats` | View your statistics | `budlords.use` |
 | `/prestige` | Prestige menu | `budlords.use` |
 | `/challenges` | Daily/weekly challenges | `budlords.use` |
@@ -278,11 +341,10 @@ Default configuration works out of the box. Customize as needed.
 | `/leaderboard [type]` | Server rankings | `budlords.use` |
 | `/season` | Current season info | `budlords.use` |
 | `/achievements [category]` | Your achievements | `budlords.use` |
-| `/skills [tree]` | Skill tree GUI | `budlords.use` |
+| `/skills [tree]` | Skill tree GUI (includes new harvest skills!) | `budlords.use` |
 | `/collection [page]` | Strain collection book | `budlords.use` |
 | `/reputation` | Buyer reputation status | `budlords.use` |
 | `/orders` | Active bulk orders | `budlords.use` |
-| `/daily` | Claim daily reward | `budlords.use` |
 | `/market` | Market conditions | `budlords.use` |
 
 ### Admin Commands
@@ -295,7 +357,20 @@ Default configuration works out of the box. Customize as needed.
 | `/addmoney <player> <amount>` | Add money | `budlords.admin` |
 | `/budlords reload` | Reload config | `budlords.admin` |
 | `/season set <season>` | Force change season | `budlords.admin` |
-| `/debug` | Debug commands | `budlords.admin` |
+| `/debug vampire <give/info/spawn>` | **NEW!** 666 Vampire Seed commands | `budlords.admin` |
+| `/debug 666 <action>` | **NEW!** Alias for vampire commands | `budlords.admin` |
+| `/debug teleport <x> <y> <z>` | **NEW!** Instant teleportation | `budlords.admin` |
+| `/debug speed <0-10>` | **NEW!** Set walk/fly speed | `budlords.admin` |
+| `/debug heal` | **NEW!** Full heal + remove effects | `budlords.admin` |
+| `/debug god` | **NEW!** Toggle god mode | `budlords.admin` |
+| `/debug fly` | **NEW!** Toggle flight | `budlords.admin` |
+| `/debug time <set/add> <value>` | **NEW!** Time control | `budlords.admin` |
+| `/debug unlock` | **NEW!** Unlock all skills instantly | `budlords.admin` |
+| `/debug maxout` | **NEW!** Max money, skills, prestige | `budlords.admin` |
+| `/debug buyers [list/stats]` | **NEW!** Buyer registry stats | `budlords.admin` |
+| `/debug formations` | **NEW!** Formation info & 666 pattern | `budlords.admin` |
+| `/debug analytics` | **NEW!** Full system dashboard | `budlords.admin` |
+| `/debug dump <type>` | **NEW!** Export data in JSON | `budlords.admin` |
 
 ### Permission Nodes
 
@@ -486,18 +561,21 @@ BudLords is licensed under the MIT License. See [LICENSE](LICENSE) file for deta
 ## Credits
 
 **Developer:** Domkaq  
-**Version:** 1.0.0  
-**Last Updated:** December 2024
+**Version:** 2.0.0  
+**Last Updated:** December 2024  
+**Major Update:** Daily quests, login streaks, timed events, progressive skills, spectacular effects!
 ---
 
 ## Statistics
 
-- **139 Unique Effects** - Most comprehensive effect system
+- **139 Unique Effects** - Most comprehensive effect system (massively enhanced in v2.0!)
 - **60+ Strains** - From common to legendary
 - **40+ Achievements** - Across 9 categories
-- **35+ Skills** - 5 distinct skill trees
-- **12+ Diseases** - Realistic plant care challenge
-- **10 Customer Types** - Dynamic trading system
+- **35+ Skills** - 5 distinct skill trees (including new progressive harvest skills)
+- **8 Daily Quest Types** - Harvest, sell, earn, smoke, perfect, 5-star, trade, crossbreed
+- **12+ Diseases** - Realistic plant care challenge (now with universal cure)
+- **20+ Individual Buyers** - Each with unique personality and purchase tracking
+- **4 Timed Event Types** - 2x Money, 3x XP, 2x Drops, 1.5x Growth
 - **4 Seasons** - Environmental gameplay
 - **6 Weather Types** - Dynamic conditions
 
@@ -505,7 +583,25 @@ BudLords is licensed under the MIT License. See [LICENSE](LICENSE) file for deta
 
 ## Roadmap (Future Updates)
 
-Potential features for future versions:
+### v2.0 (COMPLETED!)
+- [x] Daily quest system
+- [x] Login streak tracking
+- [x] Timed server events
+- [x] Progressive harvest skills
+- [x] Massively enhanced joint visual effects
+- [x] Comprehensive admin debug tools
+- [x] Fixed sale GUI bugs
+- [x] Balanced seed progression
+- [x] Private disease notifications
+
+### v3.0 (Planned)
+- [ ] Weekly challenges (harder, better rewards)
+- [ ] Seasonal limited-time strains
+- [ ] Player trading system
+- [ ] Clan/crew system
+- [ ] Competitive leaderboards
+
+### v4.0 (Future)
 - [ ] Greenhouse building system
 - [ ] Automated farming machines
 - [ ] Delivery missions

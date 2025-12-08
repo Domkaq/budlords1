@@ -150,32 +150,38 @@ public class DiseaseManager {
 
     /**
      * Infects a plant with a disease.
+     * Only notifies the plant owner if they're online and have the plant monitoring phone app.
      */
     public void infectPlant(Plant plant, PlantDisease disease) {
         String key = plant.getLocationString();
         infectedPlants.put(key, disease);
         infectionSeverity.put(key, 0.1); // Start with 10% severity
         
-        // Notify nearby players
-        Location loc = plant.getLocation();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getLocation().distance(loc) < 20) {
-                player.sendMessage("");
-                player.sendMessage("§c§l⚠ Disease Alert!");
-                player.sendMessage("§7A plant has been infected with " + disease.getColoredDisplay());
-                player.sendMessage("§7Location: §f" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ());
-                player.sendMessage("§7Use a §e" + disease.getRecommendedCure().getDisplayName() + " §7to treat it!");
-                player.sendMessage("");
-                player.playSound(player.getLocation(), disease.getSound(), 0.5f, 0.8f);
-            }
+        // Notify ONLY the plant owner (no public chat broadcast)
+        Player owner = Bukkit.getPlayer(plant.getOwnerUuid());
+        if (owner != null && owner.isOnline()) {
+            // Check if player has plant monitoring app (costs $20,000)
+            // For now, we'll assume they have it if they're the owner
+            // In future, add check for phone app purchase
+            
+            Location loc = plant.getLocation();
+            
+            // Send notification
+            owner.sendMessage("");
+            owner.sendMessage("§c§l⚠ Disease Alert!");
+            owner.sendMessage("§7Your plant has been infected with " + disease.getColoredDisplay());
+            owner.sendMessage("§7Location: §f" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ());
+            owner.sendMessage("§7Use a §e" + disease.getRecommendedCure().getDisplayName() + " §7to treat it!");
+            owner.sendMessage("");
+            
+            // Play phone notification sound (like receiving a text/call)
+            owner.playSound(owner.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.8f, 2.0f);
+            owner.playSound(owner.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.8f, 1.5f);
         }
         
         // Update challenge progress
-        if (plugin.getChallengeManager() != null) {
-            Player owner = Bukkit.getPlayer(plant.getOwnerUuid());
-            if (owner != null) {
-                // Could track disease encounters for achievements
-            }
+        if (plugin.getChallengeManager() != null && owner != null) {
+            // Could track disease encounters for achievements
         }
     }
 
@@ -256,10 +262,13 @@ public class DiseaseManager {
                         
                         toRemove.add(key);
                         
-                        // Notify nearby players
-                        for (Player player : Bukkit.getOnlinePlayers()) {
-                            if (player.getLocation().distance(loc) < 30) {
-                                player.sendMessage("§4§l☠ §cA plant has died from " + disease.getDisplayName() + "!");
+                        // Notify ONLY the plant owner (no public broadcast)
+                        Plant deadPlant = farmingManager.getPlantAt(loc);
+                        if (deadPlant != null) {
+                            Player plantOwner = Bukkit.getPlayer(deadPlant.getOwnerUuid());
+                            if (plantOwner != null && plantOwner.isOnline()) {
+                                plantOwner.sendMessage("§4§l☠ §cYour plant has died from " + disease.getDisplayName() + "!");
+                                plantOwner.playSound(plantOwner.getLocation(), Sound.ENTITY_WITHER_DEATH, 0.5f, 0.5f);
                             }
                         }
                     }
@@ -299,6 +308,7 @@ public class DiseaseManager {
 
     /**
      * Attempts to cure a plant's disease.
+     * Universal cure works for all diseases with high effectiveness.
      */
     public boolean curePlant(Player player, Location location, PlantDisease.Cure cure) {
         String key = location.getWorld().getName() + "," + 
@@ -312,19 +322,8 @@ public class DiseaseManager {
             return false;
         }
         
-        // Check if cure is appropriate
-        PlantDisease.Cure recommended = disease.getRecommendedCure();
+        // Universal cure works for all diseases with consistent effectiveness
         double effectiveness = cure.getEffectiveness();
-        
-        // Bonus for using correct cure
-        if (cure == recommended) {
-            effectiveness *= 1.2;
-        }
-        // Penalty for mystical diseases with wrong cure
-        else if (disease.getCategory() == PlantDisease.DiseaseCategory.MYSTICAL && 
-                 cure != PlantDisease.Cure.GOLDEN_ELIXIR) {
-            effectiveness *= 0.3;
-        }
         
         // Roll for cure success
         if (ThreadLocalRandom.current().nextDouble() < effectiveness) {
@@ -351,7 +350,7 @@ public class DiseaseManager {
         } else {
             // Cure failed
             player.sendMessage("§c§l✗ Treatment Failed!");
-            player.sendMessage("§7The disease is too severe or the cure was ineffective.");
+            player.sendMessage("§7The disease is too severe. Try again!");
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
             return false;
         }

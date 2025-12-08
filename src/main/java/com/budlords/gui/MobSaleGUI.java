@@ -192,16 +192,54 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         double successChance = calculateSuccessChance(player, session);
         String chanceColor = getSuccessChanceColor(successChance);
         
-        // Price display
-        inv.setItem(13, createItem(Material.GOLD_INGOT, 
-            "§e§lTotal Value",
-            Arrays.asList(
-                "",
-                "§7Items: §e" + countItems(session),
-                "§7Total: §a" + economyManager.formatMoney(totalValue),
-                "",
-                getPriceBreakdown(session)
-            )));
+        // Price display with detailed bonuses
+        List<String> priceInfo = new ArrayList<>();
+        priceInfo.add("");
+        priceInfo.add("§7Items: §e" + countItems(session));
+        priceInfo.add("§7Base Total: §e" + economyManager.formatMoney(calculateBaseTotalValue(session)));
+        priceInfo.add("");
+        
+        // Show active bonuses
+        UUID playerId = player.getUniqueId();
+        boolean hasBonuses = false;
+        
+        if (plugin.getSkillManager() != null) {
+            double skillBonus = plugin.getSkillManager().getTotalBonus(playerId, 
+                com.budlords.skills.Skill.BonusType.PRICE_BONUS);
+            if (skillBonus > 0) {
+                priceInfo.add("§a✦ Skills: §e+" + String.format("%.0f%%", skillBonus * 100));
+                hasBonuses = true;
+            }
+        }
+        
+        if (plugin.getPrestigeManager() != null && plugin.getStatsManager() != null) {
+            PlayerStats stats = plugin.getStatsManager().getStats(player);
+            if (stats != null && stats.getPrestigeLevel() > 0) {
+                double prestigeBonus = (plugin.getPrestigeManager().getEarningsMultiplier(stats.getPrestigeLevel()) - 1.0);
+                priceInfo.add("§d✦ Prestige: §e+" + String.format("%.0f%%", prestigeBonus * 100));
+                hasBonuses = true;
+            }
+        }
+        
+        if (plugin.getReputationManager() != null) {
+            int rep = plugin.getReputationManager().getReputation(playerId, session.buyerType.name());
+            double repBonus = (plugin.getReputationManager().getReputationMultiplier(rep) - 1.0);
+            if (repBonus != 0) {
+                String repColor = repBonus > 0 ? "§a" : "§c";
+                priceInfo.add(repColor + "✦ Reputation: §e" + (repBonus > 0 ? "+" : "") + String.format("%.0f%%", repBonus * 100));
+                hasBonuses = true;
+            }
+        }
+        
+        if (hasBonuses) {
+            priceInfo.add("");
+        }
+        
+        priceInfo.add("§7Final Total: §a§l" + economyManager.formatMoney(totalValue));
+        priceInfo.add("");
+        priceInfo.add(getPriceBreakdown(session));
+        
+        inv.setItem(13, createItem(Material.GOLD_INGOT, "§e§lTotal Value", priceInfo));
 
         // Confirm button
         boolean hasItems = totalValue > 0;
@@ -259,6 +297,17 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         };
     }
 
+    private double calculateBaseTotalValue(SaleSession session) {
+        double total = 0;
+        double multiplier = getPriceMultiplier(session.buyerType);
+        
+        for (ItemStack item : session.itemsToSell) {
+            if (item == null) continue;
+            total += calculateItemPrice(item, session.buyerType) * item.getAmount();
+        }
+        return total;
+    }
+    
     private double calculateTotalValue(SaleSession session) {
         double total = 0;
         double multiplier = getPriceMultiplier(session.buyerType);
@@ -514,7 +563,26 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             if (slot == SALE_SLOTS[i]) {
                 ItemStack cursor = event.getCursor();
                 
-                // Placing item
+                // Handle shift-click to remove item from sale slot
+                if (event.isShiftClick() && session.itemsToSell[i] != null) {
+                    // Return item to player inventory
+                    ItemStack itemToReturn = session.itemsToSell[i];
+                    session.itemsToSell[i] = null;
+                    
+                    HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(itemToReturn);
+                    if (!leftover.isEmpty()) {
+                        // If inventory full, drop at player's location
+                        leftover.values().forEach(item -> 
+                            player.getWorld().dropItemNaturally(player.getLocation(), item)
+                        );
+                    }
+                    
+                    player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, 0.8f);
+                    updateInventory(event.getInventory(), session, player);
+                    return;
+                }
+                
+                // Placing item with cursor
                 if (cursor != null && cursor.getType() != Material.AIR) {
                     if (isSellableItem(cursor)) {
                         if (session.itemsToSell[i] != null) {
@@ -528,8 +596,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                         player.sendMessage("§cYou can only sell packaged products and joints!");
                         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
                     }
-                } else if (session.itemsToSell[i] != null) {
-                    // Picking up item
+                } else if (session.itemsToSell[i] != null && !event.isShiftClick()) {
+                    // Picking up item with cursor (regular click)
                     player.setItemOnCursor(session.itemsToSell[i]);
                     session.itemsToSell[i] = null;
                     player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, 0.8f);
@@ -675,12 +743,24 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             com.budlords.npc.IndividualBuyer buyer = plugin.getBuyerMatcher().findBestMatch(itemsList, playerId);
             
             if (buyer != null) {
-                // Record all purchases with this buyer
-                for (ItemStack item : session.items.values()) {
+                // Record all purchases with this buyer (including joints!)
+                for (ItemStack item : session.itemsToSell) {
                     if (item != null && !item.getType().equals(Material.AIR)) {
-                        String strainId = packagingManager.getStrainId(item);
+                        String strainId = null;
+                        int amount = 0;
+                        
+                        // Get strain ID from packaged products
+                        if (packagingManager.isPackagedProduct(item)) {
+                            strainId = packagingManager.getStrainIdFromPackage(item);
+                            amount = packagingManager.getWeightFromPackage(item) * item.getAmount();
+                        }
+                        // Get strain ID from joints
+                        else if (JointItems.isJoint(item)) {
+                            strainId = JointItems.getJointStrainId(item);
+                            amount = item.getAmount(); // Each joint = 1g
+                        }
+                        
                         if (strainId != null) {
-                            int amount = packagingManager.getPackageSize(item) * item.getAmount();
                             double itemPrice = calculateItemPrice(item, session.buyerType) * item.getAmount();
                             plugin.getBuyerRegistry().recordPurchase(buyer.getId(), strainId, amount, itemPrice);
                         }
@@ -689,14 +769,29 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 
                 // Check if this sale fulfills any requests
                 if (plugin.getBuyerRequestManager() != null) {
-                    for (ItemStack item : session.items.values()) {
+                    for (ItemStack item : session.itemsToSell) {
                         if (item != null && !item.getType().equals(Material.AIR)) {
-                            String strainId = packagingManager.getStrainId(item);
+                            String strainId = null;
+                            com.budlords.strain.Strain strain = null;
+                            com.budlords.quality.StarRating rating = null;
+                            int quantity = 0;
+                            
+                            // Check packaged products
+                            if (packagingManager.isPackagedProduct(item)) {
+                                strainId = packagingManager.getStrainIdFromPackage(item);
+                                strain = strainManager.getStrain(strainId);
+                                rating = packagingManager.getStarRatingFromPackage(item);
+                                quantity = packagingManager.getWeightFromPackage(item) * item.getAmount();
+                            }
+                            // Check joints
+                            else if (JointItems.isJoint(item)) {
+                                strainId = JointItems.getJointStrainId(item);
+                                strain = strainManager.getStrain(strainId);
+                                rating = JointItems.getJointRating(item);
+                                quantity = item.getAmount();
+                            }
+                            
                             if (strainId != null) {
-                                com.budlords.strain.Strain strain = strainManager.getStrain(strainId);
-                                com.budlords.quality.StarRating rating = packagingManager.getStarRatingFromPackage(item);
-                                int quantity = packagingManager.getPackageSize(item) * item.getAmount();
-                                
                                 com.budlords.npc.BuyerRequest fulfilledRequest = 
                                     plugin.getBuyerRequestManager().checkAndFulfillRequest(
                                         buyer.getId(), strainId, 
@@ -721,10 +816,17 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 
                 // Show buyer's comment
                 String buyerComment = buyer.getPurchaseComment(
-                    session.items.values().stream()
+                    Arrays.stream(session.itemsToSell)
                         .filter(i -> i != null && !i.getType().equals(Material.AIR))
                         .findFirst()
-                        .map(i -> packagingManager.getStrainId(i))
+                        .map(i -> {
+                            if (packagingManager.isPackagedProduct(i)) {
+                                return packagingManager.getStrainIdFromPackage(i);
+                            } else if (JointItems.isJoint(i)) {
+                                return JointItems.getJointStrainId(i);
+                            }
+                            return null;
+                        })
                         .orElse(null)
                 );
                 

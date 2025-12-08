@@ -637,6 +637,22 @@ public class FarmingListener implements Listener {
             return;
         }
         
+        StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
+        if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
+        
+        // Check if player has Instant Harvest skill (skips minigame)
+        boolean hasInstantHarvest = plugin.getSkillManager() != null && 
+            plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.INSTANT_HARVEST);
+        
+        if (hasInstantHarvest) {
+            // Instant Harvest - skip minigame, harvest directly with scissors bonus
+            Plant harvested = farmingManager.harvestPlant(player, plantLocation, scissorsRating);
+            if (harvested != null) {
+                giveHarvestWithScissors(player, harvested, scissorsRating);
+            }
+            return;
+        }
+        
         // Check if player has an active mini-game
         if (plugin.getHarvestMinigame().hasActiveGame(player)) {
             // Register click for mini-game
@@ -647,9 +663,6 @@ public class FarmingListener implements Listener {
         // Check if mini-game is completed
         com.budlords.minigames.HarvestMinigame.MinigameResult result = 
             plugin.getHarvestMinigame().getResult(player);
-        
-        StarRating scissorsRating = HarvestScissors.getRatingFromItem(item);
-        if (scissorsRating == null) scissorsRating = StarRating.ONE_STAR;
         
         if (result != null) {
             // Mini-game completed - harvest with scissors AND minigame bonuses
@@ -683,6 +696,19 @@ public class FarmingListener implements Listener {
             event.setCancelled(true);
             
             if (plant.isFullyGrown()) {
+                // Check if player has Instant Harvest skill (skips minigame)
+                boolean hasInstantHarvest = plugin.getSkillManager() != null && 
+                    plugin.getSkillManager().hasSkill(player.getUniqueId(), com.budlords.skills.Skill.INSTANT_HARVEST);
+                
+                if (hasInstantHarvest) {
+                    // Instant Harvest - skip minigame, harvest directly
+                    Plant harvested = farmingManager.harvestPlant(player, clickedBlock.getLocation());
+                    if (harvested != null) {
+                        giveHarvest(player, harvested);
+                    }
+                    return;
+                }
+                
                 // Check if player has an active mini-game
                 if (plugin.getHarvestMinigame().hasActiveGame(player)) {
                     // Register click for mini-game
@@ -953,10 +979,9 @@ public class FarmingListener implements Listener {
         
         // Check for rare drop
         if (scissors.triggersRareDrop()) {
-            // Give bonus seed with higher rating
-            StarRating bonusSeedRating = StarRating.fromValue(
-                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + 1)
-            );
+            // Give bonus seed with higher rating (capped by farming XP)
+            int baseSeedStars = plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1;
+            StarRating bonusSeedRating = calculateBonusSeedRating(player, baseSeedStars, 1);
             ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
             player.getInventory().addItem(bonusSeed);
             player.sendMessage("§d✦ Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");
@@ -1127,6 +1152,41 @@ public class FarmingListener implements Listener {
     }
     
     /**
+     * Calculates the maximum bonus star rating for seeds based on farming XP.
+     * This prevents seeds from getting too high star ratings too quickly.
+     * 
+     * XP Thresholds:
+     * - 0-99 XP: Can only get +1 star bonus (max 2-star seeds)
+     * - 100-499 XP: Can get +2 star bonus (max 3-star seeds)
+     * - 500-999 XP: Can get +3 star bonus (max 4-star seeds)
+     * - 1000+ XP: Can get +4 star bonus (max 5-star seeds)
+     * 
+     * @param player The player harvesting
+     * @param baseSeedStars The base star rating of the seed from the plant
+     * @param bonusAmount The bonus amount being added (from rare drop, minigame, etc.)
+     * @return The final star rating for the bonus seed, capped by farming XP
+     */
+    private StarRating calculateBonusSeedRating(Player player, int baseSeedStars, int bonusAmount) {
+        int farmingXP = getPlayerFarmingXP(player);
+        
+        // Determine max achievable stars based on farming XP
+        int maxStars;
+        if (farmingXP < 100) {
+            maxStars = 2;  // Beginner: max 2-star seeds
+        } else if (farmingXP < 500) {
+            maxStars = 3;  // Intermediate: max 3-star seeds
+        } else if (farmingXP < 1000) {
+            maxStars = 4;  // Advanced: max 4-star seeds
+        } else {
+            maxStars = 5;  // Expert: max 5-star seeds
+        }
+        
+        // Calculate final stars with both bonus and XP cap
+        int finalStars = Math.min(maxStars, baseSeedStars + bonusAmount);
+        return StarRating.fromValue(finalStars);
+    }
+    
+    /**
      * Gives harvest with minigame bonuses only (no scissors).
      */
     private void giveHarvestWithMinigameBonus(Player player, Plant plant, 
@@ -1151,9 +1211,8 @@ public class FarmingListener implements Listener {
         
         // Check for rare drop from minigame
         if (result.hasRareDropChance()) {
-            StarRating bonusSeedRating = StarRating.fromValue(
-                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + 1)
-            );
+            int baseSeedStars = plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1;
+            StarRating bonusSeedRating = calculateBonusSeedRating(player, baseSeedStars, 1);
             ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
             player.getInventory().addItem(bonusSeed);
             player.sendMessage("§d✦ Mini-game Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");
@@ -1207,11 +1266,11 @@ public class FarmingListener implements Listener {
         }
         
         // Check for rare drops (both scissors and minigame)
+        int baseSeedStars = plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1;
         boolean hadRareDrop = false;
+        
         if (scissors.triggersRareDrop()) {
-            StarRating bonusSeedRating = StarRating.fromValue(
-                Math.min(5, (plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1) + 1)
-            );
+            StarRating bonusSeedRating = calculateBonusSeedRating(player, baseSeedStars, 1);
             ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
             player.getInventory().addItem(bonusSeed);
             player.sendMessage("§d✦ Scissors Rare Drop! §7Found a bonus " + bonusSeedRating.getDisplay() + " §7seed!");
@@ -1219,11 +1278,9 @@ public class FarmingListener implements Listener {
         }
         
         if (result.hasRareDropChance()) {
-            // Calculate bonus seed rating based on existing seed and previous drops
-            int baseSeedStars = plant.getSeedRating() != null ? plant.getSeedRating().getStars() : 1;
-            int bonusStars = hadRareDrop ? 2 : 1;
-            int finalStars = Math.min(5, baseSeedStars + bonusStars);
-            StarRating bonusSeedRating = StarRating.fromValue(finalStars);
+            // Both scissors and minigame rare drops give +2 bonus, otherwise +1
+            int bonusAmount = hadRareDrop ? 2 : 1;
+            StarRating bonusSeedRating = calculateBonusSeedRating(player, baseSeedStars, bonusAmount);
             
             ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, bonusSeedRating);
             player.getInventory().addItem(bonusSeed);

@@ -301,8 +301,49 @@ public class StrainEffectsManager implements Listener {
         int duration = (int) (baseDuration * effect.getDurationMultiplier() * (0.8 + qualityBonus * 0.1));
         int amplifier = effect.getPotionAmplifier();
         
-        // Send activation message
+        // Send activation message with dramatic flair
         player.sendMessage(type.getCategoryColor() + type.getSymbol() + " " + type.getActivationMessage());
+        
+        // Play dramatic activation sounds for major transformations
+        Location loc = player.getLocation();
+        switch (type) {
+            case GHOST_RIDER -> {
+                player.playSound(loc, Sound.ENTITY_BLAZE_AMBIENT, 1.0f, 0.5f);
+                player.playSound(loc, Sound.BLOCK_FIRE_AMBIENT, 1.0f, 0.8f);
+            }
+            case ANGEL_WINGS -> {
+                player.playSound(loc, Sound.BLOCK_BELL_USE, 0.8f, 1.5f);
+                player.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 2.0f);
+            }
+            case DEMON_HORNS -> {
+                player.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 0.5f, 1.5f);
+                player.playSound(loc, Sound.ENTITY_BLAZE_DEATH, 0.7f, 0.5f);
+            }
+            case SHADOW_WALKER -> {
+                player.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 0.8f, 0.5f);
+                player.playSound(loc, Sound.BLOCK_PORTAL_AMBIENT, 0.6f, 0.8f);
+            }
+            case RAINBOW_AURA -> {
+                player.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 0.5f, 2.0f);
+                player.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 0.4f, 1.8f);
+            }
+            case GALAXY_PORTAL -> {
+                player.playSound(loc, Sound.BLOCK_END_PORTAL_FRAME_FILL, 0.8f, 0.5f);
+                player.playSound(loc, Sound.BLOCK_PORTAL_TRAVEL, 0.5f, 1.5f);
+            }
+            case LIGHTNING_STRIKE -> {
+                player.playSound(loc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.4f, 1.5f);
+            }
+            case VAMPIRE -> {
+                player.playSound(loc, Sound.ENTITY_PHANTOM_AMBIENT, 0.7f, 0.8f);
+            }
+            default -> {
+                // Subtle activation sound for other effects
+                if (intensity >= 3) {
+                    player.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.5f);
+                }
+            }
+        }
         
         // Apply potion effects based on effect type
         switch (type) {
@@ -1124,75 +1165,234 @@ public class StrainEffectsManager implements Listener {
         
         switch (type) {
             case GHOST_RIDER -> {
-                // Fire around head
+                // DRAMATICALLY ENHANCED GHOST RIDER EFFECT
                 Location headLoc = loc.clone().add(0, 1.8, 0);
-                world.spawnParticle(Particle.FLAME, headLoc, 8 + intensity * 2, 0.25, 0.3, 0.25, 0.03);
-                world.spawnParticle(Particle.LAVA, headLoc, 1, 0.2, 0.2, 0.2, 0);
                 
-                // Occasional soul fire for intensity 4+
-                if (intensity >= 4 && ThreadLocalRandom.current().nextDouble() < 0.3) {
-                    world.spawnParticle(Particle.SOUL_FIRE_FLAME, headLoc, 4, 0.2, 0.2, 0.2, 0.02);
+                // Intense fire skull around entire head
+                world.spawnParticle(Particle.FLAME, headLoc, 20 + intensity * 5, 0.35, 0.4, 0.35, 0.05);
+                world.spawnParticle(Particle.SOUL_FIRE_FLAME, headLoc, 12 + intensity * 3, 0.3, 0.35, 0.3, 0.04);
+                world.spawnParticle(Particle.LAVA, headLoc, 3 + intensity, 0.25, 0.25, 0.25, 0);
+                
+                // Blazing eye sockets
+                Location eyeLeft = headLoc.clone().add(-0.15, 0, 0);
+                Location eyeRight = headLoc.clone().add(0.15, 0, 0);
+                world.spawnParticle(Particle.FLAME, eyeLeft, 8, 0.05, 0.05, 0.05, 0.01);
+                world.spawnParticle(Particle.FLAME, eyeRight, 8, 0.05, 0.05, 0.05, 0.01);
+                world.spawnParticle(Particle.LAVA, eyeLeft, 1, 0, 0, 0, 0);
+                world.spawnParticle(Particle.LAVA, eyeRight, 1, 0, 0, 0, 0);
+                
+                // Fire dripping effect
+                if (ThreadLocalRandom.current().nextDouble() < 0.4) {
+                    Location dripLoc = headLoc.clone().add(
+                        ThreadLocalRandom.current().nextDouble(-0.2, 0.2),
+                        -0.2,
+                        ThreadLocalRandom.current().nextDouble(-0.2, 0.2)
+                    );
+                    world.spawnParticle(Particle.DRIPPING_LAVA, dripLoc, 2, 0, 0, 0, 0);
+                }
+                
+                // Hellfire trail when moving
+                Long lastMove = lastMovementTime.get(player.getUniqueId());
+                if (lastMove != null && System.currentTimeMillis() - lastMove < 200) {
+                    world.spawnParticle(Particle.FLAME, loc.clone().add(0, 0.1, 0), 
+                        15 + intensity * 2, 0.3, 0.1, 0.3, 0.03);
+                    world.spawnParticle(Particle.SOUL_FIRE_FLAME, loc.clone().add(0, 0.2, 0), 
+                        8, 0.2, 0.1, 0.2, 0.02);
+                    world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(0, 0.3, 0), 
+                        5, 0.2, 0.1, 0.2, 0.01);
+                }
+                
+                // Dramatic flare every 2 seconds
+                if (ThreadLocalRandom.current().nextDouble() < 0.05) {
+                    world.spawnParticle(Particle.EXPLOSION_LARGE, headLoc, 1, 0, 0, 0, 0);
+                    world.spawnParticle(Particle.FLAME, headLoc, 40, 0.5, 0.5, 0.5, 0.1);
+                    world.playSound(loc, Sound.ENTITY_BLAZE_SHOOT, 0.4f, 0.5f);
+                }
+                
+                // Hellfire aura around body
+                if (intensity >= 3) {
+                    for (int i = 0; i < 360; i += 45) {
+                        double angle = Math.toRadians(i + System.currentTimeMillis() / 50.0);
+                        double x = Math.cos(angle) * 0.6;
+                        double z = Math.sin(angle) * 0.6;
+                        world.spawnParticle(Particle.FLAME, loc.clone().add(x, 1, z), 
+                            2, 0.05, 0.1, 0.05, 0.01);
+                    }
                 }
             }
             
             case RAINBOW_AURA -> {
-                // Cycling colored particles around player
-                for (int i = 0; i < particleCount; i++) {
-                    double angle = (System.currentTimeMillis() / 100.0 + i * 0.5) % (2 * Math.PI);
-                    double x = Math.cos(angle) * 0.8;
-                    double z = Math.sin(angle) * 0.8;
-                    Location partLoc = loc.clone().add(x, 1 + Math.sin(angle * 2) * 0.3, z);
-                    
-                    // RGB based on angle
-                    world.spawnParticle(Particle.SPELL_MOB, partLoc, 0, 
-                        (float) ((Math.sin(angle) + 1) / 2),
-                        (float) ((Math.sin(angle + 2.09) + 1) / 2),
-                        (float) ((Math.sin(angle + 4.18) + 1) / 2), 
-                        1);
+                // ENHANCED RAINBOW AURA - Full body rainbow spiral
+                double time = System.currentTimeMillis() / 100.0;
+                
+                // Multiple rainbow spirals at different heights
+                for (double height = 0.2; height <= 2.0; height += 0.3) {
+                    for (int i = 0; i < particleCount * 2; i++) {
+                        double angle = (time + i * 0.3 + height * 0.5) % (2 * Math.PI);
+                        double x = Math.cos(angle) * 0.9;
+                        double z = Math.sin(angle) * 0.9;
+                        Location partLoc = loc.clone().add(x, height, z);
+                        
+                        // Vibrant RGB colors
+                        world.spawnParticle(Particle.SPELL_MOB, partLoc, 0, 
+                            (float) ((Math.sin(angle) + 1) / 2),
+                            (float) ((Math.sin(angle + 2.09) + 1) / 2),
+                            (float) ((Math.sin(angle + 4.18) + 1) / 2), 
+                            1);
+                    }
+                }
+                
+                // Rainbow sparkles
+                if (ThreadLocalRandom.current().nextDouble() < 0.3) {
+                    world.spawnParticle(Particle.END_ROD, loc.clone().add(
+                        ThreadLocalRandom.current().nextDouble(-0.5, 0.5),
+                        ThreadLocalRandom.current().nextDouble(0.5, 2.0),
+                        ThreadLocalRandom.current().nextDouble(-0.5, 0.5)
+                    ), 1, 0, 0, 0, 0.05);
+                }
+                
+                // Colorful trail when moving
+                Long lastMove = lastMovementTime.get(player.getUniqueId());
+                if (lastMove != null && System.currentTimeMillis() - lastMove < 200) {
+                    for (int i = 0; i < 3; i++) {
+                        double hue = (time + i * 2) % 6;
+                        world.spawnParticle(Particle.SPELL_MOB, loc.clone().add(0, 0.5, 0), 0,
+                            (float) ((Math.sin(hue) + 1) / 2),
+                            (float) ((Math.sin(hue + 2.09) + 1) / 2),
+                            (float) ((Math.sin(hue + 4.18) + 1) / 2), 
+                            1);
+                    }
                 }
             }
             
             case SHADOW_WALKER -> {
-                // Dark smoke trail
-                world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(0, 0.5, 0), 
-                    3 + intensity, 0.3, 0.5, 0.3, 0.01);
-                world.spawnParticle(Particle.SQUID_INK, loc.clone().add(0, 0.3, 0), 
-                    1, 0.2, 0.1, 0.2, 0.01);
+                // ENHANCED SHADOW WALKER - Become the darkness
+                // Dense dark smoke around entire body
+                world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(0, 1, 0), 
+                    12 + intensity * 3, 0.5, 0.7, 0.5, 0.02);
+                world.spawnParticle(Particle.SQUID_INK, loc.clone().add(0, 0.8, 0), 
+                    8 + intensity * 2, 0.4, 0.6, 0.4, 0.02);
+                
+                // Dark tendrils reaching out
+                for (int i = 0; i < 4; i++) {
+                    double angle = (System.currentTimeMillis() / 200.0 + i * Math.PI / 2) % (2 * Math.PI);
+                    double x = Math.cos(angle) * 0.7;
+                    double z = Math.sin(angle) * 0.7;
+                    world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(x, 1, z), 
+                        2, 0.1, 0.2, 0.1, 0.01);
+                }
+                
+                // Shadow void particles
+                if (intensity >= 3) {
+                    world.spawnParticle(Particle.PORTAL, loc.clone().add(0, 1, 0), 
+                        8, 0.4, 0.5, 0.4, 0.1);
+                }
+                
+                // Disappearing effect - make player barely visible in smoke
+                if (ThreadLocalRandom.current().nextDouble() < 0.4) {
+                    world.spawnParticle(Particle.LARGE_SMOKE, loc.clone().add(0, 1.5, 0), 
+                        15, 0.3, 0.3, 0.3, 0.01);
+                }
             }
             
             case ANGEL_WINGS -> {
-                // White particles forming wing shapes
-                for (double yaw = -30; yaw <= 30; yaw += 15) {
-                    double radYaw = Math.toRadians(loc.getYaw() + 90 + yaw);
-                    double x = Math.cos(radYaw) * 0.8;
-                    double z = Math.sin(radYaw) * 0.8;
-                    world.spawnParticle(Particle.END_ROD, loc.clone().add(x, 1.2, z), 
-                        1, 0.05, 0.1, 0.05, 0);
-                    
-                    radYaw = Math.toRadians(loc.getYaw() + 270 + yaw);
-                    x = Math.cos(radYaw) * 0.8;
-                    z = Math.sin(radYaw) * 0.8;
-                    world.spawnParticle(Particle.END_ROD, loc.clone().add(x, 1.2, z), 
-                        1, 0.05, 0.1, 0.05, 0);
+                // ENHANCED ANGEL WINGS - Majestic feathered wings
+                double time = System.currentTimeMillis() / 100.0;
+                double wingFlap = Math.sin(time * 0.5) * 0.2; // Flapping motion
+                
+                // Left wing - detailed feather pattern
+                for (double yaw = -60; yaw <= 30; yaw += 10) {
+                    for (double height = 0.5; height <= 1.8; height += 0.2) {
+                        double radYaw = Math.toRadians(loc.getYaw() + 90 + yaw);
+                        double wingSpan = 0.9 + (yaw + 60) / 100.0; // Wing gets wider at base
+                        double x = Math.cos(radYaw) * (wingSpan + wingFlap);
+                        double z = Math.sin(radYaw) * (wingSpan + wingFlap);
+                        
+                        world.spawnParticle(Particle.END_ROD, loc.clone().add(x, height, z), 
+                            1, 0.03, 0.05, 0.03, 0);
+                        
+                        // Add feather detail
+                        if (ThreadLocalRandom.current().nextDouble() < 0.3) {
+                            world.spawnParticle(Particle.FIREWORKS_SPARK, loc.clone().add(x, height, z), 
+                                1, 0.05, 0.05, 0.05, 0);
+                        }
+                    }
+                }
+                
+                // Right wing - detailed feather pattern
+                for (double yaw = -30; yaw <= 60; yaw += 10) {
+                    for (double height = 0.5; height <= 1.8; height += 0.2) {
+                        double radYaw = Math.toRadians(loc.getYaw() + 270 + yaw);
+                        double wingSpan = 0.9 + (60 - yaw) / 100.0;
+                        double x = Math.cos(radYaw) * (wingSpan + wingFlap);
+                        double z = Math.sin(radYaw) * (wingSpan + wingFlap);
+                        
+                        world.spawnParticle(Particle.END_ROD, loc.clone().add(x, height, z), 
+                            1, 0.03, 0.05, 0.03, 0);
+                        
+                        if (ThreadLocalRandom.current().nextDouble() < 0.3) {
+                            world.spawnParticle(Particle.FIREWORKS_SPARK, loc.clone().add(x, height, z), 
+                                1, 0.05, 0.05, 0.05, 0);
+                        }
+                    }
+                }
+                
+                // Holy aura
+                world.spawnParticle(Particle.END_ROD, loc.clone().add(0, 1.5, 0), 
+                    8, 0.4, 0.3, 0.4, 0.02);
+                
+                // Halo above head
+                if (intensity >= 3) {
+                    for (int i = 0; i < 16; i++) {
+                        double angle = (i / 16.0) * 2 * Math.PI + time * 0.5;
+                        double x = Math.cos(angle) * 0.35;
+                        double z = Math.sin(angle) * 0.35;
+                        world.spawnParticle(Particle.END_ROD, loc.clone().add(x, 2.3, z), 
+                            1, 0, 0, 0, 0);
+                    }
                 }
             }
             
             case DEMON_HORNS -> {
-                // Red flame horns on head
+                // ENHANCED DEMON HORNS - Full demonic transformation
                 Location head = loc.clone().add(0, 2, 0);
                 double yawRad = Math.toRadians(loc.getYaw());
                 
-                // Left horn
-                double lx = Math.cos(yawRad + Math.PI/6) * 0.15;
-                double lz = Math.sin(yawRad + Math.PI/6) * 0.15;
-                world.spawnParticle(Particle.FLAME, head.clone().add(lx, 0.2, lz), 
-                    2 + intensity, 0.05, 0.1, 0.05, 0.01);
+                // Tall curved demonic horns
+                for (double h = 0; h <= 0.6; h += 0.1) {
+                    double curve = h * 0.3; // Horns curve outward
+                    
+                    // Left horn
+                    double lx = Math.cos(yawRad + Math.PI/6) * (0.15 + curve);
+                    double lz = Math.sin(yawRad + Math.PI/6) * (0.15 + curve);
+                    world.spawnParticle(Particle.FLAME, head.clone().add(lx, h, lz), 
+                        3 + intensity, 0.05, 0.05, 0.05, 0.01);
+                    world.spawnParticle(Particle.LAVA, head.clone().add(lx, h, lz), 
+                        1, 0, 0, 0, 0);
+                    
+                    // Right horn
+                    double rx = Math.cos(yawRad - Math.PI/6) * (0.15 + curve);
+                    double rz = Math.sin(yawRad - Math.PI/6) * (0.15 + curve);
+                    world.spawnParticle(Particle.FLAME, head.clone().add(rx, h, rz), 
+                        3 + intensity, 0.05, 0.05, 0.05, 0.01);
+                    world.spawnParticle(Particle.LAVA, head.clone().add(rx, h, rz), 
+                        1, 0, 0, 0, 0);
+                }
                 
-                // Right horn
-                double rx = Math.cos(yawRad - Math.PI/6) * 0.15;
-                double rz = Math.sin(yawRad - Math.PI/6) * 0.15;
-                world.spawnParticle(Particle.FLAME, head.clone().add(rx, 0.2, rz), 
-                    2 + intensity, 0.05, 0.1, 0.05, 0.01);
+                // Demonic red aura around head
+                world.spawnParticle(Particle.REDSTONE, head, 12, 0.3, 0.3, 0.3, 1);
+                
+                // Hell smoke from horns
+                if (intensity >= 3) {
+                    world.spawnParticle(Particle.SMOKE_LARGE, head.clone().add(0, 0.5, 0), 
+                        8, 0.2, 0.3, 0.2, 0.02);
+                }
+                
+                // Demonic eyes
+                Location eyeLeft = loc.clone().add(-0.15, 1.8, 0);
+                Location eyeRight = loc.clone().add(0.15, 1.8, 0);
+                world.spawnParticle(Particle.REDSTONE, eyeLeft, 3, 0.02, 0.02, 0.02, 1);
+                world.spawnParticle(Particle.REDSTONE, eyeRight, 3, 0.02, 0.02, 0.02, 1);
             }
             
             case FROST_AURA -> {
@@ -1223,15 +1423,38 @@ public class StrainEffectsManager implements Listener {
             }
             
             case GALAXY_PORTAL -> {
-                // Swirling purple portal particles
-                for (int i = 0; i < intensity + 2; i++) {
-                    double angle = (System.currentTimeMillis() / 50.0 + i * 1.2) % (2 * Math.PI);
-                    double radius = 0.5 + Math.sin(angle * 3) * 0.2;
+                // ENHANCED GALAXY PORTAL - Cosmic dimensional rift
+                double time = System.currentTimeMillis() / 50.0;
+                
+                // Dense swirling portal vortex
+                for (int i = 0; i < (intensity + 3) * 3; i++) {
+                    double angle = (time + i * 0.8) % (2 * Math.PI);
+                    double radius = 0.6 + Math.sin(angle * 3) * 0.3;
                     double x = Math.cos(angle) * radius;
                     double z = Math.sin(angle) * radius;
-                    double y = 1 + Math.sin(System.currentTimeMillis() / 200.0 + i) * 0.3;
+                    double y = 1 + Math.sin(time + i * 0.3) * 0.5;
                     world.spawnParticle(Particle.PORTAL, loc.clone().add(x, y, z), 
-                        2, 0.05, 0.05, 0.05, 0.1);
+                        3, 0.1, 0.1, 0.1, 0.2);
+                }
+                
+                // Cosmic stars
+                if (ThreadLocalRandom.current().nextDouble() < 0.5) {
+                    world.spawnParticle(Particle.END_ROD, loc.clone().add(
+                        ThreadLocalRandom.current().nextDouble(-1, 1),
+                        ThreadLocalRandom.current().nextDouble(0.5, 2),
+                        ThreadLocalRandom.current().nextDouble(-1, 1)
+                    ), 1, 0, 0, 0, 0.1);
+                }
+                
+                // Reverse gravity particles
+                world.spawnParticle(Particle.REVERSE_PORTAL, loc.clone().add(0, 1, 0), 
+                    8 + intensity * 2, 0.5, 0.5, 0.5, 0.3);
+                
+                // Dimensional tears
+                if (intensity >= 4 && ThreadLocalRandom.current().nextDouble() < 0.1) {
+                    world.spawnParticle(Particle.DRAGON_BREATH, loc.clone().add(0, 1.5, 0), 
+                        20, 0.6, 0.4, 0.6, 0.05);
+                    world.playSound(loc, Sound.BLOCK_END_PORTAL_FRAME_FILL, 0.3f, 0.5f);
                 }
             }
             
