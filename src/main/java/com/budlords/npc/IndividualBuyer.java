@@ -331,6 +331,14 @@ public class IndividualBuyer {
     public String getSpecialRequest() { return specialRequest; }
     
     /**
+     * Sets the current mood of the buyer.
+     * Valid moods: "happy", "satisfied", "neutral", "disappointed", "angry"
+     */
+    public void setCurrentMood(String mood) {
+        this.currentMood = mood;
+    }
+    
+    /**
      * Gets a summary of relationship status.
      */
     public String getRelationshipSummary() {

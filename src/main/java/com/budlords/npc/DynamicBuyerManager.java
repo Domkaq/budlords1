@@ -210,7 +210,7 @@ public class DynamicBuyerManager {
         
         // Add demand indicator if buyer wants to buy
         if (hasDemand(entity)) {
-            displayName.append("§a§l💰 "); // Money bag emoji = wants to buy
+            displayName.append("§a§l$ "); // Dollar sign = wants to buy
         }
         
         // Add reputation level stars
@@ -231,11 +231,11 @@ public class DynamicBuyerManager {
         String mood = buyer.getCurrentMood();
         if (mood != null) {
             switch (mood) {
-                case "happy" -> displayName.append(" §a😊"); // Happy face
+                case "happy" -> displayName.append(" §a☺"); // Happy smiley
                 case "satisfied" -> displayName.append(" §e✓"); // Check mark
                 case "neutral" -> { } // No indicator
-                case "disappointed" -> displayName.append(" §7😐"); // Neutral face
-                case "angry" -> displayName.append(" §c😠"); // Angry face
+                case "disappointed" -> displayName.append(" §7-"); // Neutral dash
+                case "angry" -> displayName.append(" §c✗"); // X mark
             }
         }
         
