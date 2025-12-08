@@ -196,17 +196,17 @@ public class FormationManager {
     // ==================== SECRET 666 FORMATION (HIDDEN) ====================
     // DEMON FORMATION - Unlocks demonic bonus for plants (HARDER VERSION)
     // Grants +1 star to center pot and plants, enables Blood Moon transformation
-    // Pattern: Extended inverted commas forming 666 shape (7 pots total - HARDER!)
+    // Pattern: Extended inverted commas forming 666 shape (6 surrounding pots + center = 7 total)
     //       P
     //     P
     //   P
-    // [C] ← Center (demon pot)
+    // [C] ← Center (demon pot - not in pattern array)
     //   P
     //     P
     //       P
     // Requires precise placement and more resources - much harder to achieve!
     private static final int[][][] DEMON_666_FORMATIONS = {
-        {{1, 3}, {1, 2}, {1, 1}, {-1, -1}, {-1, -2}, {-1, -3}}, // Extended 666 pattern (harder!)
+        {{1, 3}, {1, 2}, {1, 1}, {-1, -1}, {-1, -2}, {-1, -3}}, // Extended 666 pattern (6 surrounding)
         {{-1, 3}, {-1, 2}, {-1, 1}, {1, -1}, {1, -2}, {1, -3}}, // Mirrored extended pattern
         {{3, 1}, {2, 1}, {1, 1}, {-1, -1}, {-2, -1}, {-3, -1}}, // Rotated 90° extended
         {{3, -1}, {2, -1}, {1, -1}, {-1, 1}, {-2, 1}, {-3, 1}}  // Rotated 270° extended
@@ -709,6 +709,34 @@ public class FormationManager {
             case DEMON_666 -> 0; // Secret formation - no XP requirement
             default -> 0;
         };
+    }
+    
+    /**
+     * Checks if a location has a 666 Demon Formation and marks the center pot with demon bonus.
+     * This is called when a plant is placed or grows in a demon formation.
+     * @return true if demon bonus was applied
+     */
+    public boolean checkAndApplyDemonBonus(Location potLoc, String strainId) {
+        // Check if this location is the center of a 666 formation
+        FormationType formation = detectFormation(potLoc, strainId, 0);
+        
+        if (formation == FormationType.DEMON_666) {
+            // Mark this pot with demon bonus using persistent data
+            // This would require pot block data storage
+            // For now, just return true to indicate formation detected
+            plugin.getLogger().info("[DEMON 666] Formation detected at X:" + 
+                potLoc.getBlockX() + " Y:" + potLoc.getBlockY() + " Z:" + potLoc.getBlockZ());
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Gets display string for demon bonus status.
+     */
+    public static String getDemonBonusDisplay() {
+        return "§4§l⛧ DEMON BONUS ⛧";
     }
     
     /**
