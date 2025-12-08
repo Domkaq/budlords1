@@ -181,6 +181,36 @@ public class NPCManager {
             plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.SUCCESSFUL_TRADES, 1);
             plugin.getChallengeManager().updateProgress(player, Challenge.ChallengeType.EARN_MONEY, (int) finalPrice);
         }
+        
+        // Record purchase in BuyerRegistry for unified buyer tracking
+        if (plugin.getBuyerRegistry() != null) {
+            UUID buyerId = null;
+            String buyerTypeName = npcType.name();
+            
+            // Map NPC type to buyer ID in registry
+            if (npcType == NPCType.MARKET_JOE) {
+                com.budlords.npc.IndividualBuyer marketJoe = plugin.getBuyerRegistry().getMarketJoe();
+                if (marketJoe != null) {
+                    buyerId = marketJoe.getId();
+                }
+            } else if (npcType == NPCType.BLACKMARKET_JOE) {
+                com.budlords.npc.IndividualBuyer blackMarketJoe = plugin.getBuyerRegistry().getBlackMarketJoe();
+                if (blackMarketJoe != null) {
+                    buyerId = blackMarketJoe.getId();
+                }
+            }
+            
+            // Record the purchase
+            if (buyerId != null) {
+                plugin.getBuyerRegistry().recordPurchase(buyerId, strainId, weight, finalPrice);
+            }
+            
+            // Also update old reputation system for backward compatibility
+            if (plugin.getReputationManager() != null) {
+                int repGain = plugin.getReputationManager().calculateReputationGain(finalPrice, true);
+                plugin.getReputationManager().addReputation(playerId, buyerTypeName, repGain);
+            }
+        }
 
         // Remove item from hand
         if (item.getAmount() == 1) {
