@@ -209,7 +209,7 @@ public class FarmingManager {
     
     /**
      * Calculates cooperative farming bonus based on nearby online players.
-     * HARDENED: Significantly reduced bonuses - teamwork helps but not as much
+     * HARDENED: Radius reduced from 20 to 15 blocks, max bonus reduced from 50% to 20%
      * @param location The plant location
      * @return Multiplier for growth speed (1.0 to 1.2)
      */
@@ -305,9 +305,9 @@ public class FarmingManager {
                 qualityBonus -= 5; // New penalty
             }
             
-            // Pot rating bonus - reduced effectiveness
+            // Pot rating bonus - reduced effectiveness (half of star rating, rounded up)
             if (plant.getPotRating() != null) {
-                qualityBonus += Math.max(1, plant.getPotRating().getStars() / 2); // Half effectiveness
+                qualityBonus += (int) Math.ceil(plant.getPotRating().getStars() / 2.0);
             }
             
             // Fertilizer rating bonus - reduced effectiveness
