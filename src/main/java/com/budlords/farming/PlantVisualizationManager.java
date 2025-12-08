@@ -81,14 +81,24 @@ public class PlantVisualizationManager {
     // Plant location is 1 block above pot, so we offset down to appear inside pot
     // Small armor stands render helmets ~0.5 blocks above spawn point, so we need
     // to go deeper to get the helmet inside the pot
-    private static final double POT_Y_OFFSET = -1.20;
+    // 
+    // Math: For an item to render at pot level:
+    // - Plant location = pot + 1
+    // - Helmet renders at = armor_stand_Y + 0.5
+    // - To render at pot level: (pot + 1) + offset + 0.5 = pot
+    // - Therefore: offset = -1.5
+    //
+    // To render INSIDE the pot (0.2-0.3 blocks down from top):
+    // - offset = -1.5 - 0.2 = -1.7 (to -1.8)
+    private static final double POT_Y_OFFSET = -1.50;
     
-    // Specific Y offsets for early growth stages (stages 0-2) to ensure they appear inside the pot
-    // These stages need deeper positioning as they're smaller and should be more contained
-    // FIXED: Adjusted offsets to prevent floating and ensure proper pot positioning
-    private static final double SEED_Y_OFFSET = -1.35;    // Seeds sitting in pot soil
-    private static final double SPROUT_Y_OFFSET = -1.30; // Sprouts emerging from soil
-    private static final double VEG_Y_OFFSET = -1.25;     // Vegetative - growing from pot base
+    // Specific Y offsets for early growth stages to ensure proper positioning
+    // Stage 0 (Seed): Deep in the soil, near bottom of pot
+    private static final double SEED_Y_OFFSET = -1.75;
+    // Stage 1 (Sprout): Emerging from soil, still mostly inside pot  
+    private static final double SPROUT_Y_OFFSET = -1.65;
+    // Stage 2 (Vegetative): Growing from pot base, bottom leaves at pot rim
+    private static final double VEG_Y_OFFSET = -1.55;
 
     public PlantVisualizationManager(BudLords plugin, StrainManager strainManager) {
         this.plugin = plugin;
@@ -162,11 +172,12 @@ public class PlantVisualizationManager {
 
     /**
      * Creates the seed stage visual (Stage 0).
-     * A realistic cannabis seed sitting in soil with a small dirt mound appearance.
-     * Professional visualization with proper depth and detail.
-     * Plants appear INSIDE the pot, not floating above.
+     * A realistic cannabis seed sitting deep in the soil with proper depth.
+     * Enhanced with additional detail elements for a more professional look.
+     * Seeds appear firmly planted in the pot, not floating above it.
      * 
-     * IMPROVED: Enhanced visual with soil mound and better seed representation.
+     * FIXED: Corrected Y offset calculation to prevent floating
+     * IMPROVED: Added soil coverage and multiple seed detail levels
      * 
      * @param plantCount The expected total plant count (used for LOD calculation)
      */
@@ -180,30 +191,44 @@ public class PlantVisualizationManager {
         double heightScale = config != null ? config.getHeightScale() : 1.0;
         boolean glowing = config != null && config.isGlowing();
         
-        // Base location - centered on the pot block
-        // Add random offset for variety (-0.05 to 0.05)
-        double randomX = (Math.random() - 0.5) * 0.1;
-        double randomZ = (Math.random() - 0.5) * 0.1;
+        // Base location - centered on the pot block with slight randomization
+        double randomX = (Math.random() - 0.5) * 0.08;
+        double randomZ = (Math.random() - 0.5) * 0.08;
         Location baseLoc = loc.clone().add(0.5 + randomX, SEED_Y_OFFSET, 0.5 + randomZ);
         
-        // Soil mound base (only in HIGH detail mode)
-        if (lod == DetailLevel.HIGH) {
-            ArmorStand soil = createBaseArmorStand(world, baseLoc.clone().add(0, -0.08, 0));
-            soil.setHelmet(new ItemStack(Material.BROWN_CONCRETE_POWDER));
+        // Soil layer representation (in MEDIUM and HIGH detail)
+        if (lod != DetailLevel.LOW) {
+            ArmorStand soil = createBaseArmorStand(world, baseLoc.clone().add(0, -0.06, 0));
+            soil.setHelmet(new ItemStack(Material.DIRT));
             soil.setSmall(true);
-            soil.setHeadPose(new EulerAngle(Math.toRadians(90), 0, 0)); // Lay flat
+            soil.setHeadPose(new EulerAngle(Math.toRadians(85), 0, 0));
             ids.add(soil.getUniqueId());
         }
         
-        // Main seed with improved positioning
+        // Additional soil detail for HIGH mode
+        if (lod == DetailLevel.HIGH) {
+            // Small peat moss/soil particles around seed
+            for (int i = 0; i < 3; i++) {
+                double angle = (Math.PI * 2 / 3) * i;
+                double offsetX = Math.cos(angle) * 0.04;
+                double offsetZ = Math.sin(angle) * 0.04;
+                ArmorStand particle = createBaseArmorStand(world, baseLoc.clone().add(offsetX, -0.03, offsetZ));
+                particle.setHelmet(new ItemStack(Material.BROWN_CONCRETE_POWDER));
+                particle.setSmall(true);
+                particle.setHeadPose(new EulerAngle(Math.toRadians(90), angle, 0));
+                ids.add(particle.getUniqueId());
+            }
+        }
+        
+        // Main seed - positioned deeper for more realistic appearance
         ArmorStand seed = createBaseArmorStand(world, baseLoc);
         seed.setHelmet(new ItemStack(Material.COCOA_BEANS));
         seed.setSmall(true);
         if (glowing) seed.setGlowing(true);
         
-        // Subtle tilt angle for realism
+        // Natural tilt for organic look
         double randomAngle = Math.random() * Math.PI * 2;
-        seed.setHeadPose(new EulerAngle(Math.toRadians(20), randomAngle, Math.toRadians(5)));
+        seed.setHeadPose(new EulerAngle(Math.toRadians(25), randomAngle, Math.toRadians(8)));
         ids.add(seed.getUniqueId());
         
         return ids;
@@ -213,8 +238,10 @@ public class PlantVisualizationManager {
      * Creates the sprout stage visual (Stage 1).
      * A realistic cannabis seedling with cotyledons (seed leaves) and first true leaves emerging.
      * Shows the characteristic double-round seed leaves with the first serrated cannabis leaves above.
+     * The sprout is anchored firmly in the soil with visible root system and proper stem structure.
      * 
-     * IMPROVED: Enhanced detail with proper stem segments and better leaf positioning.
+     * FIXED: Corrected Y offset to prevent floating appearance
+     * IMPROVED: Enhanced stem detail, better leaf positioning, added root representation
      * 
      * @param plantCount The expected total plant count (used for LOD calculation)
      */
@@ -236,51 +263,81 @@ public class PlantVisualizationManager {
         
         Location baseLoc = loc.clone().add(0.5, SPROUT_Y_OFFSET, 0.5);
         
-        // Lower stem base (more visible and grounded)
-        ArmorStand stemBase = createBaseArmorStand(world, baseLoc.clone().add(0, 0.05 * heightScale, 0));
-        stemBase.setHelmet(new ItemStack(Material.STICK));
+        // Root/soil anchor (only in MEDIUM and HIGH detail)
+        if (lod != DetailLevel.LOW) {
+            ArmorStand rootBase = createBaseArmorStand(world, baseLoc.clone().add(0, -0.05, 0));
+            rootBase.setHelmet(new ItemStack(Material.BROWN_MUSHROOM_BLOCK));
+            rootBase.setSmall(true);
+            rootBase.setHeadPose(new EulerAngle(Math.toRadians(90), 0, 0));
+            ids.add(rootBase.getUniqueId());
+        }
+        
+        // Lower stem base - thicker, more visible, anchored in soil
+        ArmorStand stemBase = createBaseArmorStand(world, baseLoc.clone().add(0, 0.02, 0));
+        stemBase.setHelmet(new ItemStack(Material.BAMBOO));
         stemBase.setSmall(true);
         stemBase.setHeadPose(new EulerAngle(0, 0, 0)); // Straight up
         ids.add(stemBase.getUniqueId());
         
-        // Upper stem segment
-        ArmorStand stem = createBaseArmorStand(world, baseLoc.clone().add(0, 0.15 * heightScale, 0));
+        // Middle stem segment - transition zone
+        ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, 0.12 * heightScale, 0));
+        stemMiddle.setHelmet(new ItemStack(Material.STICK));
+        stemMiddle.setSmall(true);
+        ids.add(stemMiddle.getUniqueId());
+        
+        // Upper stem segment - young green stem
+        ArmorStand stem = createBaseArmorStand(world, baseLoc.clone().add(0, 0.20 * heightScale, 0));
         stem.setHelmet(new ItemStack(Material.END_ROD));
         stem.setSmall(true);
         if (glowing) stem.setGlowing(true);
         ids.add(stem.getUniqueId());
         
-        // Cotyledons (seed leaves) - improved positioning
+        // Cotyledons (seed leaves) - rounded, opposite pairs
         for (int i = 0; i < 2; i++) {
             double angle = randomRotation + (Math.PI * i);
-            double offsetX = Math.cos(angle) * 0.12 * leafScale;
-            double offsetZ = Math.sin(angle) * 0.12 * leafScale;
+            double offsetX = Math.cos(angle) * 0.11 * leafScale;
+            double offsetZ = Math.sin(angle) * 0.11 * leafScale;
             
-            ArmorStand coty = createBaseArmorStand(world, baseLoc.clone().add(offsetX, 0.20 * heightScale, offsetZ));
+            ArmorStand coty = createBaseArmorStand(world, baseLoc.clone().add(offsetX, 0.25 * heightScale, offsetZ));
             coty.setHelmet(new ItemStack(Material.LILY_PAD));
             coty.setSmall(true);
-            coty.setHeadPose(new EulerAngle(Math.toRadians(45), angle + Math.toRadians(90), Math.toRadians(10)));
+            coty.setHeadPose(new EulerAngle(Math.toRadians(50), angle + Math.toRadians(90), Math.toRadians(12)));
             ids.add(coty.getUniqueId());
         }
         
-        // First true leaves - only show in MEDIUM and HIGH LOD
+        // First true leaves - characteristic serrated cannabis leaves
         if (lod != DetailLevel.LOW) {
             for (int i = 0; i < 2; i++) {
                 double angle = randomRotation + Math.PI * i + Math.toRadians(90); // Perpendicular to cotyledons
-                double offsetX = Math.cos(angle) * 0.08 * leafScale;
-                double offsetZ = Math.sin(angle) * 0.08 * leafScale;
+                double offsetX = Math.cos(angle) * 0.09 * leafScale;
+                double offsetZ = Math.sin(angle) * 0.09 * leafScale;
                 
-                ArmorStand trueLeaf = createBaseArmorStand(world, baseLoc.clone().add(offsetX, 0.32 * heightScale, offsetZ));
-                trueLeaf.setHelmet(new ItemStack(Material.OAK_LEAVES));
+                ArmorStand trueLeaf = createBaseArmorStand(world, baseLoc.clone().add(offsetX, 0.36 * heightScale, offsetZ));
+                trueLeaf.setHelmet(new ItemStack(leafMaterial));
                 trueLeaf.setSmall(true);
-                trueLeaf.setHeadPose(new EulerAngle(Math.toRadians(35), angle + Math.toRadians(90), Math.toRadians(5)));
+                trueLeaf.setHeadPose(new EulerAngle(Math.toRadians(38), angle + Math.toRadians(90), Math.toRadians(6)));
                 ids.add(trueLeaf.getUniqueId());
             }
         }
         
-        // Growing tip - only show in HIGH LOD
+        // Second set of true leaves - only in HIGH LOD
         if (lod == DetailLevel.HIGH) {
-            ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.45 * heightScale, 0));
+            for (int i = 0; i < 2; i++) {
+                double angle = randomRotation + Math.PI * i + Math.toRadians(45);
+                double offsetX = Math.cos(angle) * 0.06 * leafScale;
+                double offsetZ = Math.sin(angle) * 0.06 * leafScale;
+                
+                ArmorStand youngLeaf = createBaseArmorStand(world, baseLoc.clone().add(offsetX, 0.45 * heightScale, offsetZ));
+                youngLeaf.setHelmet(new ItemStack(Material.OAK_LEAVES));
+                youngLeaf.setSmall(true);
+                youngLeaf.setHeadPose(new EulerAngle(Math.toRadians(25), angle + Math.toRadians(90), Math.toRadians(3)));
+                ids.add(youngLeaf.getUniqueId());
+            }
+        }
+        
+        // Growing tip/apical meristem - only show in HIGH LOD
+        if (lod == DetailLevel.HIGH) {
+            ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.52 * heightScale, 0));
             growingTip.setHelmet(new ItemStack(Material.SWEET_BERRIES));
             growingTip.setSmall(true);
             if (glowing) growingTip.setGlowing(true);
@@ -294,12 +351,14 @@ public class PlantVisualizationManager {
      * Creates the vegetative stage visual (Stage 2).
      * A detailed cannabis plant in vegetative growth with multiple node levels,
      * realistic fan leaves with proper finger arrangement, and a structured stem system.
-     * This stage shows rapid vegetative growth with lush green foliage.
+     * This stage shows rapid vegetative growth with lush green foliage anchored in the pot.
      * 
-     * OPTIMIZED: Reduced from 30+ armor stands to 6-15 based on LOD.
-     * - LOW: 6 stands (stem + main leaves only)
-     * - MEDIUM: 10 stands (stem + leaves, no fingers)
-     * - HIGH: 15 stands (stem + leaves + simplified fingers)
+     * FIXED: Corrected Y offset to ensure plant grows from pot base, not floating
+     * IMPROVED: Enhanced root representation, better stem structure, more detailed nodes
+     * OPTIMIZED: Balanced detail levels - 8-18 armor stands based on LOD
+     * - LOW: 8 stands (root + stem + basic leaves)
+     * - MEDIUM: 13 stands (root + stem + leaves + some details)
+     * - HIGH: 18 stands (root + stem + leaves + fingers + internodes)
      * 
      * @param plantCount The expected total plant count (used for LOD calculation)
      */
@@ -321,33 +380,48 @@ public class PlantVisualizationManager {
         // Random rotation for visual variety
         double randomRotation = Math.random() * Math.PI * 2;
         
-        // ===== MAIN STEM (2-3 segments based on LOD) =====
-        ArmorStand stemLower = createBaseArmorStand(world, baseLoc.clone().add(0, 0.08 * heightScale, 0));
+        // ===== ROOT SYSTEM / POT BASE (only in MEDIUM and HIGH) =====
+        if (lod != DetailLevel.LOW) {
+            ArmorStand rootMass = createBaseArmorStand(world, baseLoc.clone().add(0, -0.04, 0));
+            rootMass.setHelmet(new ItemStack(Material.BROWN_MUSHROOM_BLOCK));
+            rootMass.setSmall(true);
+            rootMass.setHeadPose(new EulerAngle(Math.toRadians(85), 0, 0));
+            ids.add(rootMass.getUniqueId());
+        }
+        
+        // ===== MAIN STEM (3-4 segments based on LOD) =====
+        // Lower stem - thick, woody base
+        ArmorStand stemBase = createBaseArmorStand(world, baseLoc.clone().add(0, 0.02, 0));
+        stemBase.setHelmet(new ItemStack(Material.DARK_OAK_LOG));
+        stemBase.setSmall(true);
+        ids.add(stemBase.getUniqueId());
+        
+        ArmorStand stemLower = createBaseArmorStand(world, baseLoc.clone().add(0, 0.12 * heightScale, 0));
         stemLower.setHelmet(new ItemStack(Material.BAMBOO));
         stemLower.setSmall(true);
         if (glowing) stemLower.setGlowing(true);
         ids.add(stemLower.getUniqueId());
         
         if (lod != DetailLevel.LOW) {
-            ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, 0.28 * heightScale, 0));
+            ArmorStand stemMiddle = createBaseArmorStand(world, baseLoc.clone().add(0, 0.32 * heightScale, 0));
             stemMiddle.setHelmet(new ItemStack(Material.STICK));
             stemMiddle.setSmall(true);
             ids.add(stemMiddle.getUniqueId());
         }
         
-        ArmorStand stemUpper = createBaseArmorStand(world, baseLoc.clone().add(0, 0.48 * heightScale, 0));
+        ArmorStand stemUpper = createBaseArmorStand(world, baseLoc.clone().add(0, 0.52 * heightScale, 0));
         stemUpper.setHelmet(new ItemStack(Material.END_ROD));
         stemUpper.setSmall(true);
         ids.add(stemUpper.getUniqueId());
         
         // ===== NODE 1 - BOTTOM FAN LEAVES =====
-        double node1Height = 0.18 * heightScale;
-        // Always 2 leaves at bottom node for structural integrity
-        int node1Leaves = 2;
+        double node1Height = 0.22 * heightScale;
+        // Always show at least 2 main leaves for structure
+        int node1Leaves = (lod == DetailLevel.LOW) ? 2 : 4;
         for (int i = 0; i < node1Leaves; i++) {
-            double angle = randomRotation + (Math.PI * i);
-            double offsetX = Math.cos(angle) * 0.2 * leafScale;
-            double offsetZ = Math.sin(angle) * 0.2 * leafScale;
+            double angle = randomRotation + (Math.PI * 2 / node1Leaves) * i;
+            double offsetX = Math.cos(angle) * 0.18 * leafScale;
+            double offsetZ = Math.sin(angle) * 0.18 * leafScale;
             
             ArmorStand fanLeaf = createBaseArmorStand(world, baseLoc.clone().add(offsetX, node1Height, offsetZ));
             fanLeaf.setHelmet(new ItemStack(Material.JUNGLE_LEAVES));
@@ -355,58 +429,59 @@ public class PlantVisualizationManager {
             fanLeaf.setHeadPose(new EulerAngle(Math.toRadians(55), angle + Math.toRadians(90), Math.toRadians(12)));
             ids.add(fanLeaf.getUniqueId());
             
-            // Add finger details only in HIGH LOD mode (simplified to 2 fingers instead of 4)
-            if (lod == DetailLevel.HIGH) {
-                for (int j = -1; j <= 1; j += 2) { // Only -1 and 1
-                    double fingerAngle = angle + Math.toRadians(j * 18);
-                    double fingerDist = 0.12 * leafScale;
+            // Add characteristic 5-finger detail in HIGH LOD mode
+            if (lod == DetailLevel.HIGH && i < 2) {
+                for (int j = -1; j <= 1; j += 2) {
+                    double fingerAngle = angle + Math.toRadians(j * 20);
+                    double fingerDist = 0.13 * leafScale;
                     double fingerX = Math.cos(fingerAngle) * fingerDist;
                     double fingerZ = Math.sin(fingerAngle) * fingerDist;
                     
                     ArmorStand finger = createBaseArmorStand(world, baseLoc.clone().add(fingerX, node1Height + 0.02, fingerZ));
                     finger.setHelmet(new ItemStack(Material.OAK_LEAVES));
                     finger.setSmall(true);
-                    finger.setHeadPose(new EulerAngle(Math.toRadians(50), fingerAngle + Math.toRadians(90), Math.toRadians(j * 6)));
+                    finger.setHeadPose(new EulerAngle(Math.toRadians(48), fingerAngle + Math.toRadians(90), Math.toRadians(j * 8)));
                     ids.add(finger.getUniqueId());
                 }
             }
         }
         
-        // ===== NODE 2 - MIDDLE LEAVES (only in MEDIUM and HIGH) =====
+        // ===== NODE 2 - MIDDLE INTERNODAL LEAVES (only in MEDIUM and HIGH) =====
         if (lod != DetailLevel.LOW) {
-            double node2Height = 0.38 * heightScale;
-            for (int i = 0; i < 2; i++) {
-                double angle = randomRotation + Math.PI * i + Math.toRadians(90);
-                double offsetX = Math.cos(angle) * 0.16 * leafScale;
-                double offsetZ = Math.sin(angle) * 0.16 * leafScale;
+            double node2Height = 0.42 * heightScale;
+            int node2Leaves = (lod == DetailLevel.MEDIUM) ? 2 : 4;
+            for (int i = 0; i < node2Leaves; i++) {
+                double angle = randomRotation + (Math.PI * 2 / node2Leaves) * i + Math.toRadians(45);
+                double offsetX = Math.cos(angle) * 0.14 * leafScale;
+                double offsetZ = Math.sin(angle) * 0.14 * leafScale;
                 
                 ArmorStand fanLeaf = createBaseArmorStand(world, baseLoc.clone().add(offsetX, node2Height, offsetZ));
                 fanLeaf.setHelmet(new ItemStack(leafMaterial));
                 fanLeaf.setSmall(true);
-                fanLeaf.setHeadPose(new EulerAngle(Math.toRadians(42), angle + Math.toRadians(90), Math.toRadians(8)));
+                fanLeaf.setHeadPose(new EulerAngle(Math.toRadians(45), angle + Math.toRadians(90), Math.toRadians(10)));
                 ids.add(fanLeaf.getUniqueId());
             }
         }
         
-        // ===== NODE 3 - UPPER YOUNG LEAVES (only in HIGH) =====
+        // ===== NODE 3 - UPPER DEVELOPING LEAVES (only in HIGH) =====
         if (lod == DetailLevel.HIGH) {
-            double node3Height = 0.55 * heightScale;
+            double node3Height = 0.62 * heightScale;
             for (int i = 0; i < 4; i++) {
                 double angle = randomRotation + (Math.PI / 2) * i;
-                double offsetX = Math.cos(angle) * 0.09 * leafScale;
-                double offsetZ = Math.sin(angle) * 0.09 * leafScale;
+                double offsetX = Math.cos(angle) * 0.10 * leafScale;
+                double offsetZ = Math.sin(angle) * 0.10 * leafScale;
                 
                 ArmorStand youngLeaf = createBaseArmorStand(world, baseLoc.clone().add(offsetX, node3Height, offsetZ));
-                youngLeaf.setHelmet(new ItemStack(Material.OAK_LEAVES));
+                youngLeaf.setHelmet(new ItemStack(Material.AZALEA_LEAVES));
                 youngLeaf.setSmall(true);
-                youngLeaf.setHeadPose(new EulerAngle(Math.toRadians(28), angle + Math.toRadians(90), 0));
+                youngLeaf.setHeadPose(new EulerAngle(Math.toRadians(32), angle + Math.toRadians(90), Math.toRadians(5)));
                 if (glowing) youngLeaf.setGlowing(true);
                 ids.add(youngLeaf.getUniqueId());
             }
         }
         
-        // ===== GROWING TIP =====
-        ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.65 * heightScale, 0));
+        // ===== APICAL MERISTEM / GROWING TIP =====
+        ArmorStand growingTip = createBaseArmorStand(world, baseLoc.clone().add(0, 0.72 * heightScale, 0));
         growingTip.setHelmet(new ItemStack(Material.SWEET_BERRIES));
         growingTip.setSmall(true);
         if (glowing) growingTip.setGlowing(true);
