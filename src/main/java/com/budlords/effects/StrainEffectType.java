@@ -63,6 +63,9 @@ public enum StrainEffectType {
     THIRD_EYE("Third Eye", "§5👁", "See beyond the visible!", Material.ENDER_EYE,
         "Night vision and glowing entities", EffectCategory.PERCEPTION),
     
+    NIGHT_VISION("Night Vision", "§e👁", "See clearly in the dark!", Material.GOLDEN_CARROT,
+        "Enhanced night vision ability", EffectCategory.PERCEPTION),
+    
     MATRIX_VISION("Matrix Vision", "§a📟", "See the code...", Material.LIME_STAINED_GLASS,
         "Green tinted vision effect", EffectCategory.PERCEPTION),
     
@@ -541,6 +544,7 @@ public enum StrainEffectType {
             case DOLPHIN_SWIM -> Particle.BUBBLE_COLUMN_UP;
             case ROCKET_BOOST -> Particle.FLAME;
             case THIRD_EYE -> Particle.ENCHANTMENT_TABLE;
+            case NIGHT_VISION -> Particle.END_ROD;
             case MATRIX_VISION -> Particle.VILLAGER_HAPPY;
             case DRUNK_VISION -> Particle.SPELL_MOB;
             case EAGLE_SIGHT -> Particle.END_ROD;

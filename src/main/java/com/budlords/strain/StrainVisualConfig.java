@@ -94,7 +94,8 @@ public class StrainVisualConfig {
         VOLCANO("Volcano", Material.MAGMA_BLOCK, "Volcanic lava buds"),
         VOID("Void", Material.OBSIDIAN, "Dark void dimension buds"),
         STAR("Star", Material.NETHER_STAR, "Celestial star buds"),
-        MIRROR("Mirror", Material.GLASS, "Reflective mirror buds");
+        MIRROR("Mirror", Material.GLASS, "Reflective mirror buds"),
+        DEMON("Demon", Material.WITHER_SKELETON_SKULL, "Demonic dark buds");
         
         private final String displayName;
         private final Material defaultMaterial;
