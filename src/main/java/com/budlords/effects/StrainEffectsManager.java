@@ -1188,7 +1188,7 @@ public class StrainEffectsManager implements Listener {
                         -0.2,
                         ThreadLocalRandom.current().nextDouble(-0.2, 0.2)
                     );
-                    world.spawnParticle(Particle.DRIPPING_LAVA, dripLoc, 2, 0, 0, 0, 0);
+                    world.spawnParticle(Particle.DRIPPING_DRIPSTONE_LAVA, dripLoc, 2, 0, 0, 0, 0);
                 }
                 
                 // Hellfire trail when moving
@@ -1198,7 +1198,7 @@ public class StrainEffectsManager implements Listener {
                         15 + intensity * 2, 0.3, 0.1, 0.3, 0.03);
                     world.spawnParticle(Particle.SOUL_FIRE_FLAME, loc.clone().add(0, 0.2, 0), 
                         8, 0.2, 0.1, 0.2, 0.02);
-                    world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(0, 0.3, 0), 
+                    world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 0.3, 0), 
                         5, 0.2, 0.1, 0.2, 0.01);
                 }
                 
@@ -1268,7 +1268,7 @@ public class StrainEffectsManager implements Listener {
             case SHADOW_WALKER -> {
                 // ENHANCED SHADOW WALKER - Become the darkness
                 // Dense dark smoke around entire body
-                world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(0, 1, 0), 
+                world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 1, 0), 
                     12 + intensity * 3, 0.5, 0.7, 0.5, 0.02);
                 world.spawnParticle(Particle.SQUID_INK, loc.clone().add(0, 0.8, 0), 
                     8 + intensity * 2, 0.4, 0.6, 0.4, 0.02);
@@ -1278,7 +1278,7 @@ public class StrainEffectsManager implements Listener {
                     double angle = (System.currentTimeMillis() / 200.0 + i * Math.PI / 2) % (2 * Math.PI);
                     double x = Math.cos(angle) * 0.7;
                     double z = Math.sin(angle) * 0.7;
-                    world.spawnParticle(Particle.SMOKE_LARGE, loc.clone().add(x, 1, z), 
+                    world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(x, 1, z), 
                         2, 0.1, 0.2, 0.1, 0.01);
                 }
                 
@@ -1290,7 +1290,7 @@ public class StrainEffectsManager implements Listener {
                 
                 // Disappearing effect - make player barely visible in smoke
                 if (ThreadLocalRandom.current().nextDouble() < 0.4) {
-                    world.spawnParticle(Particle.LARGE_SMOKE, loc.clone().add(0, 1.5, 0), 
+                    world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 1.5, 0), 
                         15, 0.3, 0.3, 0.3, 0.01);
                 }
             }

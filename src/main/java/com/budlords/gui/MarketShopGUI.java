@@ -477,8 +477,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
         // Add each cure type
         int slot = 10;
         for (PlantDisease.Cure cure : PlantDisease.Cure.values()) {
-            // Skip Golden Elixir - too rare for regular shop
-            if (cure == PlantDisease.Cure.GOLDEN_ELIXIR) continue;
+            // No need to skip any cure types - only UNIVERSAL_CURE exists now
             
             double price = cure.getBaseCost();
             
@@ -533,13 +532,7 @@ public class MarketShopGUI implements InventoryHolder, Listener {
     
     private String getCureTargetInfo(PlantDisease.Cure cure) {
         return switch (cure) {
-            case FUNGICIDE -> "Root Rot, Powdery Mildew, Botrytis";
-            case ANTIBACTERIAL_SPRAY -> "Leaf Blight, Bacterial infections";
-            case PESTICIDE -> "Spider Mites, Aphids, Thrips";
-            case NUTRIENT_FLUSH -> "Nutrient Burn, Heat Stress, Light Burn";
-            case NEEM_OIL -> "Multiple pest types (general use)";
-            case HEALING_SALVE -> "General plant health (moderate effectiveness)";
-            case GOLDEN_ELIXIR -> "Mystical diseases (Zombie Fungus, Crystal Virus)";
+            case UNIVERSAL_CURE -> "All plant diseases including mystical";
         };
     }
 
