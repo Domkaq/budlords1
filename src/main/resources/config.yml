@@ -5,20 +5,22 @@
 # Autosave interval in seconds (default: 300 = 5 minutes)
 autosave-interval-seconds: 300
 
-# Economy settings
+# Economy settings - HARDENED DIFFICULTY
 economy:
   # Currency symbol
   currency-symbol: "$"
-  # Starting balance for new players
-  starting-balance: 0.0
+  # Starting balance for new players - NEGATIVE start for extreme challenge
+  starting-balance: -100.0  # Start in debt!
 
-# Farming settings
+# Farming settings - HARDENED DIFFICULTY
 farming:
   # How often to check for plant growth (seconds)
   growth-check-interval-seconds: 60
-  # Base time between growth stages (seconds)
+  # Base time between growth stages (seconds) - SIGNIFICANTLY INCREASED
   # Higher star pots and better care reduce this time
-  growth-interval-seconds: 300
+  # HARDENED: 900 seconds (15 minutes) per stage instead of 300 (5 minutes)
+  # Full grow time: 45 minutes minimum with perfect conditions
+  growth-interval-seconds: 900
   # Particle effect interval (ticks, 20 = 1 second)
   particle-interval-ticks: 40
   # Enable pot-based growing (new system)
@@ -34,18 +36,18 @@ farming:
   # Disable this for performance if you have many plants
   3d-visualization: true
 
-# Star Quality System (★ 1-5)
+# Star Quality System (★ 1-5) - HARDENED DIFFICULTY
 quality:
   # Enable star quality system for all items
   enabled: true
-  # Probability weights for random star generation
+  # Probability weights for random star generation - MUCH HARDER TO GET HIGH STARS
   # Values don't need to sum to 100, they are relative weights
   star-weights:
-    one-star: 40
-    two-star: 30
-    three-star: 18
-    four-star: 9
-    five-star: 3
+    one-star: 55    # Increased from 40
+    two-star: 30    # Unchanged
+    three-star: 12  # Reduced from 18
+    four-star: 3    # Reduced from 9
+    five-star: 1    # Reduced from 3
 
 # Packaging multipliers
 # Value = base price × multiplier
@@ -86,20 +88,20 @@ trading:
     # Add more entity types as needed
     # Full list: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html
 
-# Prestige System settings
+# Prestige System settings - HARDENED DIFFICULTY
 prestige:
   # Enable prestige system
   enabled: true
-  # Base cost for first prestige (doubles each level)
-  base-cost: 500000
+  # Base cost for first prestige (significantly increased)
+  base-cost: 1000000  # Doubled from 500k
   # Maximum prestige level
   max-level: 10
-  # Bonuses per prestige level
+  # Bonuses per prestige level - REDUCED for harder gameplay
   bonuses:
-    earnings-percent: 10     # +10% per level
-    growth-speed-percent: 5  # +5% per level
-    quality-percent: 8       # +8% per level
-    trade-success-percent: 2 # +2% per level
+    earnings-percent: 6      # +6% per level (was 10%)
+    growth-speed-percent: 3  # +3% per level (was 5%)
+    quality-percent: 5       # +5% per level (was 8%)
+    trade-success-percent: 1 # +1% per level (was 2%)
 
 # Challenge System settings
 challenges:
@@ -123,20 +125,20 @@ events:
     police-raid: 0.02
     market-boom: 0.04
 
-# Crossbreeding settings
+# Crossbreeding settings - HARDENED DIFFICULTY
 crossbreed:
   # Enable crossbreeding lab
   enabled: true
-  # Base cost for crossbreeding
-  base-cost: 500
-  # Mutation chance (0.0 to 1.0)
-  mutation-chance: 0.05
-  # Bonus mutation chance when using legendary parents
-  legendary-mutation-bonus: 0.10
-  # Chance for 6-star legendary mutation (only during mutations)
-  six-star-mutation-chance: 0.02
-  # Extra mutation chance when both parents are 5-star
-  five-star-parent-bonus: 0.10
+  # Base cost for crossbreeding - SIGNIFICANTLY INCREASED
+  base-cost: 2000  # Quadrupled from 500
+  # Mutation chance (0.0 to 1.0) - REDUCED
+  mutation-chance: 0.02  # Reduced from 0.05
+  # Bonus mutation chance when using legendary parents - REDUCED
+  legendary-mutation-bonus: 0.05  # Reduced from 0.10
+  # Chance for 6-star legendary mutation (only during mutations) - REDUCED
+  six-star-mutation-chance: 0.005  # Reduced from 0.02
+  # Extra mutation chance when both parents are 5-star - REDUCED
+  five-star-parent-bonus: 0.05  # Reduced from 0.10
   # Maximum effects for crossbred strains
   max-effects-crossbred: 8
   # Maximum effects for admin-created strains (via /straincreator)
@@ -196,16 +198,16 @@ weather:
   # Show weather particles near plants
   particle-effects: true
 
-# Disease System settings
+# Disease System settings - HARDENED DIFFICULTY
 diseases:
   # Enable plant diseases
   enabled: true
-  # Base infection chance multiplier (0.5 = half as likely)
-  infection-rate-multiplier: 1.0
+  # Base infection chance multiplier - INCREASED for more disease pressure
+  infection-rate-multiplier: 2.0  # Doubled from 1.0
   # Allow diseases to spread to nearby plants
   spread-enabled: true
-  # Maximum spread radius in blocks
-  spread-radius: 3
+  # Maximum spread radius in blocks - INCREASED spread danger
+  spread-radius: 5  # Increased from 3
 
 # Achievement System settings
 achievements:
