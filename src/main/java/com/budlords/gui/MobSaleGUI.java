@@ -514,7 +514,26 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             if (slot == SALE_SLOTS[i]) {
                 ItemStack cursor = event.getCursor();
                 
-                // Placing item
+                // Handle shift-click to remove item from sale slot
+                if (event.isShiftClick() && session.itemsToSell[i] != null) {
+                    // Return item to player inventory
+                    ItemStack itemToReturn = session.itemsToSell[i];
+                    session.itemsToSell[i] = null;
+                    
+                    HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(itemToReturn);
+                    if (!leftover.isEmpty()) {
+                        // If inventory full, drop at player's location
+                        leftover.values().forEach(item -> 
+                            player.getWorld().dropItemNaturally(player.getLocation(), item)
+                        );
+                    }
+                    
+                    player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, 0.8f);
+                    updateInventory(event.getInventory(), session, player);
+                    return;
+                }
+                
+                // Placing item with cursor
                 if (cursor != null && cursor.getType() != Material.AIR) {
                     if (isSellableItem(cursor)) {
                         if (session.itemsToSell[i] != null) {
@@ -528,8 +547,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                         player.sendMessage("§cYou can only sell packaged products and joints!");
                         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
                     }
-                } else if (session.itemsToSell[i] != null) {
-                    // Picking up item
+                } else if (session.itemsToSell[i] != null && !event.isShiftClick()) {
+                    // Picking up item with cursor (regular click)
                     player.setItemOnCursor(session.itemsToSell[i]);
                     session.itemsToSell[i] = null;
                     player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, 0.8f);
@@ -675,12 +694,24 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             com.budlords.npc.IndividualBuyer buyer = plugin.getBuyerMatcher().findBestMatch(itemsList, playerId);
             
             if (buyer != null) {
-                // Record all purchases with this buyer
-                for (ItemStack item : session.items.values()) {
+                // Record all purchases with this buyer (including joints!)
+                for (ItemStack item : session.itemsToSell) {
                     if (item != null && !item.getType().equals(Material.AIR)) {
-                        String strainId = packagingManager.getStrainId(item);
+                        String strainId = null;
+                        int amount = 0;
+                        
+                        // Get strain ID from packaged products
+                        if (packagingManager.isPackagedProduct(item)) {
+                            strainId = packagingManager.getStrainIdFromPackage(item);
+                            amount = packagingManager.getWeightFromPackage(item) * item.getAmount();
+                        }
+                        // Get strain ID from joints
+                        else if (JointItems.isJoint(item)) {
+                            strainId = JointItems.getJointStrainId(item);
+                            amount = item.getAmount(); // Each joint = 1g
+                        }
+                        
                         if (strainId != null) {
-                            int amount = packagingManager.getPackageSize(item) * item.getAmount();
                             double itemPrice = calculateItemPrice(item, session.buyerType) * item.getAmount();
                             plugin.getBuyerRegistry().recordPurchase(buyer.getId(), strainId, amount, itemPrice);
                         }
@@ -689,14 +720,29 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 
                 // Check if this sale fulfills any requests
                 if (plugin.getBuyerRequestManager() != null) {
-                    for (ItemStack item : session.items.values()) {
+                    for (ItemStack item : session.itemsToSell) {
                         if (item != null && !item.getType().equals(Material.AIR)) {
-                            String strainId = packagingManager.getStrainId(item);
+                            String strainId = null;
+                            com.budlords.strain.Strain strain = null;
+                            com.budlords.quality.StarRating rating = null;
+                            int quantity = 0;
+                            
+                            // Check packaged products
+                            if (packagingManager.isPackagedProduct(item)) {
+                                strainId = packagingManager.getStrainIdFromPackage(item);
+                                strain = strainManager.getStrain(strainId);
+                                rating = packagingManager.getStarRatingFromPackage(item);
+                                quantity = packagingManager.getWeightFromPackage(item) * item.getAmount();
+                            }
+                            // Check joints
+                            else if (JointItems.isJoint(item)) {
+                                strainId = JointItems.getJointStrainId(item);
+                                strain = strainManager.getStrain(strainId);
+                                rating = JointItems.getJointRating(item);
+                                quantity = item.getAmount();
+                            }
+                            
                             if (strainId != null) {
-                                com.budlords.strain.Strain strain = strainManager.getStrain(strainId);
-                                com.budlords.quality.StarRating rating = packagingManager.getStarRatingFromPackage(item);
-                                int quantity = packagingManager.getPackageSize(item) * item.getAmount();
-                                
                                 com.budlords.npc.BuyerRequest fulfilledRequest = 
                                     plugin.getBuyerRequestManager().checkAndFulfillRequest(
                                         buyer.getId(), strainId, 
@@ -721,10 +767,17 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 
                 // Show buyer's comment
                 String buyerComment = buyer.getPurchaseComment(
-                    session.items.values().stream()
+                    Arrays.stream(session.itemsToSell)
                         .filter(i -> i != null && !i.getType().equals(Material.AIR))
                         .findFirst()
-                        .map(i -> packagingManager.getStrainId(i))
+                        .map(i -> {
+                            if (packagingManager.isPackagedProduct(i)) {
+                                return packagingManager.getStrainIdFromPackage(i);
+                            } else if (JointItems.isJoint(i)) {
+                                return JointItems.getJointStrainId(i);
+                            }
+                            return null;
+                        })
                         .orElse(null)
                 );
                 

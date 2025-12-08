@@ -307,17 +307,74 @@ public class BuyerDetailGUI implements InventoryHolder, Listener {
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null) return;
         
-        // Back button
-        if (clicked.getType() == Material.ARROW) {
+        int slot = event.getRawSlot();
+        UUID buyerId = viewingSessions.get(player.getUniqueId());
+        
+        // Purchase history (slot 14)
+        if (slot == 14) {
+            // Show detailed purchase history
+            if (buyerId != null && plugin.getBuyerRegistry() != null) {
+                IndividualBuyer buyer = plugin.getBuyerRegistry().getBuyer(buyerId);
+                if (buyer != null) {
+                    player.sendMessage("");
+                    player.sendMessage("§6§l📊 Purchase History - " + buyer.getName());
+                    player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━");
+                    
+                    Map<String, Integer> history = buyer.getPurchaseHistory();
+                    if (history.isEmpty()) {
+                        player.sendMessage("§7No purchases yet");
+                    } else {
+                        history.entrySet().stream()
+                            .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                            .limit(10)
+                            .forEach(entry -> {
+                                Strain strain = strainManager.getStrain(entry.getKey());
+                                String strainName = strain != null ? strain.getName() : "Unknown";
+                                player.sendMessage("§e• " + strainName + " §7x" + entry.getValue() + "g");
+                            });
+                    }
+                    
+                    player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━");
+                    player.sendMessage("");
+                    player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 0.7f, 1.0f);
+                }
+            }
+            return;
+        }
+        
+        // Special request (slot 12)
+        if (slot == 12) {
+            if (buyerId != null && plugin.getBuyerRequestManager() != null && plugin.getBuyerRegistry() != null) {
+                IndividualBuyer buyer = plugin.getBuyerRegistry().getBuyer(buyerId);
+                if (buyer != null) {
+                    player.sendMessage("");
+                    player.sendMessage("§e§l💬 Special Request from " + buyer.getName());
+                    player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━");
+                    player.sendMessage("§7\"" + buyer.getSpecialRequest() + "\"");
+                    player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━");
+                    player.sendMessage("§7Fulfill this request for bonus rewards!");
+                    player.sendMessage("");
+                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 0.7f, 1.2f);
+                }
+            }
+            return;
+        }
+        
+        // Back button (slot 45)
+        if (slot == 45 && clicked.getType() == Material.ARROW) {
             player.closeInventory();
-            // Open buyer list (would need reference to BuyerListGUI)
+            // Open buyer list
+            if (plugin.getBuyerListGUI() != null) {
+                plugin.getBuyerListGUI().open(player);
+            }
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
             return;
         }
         
-        // Close button
-        if (clicked.getType() == Material.BARRIER) {
+        // Close button (slot 49)
+        if (slot == 49 && clicked.getType() == Material.BARRIER) {
             player.closeInventory();
+            viewingSessions.remove(player.getUniqueId());
             player.playSound(player.getLocation(), Sound.BLOCK_CHEST_CLOSE, 0.5f, 1.0f);
             return;
         }
