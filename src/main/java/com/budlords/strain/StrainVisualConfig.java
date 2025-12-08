@@ -95,7 +95,7 @@ public class StrainVisualConfig {
         VOID("Void", Material.OBSIDIAN, "Dark void dimension buds"),
         STAR("Star", Material.NETHER_STAR, "Celestial star buds"),
         MIRROR("Mirror", Material.GLASS, "Reflective mirror buds"),
-        DEMON("Demon", Material.WITHER_SKELETON_SKULL, "Demonic dark buds");
+        DEMON("Demon", Material.NETHERITE_BLOCK, "Demonic dark buds");
         
         private final String displayName;
         private final Material defaultMaterial;
