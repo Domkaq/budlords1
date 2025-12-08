@@ -23,6 +23,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class NPCListener implements Listener {
 
+    // Helpful hint message shown to players about phone usage
+    private static final String PHONE_HINT = "§b§l📱 §7Use your phone to view reputation!";
+
     private final BudLords plugin;
     private final NPCManager npcManager;
     private final EconomyManager economyManager;
@@ -80,7 +83,16 @@ public class NPCListener implements Listener {
 
         ItemStack item = player.getInventory().getItemInMainHand();
 
-        // Check if holding phone - open buyer profile GUI
+        // PRIORITY 1: Check if holding a packaged product or joint - ALWAYS open sale GUI first
+        // This ensures selling takes priority over all other interactions
+        if (packagingManager.isPackagedProduct(item) || JointItems.isJoint(item)) {
+            // Open the sale GUI to negotiate and complete the transaction
+            mobSaleGUI.open(player, entity, npcType);
+            return;
+        }
+
+        // PRIORITY 2: Check if holding phone - open buyer profile GUI to view reputation
+        // Phone shows detailed buyer information and reputation levels
         if (PhoneItems.isPhone(item)) {
             if (buyerProfileGUI != null) {
                 buyerProfileGUI.openBuyerProfile(player, npcType, entity);
@@ -90,20 +102,13 @@ public class NPCListener implements Listener {
             return;
         }
 
-        // Check if holding seeds - BlackMarket Joe doesn't buy seeds
+        // PRIORITY 3: Check if holding seeds - BlackMarket Joe doesn't buy seeds
         if (strainManager.isSeedItem(item)) {
             if (npcType == NPCManager.NPCType.BLACKMARKET_JOE) {
                 player.sendMessage("§5BlackMarket Joe doesn't buy seeds!");
                 player.sendMessage("§7Sell packaged buds instead.");
                 return;
             }
-        }
-
-        // Check if holding a packaged product or joint - open the sale GUI
-        if (packagingManager.isPackagedProduct(item) || JointItems.isJoint(item)) {
-            // Open the Schedule 1 style sale GUI
-            mobSaleGUI.open(player, entity, npcType);
-            return;
         }
         
         // Market Joe opens shop GUI when not holding packaged product
@@ -137,6 +142,7 @@ public class NPCListener implements Listener {
                     }
                     
                     player.sendMessage("§7Hold a packaged product or joint to sell!");
+                    player.sendMessage(PHONE_HINT);
                     player.sendMessage("");
                     return;
                 }
@@ -148,11 +154,12 @@ public class NPCListener implements Listener {
             player.sendMessage("§e§l" + entityName);
             player.sendMessage("§7This buyer is interested in your products!");
             player.sendMessage("§7Hold a packaged product or joint to sell!");
+            player.sendMessage(PHONE_HINT);
             player.sendMessage("");
             return;
         }
 
-        // Show trader info for Village Vendors
+        // PRIORITY 4: Default NPC interaction - show trader info for Village Vendors and others
         String traderName = switch (npcType) {
             case MARKET_JOE -> "§a§lMarket Joe";
             case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
@@ -165,6 +172,8 @@ public class NPCListener implements Listener {
         player.sendMessage(traderName);
         player.sendMessage("§7Hold a packaged product or joint to sell!");
         player.sendMessage("§7Use §f/package <amount>§7 to package buds.");
+        player.sendMessage("");
+        player.sendMessage(PHONE_HINT);
         player.sendMessage("");
 
         if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {

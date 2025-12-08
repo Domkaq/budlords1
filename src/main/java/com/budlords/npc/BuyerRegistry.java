@@ -58,10 +58,8 @@ public class BuyerRegistry {
         this.buyersFile = new File(plugin.getDataFolder(), "buyers.yml");
         loadBuyers();
         
-        // Generate initial buyers if registry is empty
-        if (buyers.isEmpty()) {
-            generateInitialBuyers(30); // Start with 30 diverse buyers
-        }
+        // Don't generate fake buyers - only real dynamic buyers (villagers) and fixed NPCs
+        plugin.getLogger().info("Buyer registry initialized with " + buyers.size() + " existing buyers");
     }
     
     /**

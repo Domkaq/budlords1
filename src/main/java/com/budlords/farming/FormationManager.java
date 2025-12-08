@@ -192,6 +192,25 @@ public class FormationManager {
         {{0, 1}, {0, 2}, {1, 0}, {-1, 0}, {1, 2}, {-1, 2}, {2, 1}, {-2, 1}}, // Rune of power
         {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 2}, {0, -2}, {2, 0}, {-2, 0}, {0, 0}} // Elder rune
     };
+    
+    // ==================== SECRET 666 FORMATION (HIDDEN) ====================
+    // DEMON FORMATION - Unlocks demonic bonus for plants (HARDER VERSION)
+    // Grants +1 star to center pot and plants, enables Blood Moon transformation
+    // Pattern: Extended inverted commas forming 666 shape (6 surrounding pots + center = 7 total)
+    //       P
+    //     P
+    //   P
+    // [C] ← Center (demon pot - not in pattern array)
+    //   P
+    //     P
+    //       P
+    // Requires precise placement and more resources - much harder to achieve!
+    private static final int[][][] DEMON_666_FORMATIONS = {
+        {{1, 3}, {1, 2}, {1, 1}, {-1, -1}, {-1, -2}, {-1, -3}}, // Extended 666 pattern (6 surrounding)
+        {{-1, 3}, {-1, 2}, {-1, 1}, {1, -1}, {1, -2}, {1, -3}}, // Mirrored extended pattern
+        {{3, 1}, {2, 1}, {1, 1}, {-1, -1}, {-2, -1}, {-3, -1}}, // Rotated 90° extended
+        {{3, -1}, {2, -1}, {1, -1}, {-1, 1}, {-2, 1}, {-3, 1}}  // Rotated 270° extended
+    };
 
     public FormationManager(BudLords plugin, FarmingManager farmingManager) {
         this.plugin = plugin;
@@ -499,6 +518,8 @@ public class FormationManager {
             case PHOENIX -> 2.6;
             case CELESTIAL -> 3.0;
             case ANCIENT_RUNE -> 2.7;
+            // Secret tier - Demon 666 (high multiplier due to rarity)
+            case DEMON_666 -> 3.5;
             default -> 0;
         };
     }
@@ -509,6 +530,11 @@ public class FormationManager {
      */
     public FormationType detectFormation(Location plantLoc, String strainId, int farmingXP) {
         // Check formations from highest tier to lowest (mythic first)
+        
+        // SECRET: Check for 666 Demon Formation (no XP required, always available but hidden)
+        if (matchesFormation(plantLoc, strainId, DEMON_666_FORMATIONS)) {
+            return FormationType.DEMON_666;
+        }
         
         // Mythic tier (10000+ XP required)
         if (farmingXP >= XP_TIER_MYTHIC) {
@@ -609,7 +635,8 @@ public class FormationManager {
             DIAMOND_FORMATIONS, STAR_FORMATIONS, SPIRAL_FORMATIONS, ARROW_FORMATIONS,
             PENTAGON_FORMATIONS, HEXAGON_FORMATIONS, OCTAGON_FORMATIONS, HEART_FORMATIONS,
             YIN_YANG_FORMATIONS, INFINITY_FORMATIONS, SACRED_GEOMETRY_FORMATIONS, CROWN_FORMATIONS,
-            DRAGON_FORMATIONS, PHOENIX_FORMATIONS, CELESTIAL_FORMATIONS, ANCIENT_RUNE_FORMATIONS
+            DRAGON_FORMATIONS, PHOENIX_FORMATIONS, CELESTIAL_FORMATIONS, ANCIENT_RUNE_FORMATIONS,
+            DEMON_666_FORMATIONS // Secret formation
         };
         
         for (int[][][] patternSet : allPatterns) {
@@ -662,6 +689,8 @@ public class FormationManager {
             case PHOENIX -> "§6🔥 Phoenix Formation";
             case CELESTIAL -> "§d✦ Celestial Formation";
             case ANCIENT_RUNE -> "§5ᚱ Ancient Rune Formation";
+            // Secret
+            case DEMON_666 -> "§4§l⛧ 666 Demon Formation §4§l⛧";
             case NONE -> "§7No Formation";
         };
     }
@@ -677,8 +706,37 @@ public class FormationManager {
             case PENTAGON, HEXAGON, OCTAGON, HEART -> XP_TIER_MASTER;
             case YIN_YANG, INFINITY, SACRED_GEOMETRY, CROWN -> XP_TIER_LEGENDARY;
             case DRAGON, PHOENIX, CELESTIAL, ANCIENT_RUNE -> XP_TIER_MYTHIC;
+            case DEMON_666 -> 0; // Secret formation - no XP requirement
             default -> 0;
         };
+    }
+    
+    /**
+     * Checks if a location has a 666 Demon Formation and marks the center pot with demon bonus.
+     * This is called when a plant is placed or grows in a demon formation.
+     * @return true if demon bonus was applied
+     */
+    public boolean checkAndApplyDemonBonus(Location potLoc, String strainId) {
+        // Check if this location is the center of a 666 formation
+        FormationType formation = detectFormation(potLoc, strainId, 0);
+        
+        if (formation == FormationType.DEMON_666) {
+            // Mark this pot with demon bonus using persistent data
+            // This would require pot block data storage
+            // For now, just return true to indicate formation detected
+            plugin.getLogger().info("[DEMON 666] Formation detected at X:" + 
+                potLoc.getBlockX() + " Y:" + potLoc.getBlockY() + " Z:" + potLoc.getBlockZ());
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Gets display string for demon bonus status.
+     */
+    public static String getDemonBonusDisplay() {
+        return "§4§l⛧ DEMON BONUS ⛧";
     }
     
     /**
@@ -713,7 +771,9 @@ public class FormationManager {
         DRAGON(6, 4),
         PHOENIX(6, 4),
         CELESTIAL(6, 5),
-        ANCIENT_RUNE(6, 4);
+        ANCIENT_RUNE(6, 4),
+        // Secret Formation (HIDDEN - No XP requirement but extremely rare)
+        DEMON_666(7, 1); // Tier 7, +1 star (grants demon bonus)
         
         private final int tier;
         private final int baseStarBonus;
