@@ -61,6 +61,13 @@ public class PlantVisualizationManager {
     private static final int MODEL_LEAF_LARGE = 4;
     private static final int MODEL_BUD = 5;
     
+    // Visual detail constants
+    private static final double POSITION_RANDOMIZATION_RANGE = 0.08;
+    private static final int SOIL_PARTICLE_COUNT = 3;
+    private static final double SOIL_PARTICLE_SPREAD = 0.04;
+    private static final int MIN_NODE_LEAVES = 2;
+    private static final int MAX_NODE_LEAVES = 4;
+    
     // Level of Detail (LOD) system - dynamically adjust detail based on plant count
     private enum DetailLevel {
         HIGH,      // <10 plants - full detail
@@ -192,8 +199,8 @@ public class PlantVisualizationManager {
         boolean glowing = config != null && config.isGlowing();
         
         // Base location - centered on the pot block with slight randomization
-        double randomX = (Math.random() - 0.5) * 0.08;
-        double randomZ = (Math.random() - 0.5) * 0.08;
+        double randomX = (Math.random() - 0.5) * POSITION_RANDOMIZATION_RANGE;
+        double randomZ = (Math.random() - 0.5) * POSITION_RANDOMIZATION_RANGE;
         Location baseLoc = loc.clone().add(0.5 + randomX, SEED_Y_OFFSET, 0.5 + randomZ);
         
         // Soil layer representation (in MEDIUM and HIGH detail)
@@ -208,10 +215,10 @@ public class PlantVisualizationManager {
         // Additional soil detail for HIGH mode
         if (lod == DetailLevel.HIGH) {
             // Small peat moss/soil particles around seed
-            for (int i = 0; i < 3; i++) {
-                double angle = (Math.PI * 2 / 3) * i;
-                double offsetX = Math.cos(angle) * 0.04;
-                double offsetZ = Math.sin(angle) * 0.04;
+            for (int i = 0; i < SOIL_PARTICLE_COUNT; i++) {
+                double angle = (Math.PI * 2 / SOIL_PARTICLE_COUNT) * i;
+                double offsetX = Math.cos(angle) * SOIL_PARTICLE_SPREAD;
+                double offsetZ = Math.sin(angle) * SOIL_PARTICLE_SPREAD;
                 ArmorStand particle = createBaseArmorStand(world, baseLoc.clone().add(offsetX, -0.03, offsetZ));
                 particle.setHelmet(new ItemStack(Material.BROWN_CONCRETE_POWDER));
                 particle.setSmall(true);
@@ -416,8 +423,8 @@ public class PlantVisualizationManager {
         
         // ===== NODE 1 - BOTTOM FAN LEAVES =====
         double node1Height = 0.22 * heightScale;
-        // Always show at least 2 main leaves for structure
-        int node1Leaves = (lod == DetailLevel.LOW) ? 2 : 4;
+        // Always show at least minimum leaves for structure
+        int node1Leaves = (lod == DetailLevel.LOW) ? MIN_NODE_LEAVES : MAX_NODE_LEAVES;
         for (int i = 0; i < node1Leaves; i++) {
             double angle = randomRotation + (Math.PI * 2 / node1Leaves) * i;
             double offsetX = Math.cos(angle) * 0.18 * leafScale;
@@ -449,7 +456,7 @@ public class PlantVisualizationManager {
         // ===== NODE 2 - MIDDLE INTERNODAL LEAVES (only in MEDIUM and HIGH) =====
         if (lod != DetailLevel.LOW) {
             double node2Height = 0.42 * heightScale;
-            int node2Leaves = (lod == DetailLevel.MEDIUM) ? 2 : 4;
+            int node2Leaves = (lod == DetailLevel.MEDIUM) ? MIN_NODE_LEAVES : MAX_NODE_LEAVES;
             for (int i = 0; i < node2Leaves; i++) {
                 double angle = randomRotation + (Math.PI * 2 / node2Leaves) * i + Math.toRadians(45);
                 double offsetX = Math.cos(angle) * 0.14 * leafScale;
