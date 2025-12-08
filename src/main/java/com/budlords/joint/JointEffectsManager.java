@@ -121,19 +121,44 @@ public class JointEffectsManager implements Listener {
             plugin.getStrainEffectsManager().applyStrainEffects(player, strain, rating, totalDuration);
         }
 
-        // Send message
+        // ═══════════════════════════════════════
+        // ENHANCED MESSAGE DISPLAY - PROFESSIONAL!
+        // ═══════════════════════════════════════
+        
+        String rarityColor = getRarityColor(strain != null ? strain.getRarity() : Strain.Rarity.COMMON);
+        String qualityStars = rating.getDisplay();
+        
         player.sendMessage("");
-        player.sendMessage("§a§l✦ " + strainName + " Joint " + rating.getDisplay());
-        player.sendMessage("§7You take a deep hit...");
-        player.sendMessage("§7Potency: §e" + potency + "% §7| Duration: §e" + (totalDuration / 20) + "s");
+        player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        player.sendMessage("");
+        player.sendMessage("  " + rarityColor + "§l✦ " + strainName + " Joint " + qualityStars);
+        player.sendMessage("");
+        player.sendMessage("  §7💨 You take a deep, satisfying hit...");
+        player.sendMessage("");
+        player.sendMessage("  §7Potency: §e" + potency + "% §8│ §7Duration: §e" + (totalDuration / 20) + "s");
+        
+        // Show rarity badge
+        if (strain != null) {
+            String rarityBadge = switch (strain.getRarity()) {
+                case LEGENDARY -> "§6§l★ LEGENDARY ★";
+                case RARE -> "§9§l◆ RARE ◆";
+                case UNCOMMON -> "§a§l♦ UNCOMMON ♦";
+                case COMMON -> "§7○ Common";
+            };
+            player.sendMessage("  §7Rarity: " + rarityBadge);
+        }
         
         // Show active strain effects
         if (strain != null && !strain.getEffects().isEmpty()) {
-            player.sendMessage("§dSpecial Effects Active:");
+            player.sendMessage("");
+            player.sendMessage("  §d§lStrain Effects:");
             for (com.budlords.effects.StrainEffect effect : strain.getEffects()) {
-                player.sendMessage("  " + effect.getCompactDisplay());
+                player.sendMessage("    " + effect.getCompactDisplay());
             }
         }
+        
+        player.sendMessage("");
+        player.sendMessage("§8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         player.sendMessage("");
 
         // Update stats
@@ -146,73 +171,250 @@ public class JointEffectsManager implements Listener {
         int potency = session.getPotency();
         StarRating rating = session.getRating();
         int duration = session.getDuration();
+        Strain strain = plugin.getStrainManager().getStrain(session.getStrainId());
+        Strain.Rarity rarity = strain != null ? strain.getRarity() : Strain.Rarity.COMMON;
 
-        // Base effects - all joints give some effects
+        // ═══════════════════════════════════════
+        // ENHANCED EFFECT SYSTEM - MORE FUN & USEFUL!
+        // ═══════════════════════════════════════
         List<PotionEffect> effects = new ArrayList<>();
+        List<String> activeEffects = new ArrayList<>();
 
-        // Speed or Slowness based on strain characteristics
-        if (potency > 70) {
-            // High potency - more intense effects
-            effects.add(new PotionEffect(PotionEffectType.SLOW, duration, 0, false, false, true));
-            effects.add(new PotionEffect(PotionEffectType.CONFUSION, duration / 2, 0, false, false, true));
-        } else if (potency > 40) {
-            // Medium potency - balanced effects
-            effects.add(new PotionEffect(PotionEffectType.SLOW, duration / 2, 0, false, false, true));
-        }
-
-        // Positive effects based on quality
-        if (rating.getStars() >= 3) {
-            effects.add(new PotionEffect(PotionEffectType.REGENERATION, duration, 0, false, false, true));
-        }
-        if (rating.getStars() >= 4) {
-            effects.add(new PotionEffect(PotionEffectType.ABSORPTION, duration, 0, false, false, true));
-        }
-        if (rating.getStars() >= 5) {
-            effects.add(new PotionEffect(PotionEffectType.LUCK, duration * 2, 0, false, false, true));
-        }
-
-        // Hunger effect (munchies!)
-        effects.add(new PotionEffect(PotionEffectType.HUNGER, duration / 2, 0, false, false, true));
-        effects.add(new PotionEffect(PotionEffectType.SATURATION, 40, 0, false, false, true));
-
-        // Night vision for better strains
-        if (potency > 50 && rating.getStars() >= 2) {
+        // ═══ CORE EFFECTS - ALWAYS PRESENT ═══
+        
+        // Night vision - essential for weed experience
+        if (rating.getStars() >= 2) {
             effects.add(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0, false, false, true));
+            activeEffects.add("§b👁 Enhanced Vision");
+        }
+        
+        // Hunger (munchies!) - iconic effect
+        effects.add(new PotionEffect(PotionEffectType.HUNGER, duration / 2, 1, false, false, true));
+        effects.add(new PotionEffect(PotionEffectType.SATURATION, 60, 1, false, false, true));
+        activeEffects.add("§6🍕 The Munchies");
+
+        // ═══ POTENCY-BASED EFFECTS ═══
+        
+        if (potency > 80) {
+            // VERY HIGH POTENCY - Extreme effects with fun twist
+            effects.add(new PotionEffect(PotionEffectType.SLOW, duration / 2, 1, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.CONFUSION, duration / 3, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.JUMP, duration, 2, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.SPEED, duration, 0, false, false, true));
+            activeEffects.add("§5⚡ Ultra High - Mixed Signals");
+            activeEffects.add("§a🦘 Super Jump");
+        } else if (potency > 60) {
+            // HIGH POTENCY - Strong but pleasant
+            effects.add(new PotionEffect(PotionEffectType.SLOW, duration / 3, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.JUMP, duration, 1, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.SPEED, duration / 2, 0, false, false, true));
+            activeEffects.add("§d✨ Strong High");
+            activeEffects.add("§a🏃 Enhanced Movement");
+        } else if (potency > 40) {
+            // MEDIUM POTENCY - Balanced and fun
+            effects.add(new PotionEffect(PotionEffectType.JUMP, duration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.SPEED, duration / 2, 0, false, false, true));
+            activeEffects.add("§e✨ Smooth High");
+            activeEffects.add("§a🏃 Light Step");
+        } else {
+            // LOW POTENCY - Mild and comfortable
+            effects.add(new PotionEffect(PotionEffectType.SPEED, duration / 2, 0, false, false, true));
+            activeEffects.add("§7✨ Mild Buzz");
         }
 
-        // Random special effects based on strain type
-        int randomEffect = ThreadLocalRandom.current().nextInt(100);
-        if (randomEffect < potency / 2) {
-            // Chance for special effects
-            PotionEffectType[] specialEffects = {
-                PotionEffectType.JUMP,
-                PotionEffectType.DOLPHINS_GRACE,
-                PotionEffectType.GLOWING,
-                PotionEffectType.LEVITATION
-            };
-            PotionEffectType special = specialEffects[ThreadLocalRandom.current().nextInt(specialEffects.length)];
+        // ═══ QUALITY-BASED POSITIVE EFFECTS ═══
+        
+        if (rating.getStars() >= 5) {
+            // ★★★★★ LEGENDARY QUALITY
+            effects.add(new PotionEffect(PotionEffectType.REGENERATION, duration, 1, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.ABSORPTION, duration, 2, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.RESISTANCE, duration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.LUCK, duration * 2, 1, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
+            activeEffects.add("§6§l★ LEGENDARY BENEFITS ★");
+            activeEffects.add("§c💗 Super Regen");
+            activeEffects.add("§e🛡 Absorption Shield");
+            activeEffects.add("§a🍀 Double Luck");
+        } else if (rating.getStars() >= 4) {
+            // ★★★★ HIGH QUALITY
+            effects.add(new PotionEffect(PotionEffectType.REGENERATION, duration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.ABSORPTION, duration, 1, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.LUCK, duration, 0, false, false, true));
+            activeEffects.add("§d✦ Premium Quality");
+            activeEffects.add("§c💗 Health Regen");
+            activeEffects.add("§e🛡 Extra Hearts");
+        } else if (rating.getStars() >= 3) {
+            // ★★★ GOOD QUALITY
+            effects.add(new PotionEffect(PotionEffectType.REGENERATION, duration / 2, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.ABSORPTION, duration / 2, 0, false, false, true));
+            activeEffects.add("§a✦ Good Quality");
+            activeEffects.add("§c💗 Healing");
+        }
+
+        // ═══ RARITY-BASED SPECIAL EFFECTS ═══
+        
+        if (rarity == Strain.Rarity.LEGENDARY) {
+            // LEGENDARY STRAINS - Flying ability!
+            int levDuration = duration / 4; // Controlled duration
+            effects.add(new PotionEffect(PotionEffectType.LEVITATION, levDuration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.SLOW_FALLING, duration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, duration, 0, false, false, true));
+            activeEffects.add("§6✈ FLYING HIGH!");
+            activeEffects.add("§b🌊 Water Grace");
             
-            // Short duration for levitation to prevent issues
-            int specialDuration = special == PotionEffectType.LEVITATION ? 60 : duration / 2;
-            int amplifier = special == PotionEffectType.LEVITATION ? 0 : 0;
+            // Extra special ability
+            player.sendMessage("");
+            player.sendMessage("§6§l★═══════════════════★");
+            player.sendMessage("§6§l   LEGENDARY STRAIN ACTIVATED!");
+            player.sendMessage("§e✈ You can briefly FLY!");
+            player.sendMessage("§e🌟 Special abilities unlocked!");
+            player.sendMessage("§6§l★═══════════════════★");
+            player.sendMessage("");
             
-            effects.add(new PotionEffect(special, specialDuration, amplifier, false, false, true));
+        } else if (rarity == Strain.Rarity.RARE) {
+            // RARE STRAINS - Enhanced mobility
+            effects.add(new PotionEffect(PotionEffectType.JUMP, duration, 2, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.SPEED, duration, 1, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, duration / 2, 0, false, false, true));
+            activeEffects.add("§9🚀 Super Mobility");
+            activeEffects.add("§b🌊 Swim Speed");
             
-            player.sendMessage("§d✦ Special Effect: §f" + formatEffectName(special) + "!");
+        } else if (rarity == Strain.Rarity.UNCOMMON) {
+            // UNCOMMON - Utility boost
+            effects.add(new PotionEffect(PotionEffectType.HASTE, duration, 0, false, false, true));
+            activeEffects.add("§a⚒ Mining Speed");
+        }
+
+        // ═══ RANDOM FUN EFFECTS (Potency-based chance) ═══
+        
+        int randomChance = ThreadLocalRandom.current().nextInt(100);
+        if (randomChance < potency / 2) {
+            List<FunEffect> possibleEffects = new ArrayList<>();
+            
+            // Build list based on quality
+            possibleEffects.add(new FunEffect(PotionEffectType.GLOWING, duration, 0, "§e✨ Glowing Aura"));
+            possibleEffects.add(new FunEffect(PotionEffectType.WATER_BREATHING, duration, 0, "§b🐟 Water Breathing"));
+            
+            if (rating.getStars() >= 3) {
+                possibleEffects.add(new FunEffect(PotionEffectType.HERO_OF_THE_VILLAGE, duration, 0, "§a🏘 Village Hero"));
+            }
+            
+            if (rating.getStars() >= 4) {
+                possibleEffects.add(new FunEffect(PotionEffectType.CONDUIT_POWER, duration, 0, "§b⚡ Conduit Power"));
+            }
+            
+            FunEffect chosen = possibleEffects.get(ThreadLocalRandom.current().nextInt(possibleEffects.size()));
+            effects.add(new PotionEffect(chosen.type, chosen.duration, chosen.amplifier, false, false, true));
+            activeEffects.add("§d✦ Bonus: " + chosen.display);
         }
 
         // Apply all effects
         for (PotionEffect effect : effects) {
             player.addPotionEffect(effect);
         }
+        
+        // Display active effects summary
+        if (!activeEffects.isEmpty()) {
+            player.sendMessage("§7Active Effects:");
+            for (String effect : activeEffects) {
+                player.sendMessage("  " + effect);
+            }
+        }
     }
+    
+    /**
+     * Helper class for random fun effects.
+     */
+    private record FunEffect(PotionEffectType type, int duration, int amplifier, String display) {}
 
     private void playSmokingAnimation(Player player, HighSession session) {
         Location loc = player.getLocation();
+        
+        // Get strain for color-coded effects
+        Strain strain = plugin.getStrainManager().getStrain(session.getStrainId());
+        Strain.Rarity rarity = strain != null ? strain.getRarity() : Strain.Rarity.COMMON;
+        int potency = session.getPotency();
+        int stars = session.getRating().getStars();
 
-        // Initial smoke burst
-        player.playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
-        player.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc.clone().add(0, 1.5, 0), 5, 0.2, 0.1, 0.2, 0.02);
+        // ═══════════════════════════════════════
+        // INITIAL SMOKING SEQUENCE - SPECTACULAR!
+        // ═══════════════════════════════════════
+        
+        // Multiple sound layers for depth
+        player.playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 0.7f, 1.5f);
+        player.playSound(loc, Sound.ENTITY_GHAST_SHOOT, 0.3f, 2.0f);
+        player.playSound(loc, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.4f, 0.8f);
+        
+        // Massive initial smoke burst with swirl effect
+        new BukkitRunnable() {
+            int burst = 0;
+            @Override
+            public void run() {
+                if (burst >= 5 || !player.isOnline()) {
+                    cancel();
+                    return;
+                }
+                
+                Location smokeLoc = player.getLocation().add(0, 1.6, 0);
+                
+                // Swirling smoke effect
+                for (int i = 0; i < 8; i++) {
+                    double angle = (Math.PI * 2 * i / 8.0) + (burst * 0.5);
+                    double radius = 0.3 + (burst * 0.1);
+                    double x = Math.cos(angle) * radius;
+                    double z = Math.sin(angle) * radius;
+                    
+                    player.getWorld().spawnParticle(
+                        Particle.CAMPFIRE_COSY_SMOKE,
+                        smokeLoc.clone().add(x, 0, z),
+                        0, x * 0.1, 0.2, z * 0.1, 0.02
+                    );
+                }
+                
+                // Central smoke plume
+                player.getWorld().spawnParticle(
+                    Particle.CLOUD,
+                    smokeLoc,
+                    5, 0.15, 0.1, 0.15, 0.01
+                );
+                
+                burst++;
+            }
+        }.runTaskTimer(plugin, 0L, 2L);
+        
+        // Rarity-based color explosion
+        Particle rarityParticle = getRarityParticle(rarity);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!player.isOnline()) {
+                    cancel();
+                    return;
+                }
+                Location effectLoc = player.getLocation().add(0, 1.2, 0);
+                
+                // Expanding ring of colored particles
+                for (int i = 0; i < 20; i++) {
+                    double angle = Math.PI * 2 * i / 20.0;
+                    double radius = 0.8;
+                    double x = Math.cos(angle) * radius;
+                    double z = Math.sin(angle) * radius;
+                    
+                    player.getWorld().spawnParticle(
+                        rarityParticle,
+                        effectLoc.clone().add(x, 0, z),
+                        1, 0, 0, 0, 0
+                    );
+                }
+                
+                // Upward spiral
+                player.getWorld().spawnParticle(
+                    Particle.END_ROD,
+                    effectLoc,
+                    10, 0.3, 0.5, 0.3, 0.05
+                );
+            }
+        }.runTaskLater(plugin, 10L);
 
         // Cancel existing particle task
         BukkitTask existing = particleTasks.remove(player.getUniqueId());
@@ -220,47 +422,137 @@ public class JointEffectsManager implements Listener {
             existing.cancel();
         }
 
-        // Start ambient high particles
+        // ═══════════════════════════════════════
+        // CONTINUOUS AMBIENT EFFECTS - PROFESSIONAL!
+        // ═══════════════════════════════════════
         BukkitTask task = new BukkitRunnable() {
             int ticks = 0;
             final int maxTicks = session.getDuration();
+            double spiralAngle = 0;
 
             @Override
             public void run() {
                 if (!player.isOnline() || ticks >= maxTicks) {
                     activeSessions.remove(player.getUniqueId());
                     particleTasks.remove(player.getUniqueId());
+                    
+                    // Ending particle burst
+                    if (player.isOnline()) {
+                        Location endLoc = player.getLocation().add(0, 1.5, 0);
+                        player.getWorld().spawnParticle(
+                            Particle.CLOUD,
+                            endLoc,
+                            20, 0.3, 0.3, 0.3, 0.05
+                        );
+                        player.playSound(endLoc, Sound.BLOCK_FIRE_EXTINGUISH, 0.3f, 0.8f);
+                    }
                     cancel();
                     return;
                 }
 
                 Location playerLoc = player.getLocation();
 
-                // Periodic smoke from mouth area
-                if (ticks % 20 == 0) {
+                // ═══ CONSTANT SMOKE AURA ═══
+                if (ticks % 10 == 0) {
+                    // Gentle smoke wisps from head
                     player.getWorld().spawnParticle(
                         Particle.CAMPFIRE_SIGNAL_SMOKE,
                         playerLoc.clone().add(0, 1.6, 0),
-                        1, 0.1, 0.05, 0.1, 0.01
+                        2, 0.12, 0.08, 0.12, 0.005
                     );
                 }
 
-                // Ambient particles based on potency
-                if (session.getPotency() > 60 && ticks % 40 == 0) {
+                // ═══ RARITY-BASED SPIRAL AURA ═══
+                if (ticks % 5 == 0) {
+                    double radius = 0.6 + (Math.sin(ticks * 0.1) * 0.2);
+                    double height = 0.5 + ((ticks % 60) * 0.03);
+                    
+                    double x = Math.cos(spiralAngle) * radius;
+                    double z = Math.sin(spiralAngle) * radius;
+                    
                     player.getWorld().spawnParticle(
-                        Particle.SPELL_MOB,
+                        rarityParticle,
+                        playerLoc.clone().add(x, height, z),
+                        1, 0, 0, 0, 0
+                    );
+                    
+                    spiralAngle += 0.4;
+                }
+
+                // ═══ POTENCY EFFECTS (Higher = More Intense) ═══
+                if (potency > 70 && ticks % 15 == 0) {
+                    // Intense swirling particles for high potency
+                    for (int i = 0; i < 3; i++) {
+                        double angle = (Math.PI * 2 * i / 3.0) + (ticks * 0.1);
+                        double x = Math.cos(angle) * 0.5;
+                        double z = Math.sin(angle) * 0.5;
+                        
+                        player.getWorld().spawnParticle(
+                            Particle.SPELL_WITCH,
+                            playerLoc.clone().add(x, 1.2, z),
+                            1, 0, 0, 0, 0
+                        );
+                    }
+                } else if (potency > 40 && ticks % 25 == 0) {
+                    // Medium potency sparkles
+                    player.getWorld().spawnParticle(
+                        Particle.ENCHANTMENT_TABLE,
                         playerLoc.clone().add(0, 1.2, 0),
-                        3, 0.3, 0.3, 0.3, 1
+                        5, 0.3, 0.3, 0.3, 1
                     );
                 }
 
-                // Happy particles for high quality
-                if (session.getRating().getStars() >= 4 && ticks % 60 == 0) {
+                // ═══ QUALITY EFFECTS (5-star = Best) ═══
+                if (stars >= 5 && ticks % 20 == 0) {
+                    // Legendary quality golden sparkles
+                    player.getWorld().spawnParticle(
+                        Particle.TOTEM,
+                        playerLoc.clone().add(0, 2, 0),
+                        3, 0.3, 0.2, 0.3, 0
+                    );
+                    player.getWorld().spawnParticle(
+                        Particle.END_ROD,
+                        playerLoc.clone().add(0, 0.5, 0),
+                        1, 0.2, 0.2, 0.2, 0.02
+                    );
+                } else if (stars >= 4 && ticks % 30 == 0) {
+                    // High quality heart particles
                     player.getWorld().spawnParticle(
                         Particle.HEART,
-                        playerLoc.clone().add(0, 2, 0),
-                        1, 0.2, 0.1, 0.2, 0
+                        playerLoc.clone().add(0, 2.1, 0),
+                        1, 0.25, 0.15, 0.25, 0
                     );
+                } else if (stars >= 3 && ticks % 40 == 0) {
+                    // Good quality villager particles
+                    player.getWorld().spawnParticle(
+                        Particle.VILLAGER_HAPPY,
+                        playerLoc.clone().add(0, 1.8, 0),
+                        2, 0.3, 0.2, 0.3, 0
+                    );
+                }
+                
+                // ═══ LEGENDARY RARITY SPECIAL EFFECT ═══
+                if (rarity == Strain.Rarity.LEGENDARY && ticks % 30 == 0) {
+                    // Epic ground slam effect
+                    Location groundLoc = playerLoc.clone().add(0, 0.1, 0);
+                    for (int i = 0; i < 12; i++) {
+                        double angle = Math.PI * 2 * i / 12.0;
+                        double radius = 1.5;
+                        double x = Math.cos(angle) * radius;
+                        double z = Math.sin(angle) * radius;
+                        
+                        player.getWorld().spawnParticle(
+                            Particle.DRAGON_BREATH,
+                            groundLoc.clone().add(x, 0, z),
+                            1, 0, 0, 0, 0
+                        );
+                    }
+                    player.playSound(playerLoc, Sound.ENTITY_ENDER_DRAGON_FLAP, 0.2f, 2.0f);
+                }
+                
+                // ═══ AMBIENT SOUND EFFECTS ═══
+                if (ticks % 100 == 0 && potency > 60) {
+                    player.playSound(playerLoc, Sound.BLOCK_AMETHYST_BLOCK_RESONATE, 0.3f, 0.7f);
                 }
 
                 ticks += 5;
@@ -269,15 +561,40 @@ public class JointEffectsManager implements Listener {
 
         particleTasks.put(player.getUniqueId(), task);
 
-        // Schedule end message
+        // Schedule end message with fade effect
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (player.isOnline()) {
-                    player.sendMessage("§7The high from " + session.getStrainName() + " is wearing off...");
+                    player.sendMessage("§7§o The high from " + session.getStrainName() + " is fading away...");
+                    player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 0.4f, 1.2f);
                 }
             }
-        }.runTaskLater(plugin, session.getDuration());
+        }.runTaskLater(plugin, session.getDuration() - 40);
+    }
+    
+    /**
+     * Gets the particle type based on strain rarity for color-coded effects.
+     */
+    private Particle getRarityParticle(Strain.Rarity rarity) {
+        return switch (rarity) {
+            case COMMON -> Particle.ASH;
+            case UNCOMMON -> Particle.VILLAGER_HAPPY;
+            case RARE -> Particle.ENCHANTMENT_TABLE;
+            case LEGENDARY -> Particle.END_ROD;
+        };
+    }
+    
+    /**
+     * Gets the color code based on strain rarity.
+     */
+    private String getRarityColor(Strain.Rarity rarity) {
+        return switch (rarity) {
+            case COMMON -> "§7";
+            case UNCOMMON -> "§a";
+            case RARE -> "§9";
+            case LEGENDARY -> "§6";
+        };
     }
 
     private String formatEffectName(PotionEffectType type) {

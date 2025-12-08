@@ -673,16 +673,25 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
 
     private void updateBuyerProfile(Inventory inv, Player player, NPCManager.NPCType buyerType, Entity entity) {
         inv.clear();
-        ReputationManager repManager = plugin.getReputationManager();
         
+        // Get the IndividualBuyer from the unified registry
+        IndividualBuyer buyer = null;
+        if (buyerType == NPCManager.NPCType.MARKET_JOE) {
+            buyer = plugin.getBuyerRegistry().getMarketJoe();
+        } else if (buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
+            buyer = plugin.getBuyerRegistry().getBlackMarketJoe();
+        } else if (buyerType == NPCManager.NPCType.CONFIGURABLE_MOB && entity != null) {
+            // Try to get dynamic buyer for this entity
+            buyer = plugin.getDynamicBuyerManager() != null ? 
+                plugin.getDynamicBuyerManager().getBuyer(entity) : null;
+        }
+        
+        // Fallback to old reputation system if buyer not found (shouldn't happen for Market/BlackMarket Joe)
+        ReputationManager repManager = plugin.getReputationManager();
         int rep = repManager != null ? repManager.getReputation(player.getUniqueId(), buyerType.name()) : 0;
-        String repLevel = repManager != null ? repManager.getReputationLevel(rep) : "NEUTRAL";
-        String repDisplay = repManager != null ? repManager.getReputationDisplay(rep) : "§7Unknown";
-        String repBonus = repManager != null ? repManager.getReputationBonusText(rep) : "§7N/A";
-        double multiplier = repManager != null ? repManager.getReputationMultiplier(rep) : 1.0;
 
         String buyerColor = getBuyerColor(buyerType);
-        String buyerName = getBuyerDisplayName(buyerType);
+        String buyerName = buyer != null ? buyer.getName() : getBuyerDisplayName(buyerType);
 
         // Border - styled for the buyer
         ItemStack border1 = createItem(getBuyerBorderMaterial(buyerType), " ", null);
@@ -709,63 +718,164 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
         inv.setItem(4, profileHead);
 
         // ═══════════════════════════════════════
-        // REPUTATION CARD (Left side)
+        // RELATIONSHIP CARD (Left side) - Using NEW IndividualBuyer system
         // ═══════════════════════════════════════
         
-        // Big reputation display
-        ItemStack repCard = createItem(getRepIcon(repLevel),
-            "§6§l★ YOUR REPUTATION",
-            Arrays.asList(
-                "",
-                "§7Status: " + repDisplay,
-                "§7Points: §f" + rep + " §8/ 500",
-                "",
-                "§7Price Bonus: " + repBonus,
-                "§7Multiplier: §a" + String.format("%.2fx", multiplier),
-                "",
-                getProgressBar(rep, 500)
-            ));
-        inv.setItem(20, repCard);
+        if (buyer != null) {
+            // NEW SYSTEM: Show IndividualBuyer relationship data
+            String relationshipStatus = buyer.getRelationshipSummary();
+            int totalPurchases = buyer.getTotalPurchases();
+            double totalSpent = buyer.getTotalMoneySpent();
+            double loyaltyBonus = buyer.getLoyaltyBonus();
+            
+            ItemStack relationshipCard = createItem(getRelationshipIcon(totalPurchases),
+                "§6§l★ YOUR RELATIONSHIP",
+                Arrays.asList(
+                    "",
+                    "§7Status: " + relationshipStatus,
+                    "§7Purchases: §f" + totalPurchases,
+                    "§7Total Spent: §a$" + String.format("%.2f", totalSpent),
+                    "",
+                    "§7Loyalty Bonus: §a" + String.format("%.1f%%", (loyaltyBonus - 1.0) * 100),
+                    "§7Mood: " + getMoodDisplay(buyer.getCurrentMood()),
+                    "",
+                    getRelationshipProgressBar(totalPurchases)
+                ));
+            inv.setItem(20, relationshipCard);
 
-        // Next level info
-        String nextLevel = getNextReputationLevel(rep);
-        int pointsToNext = getPointsToNextLevel(rep);
-        ItemStack nextLevelCard = createItem(Material.EXPERIENCE_BOTTLE,
-            "§e§lNext Level: " + nextLevel,
-            Arrays.asList(
-                "",
-                "§7Points needed: §f" + pointsToNext,
-                "",
-                "§7Earn reputation by:",
-                "§7• Successful sales",
-                "§7• Higher value deals",
-                "§7• Bulk orders"
-            ));
-        inv.setItem(29, nextLevelCard);
+            // Milestones achieved
+            List<String> milestones = buyer.getMilestones();
+            List<String> milestoneLore = new ArrayList<>();
+            milestoneLore.add("");
+            milestoneLore.add("§7Achievements with this buyer:");
+            milestoneLore.add("");
+            if (milestones.isEmpty()) {
+                milestoneLore.add("§7Complete your first sale!");
+            } else {
+                for (int i = 0; i < Math.min(5, milestones.size()); i++) {
+                    milestoneLore.add(milestones.get(i));
+                }
+                if (milestones.size() > 5) {
+                    milestoneLore.add("§8... and " + (milestones.size() - 5) + " more!");
+                }
+            }
+            
+            ItemStack milestonesCard = createItem(Material.BOOK,
+                "§e§l🏆 Milestones",
+                milestoneLore);
+            inv.setItem(29, milestonesCard);
+        } else {
+            // FALLBACK: Old reputation system (for non-Joe buyers without IndividualBuyer data)
+            String repLevel = repManager != null ? repManager.getReputationLevel(rep) : "NEUTRAL";
+            String repDisplay = repManager != null ? repManager.getReputationDisplay(rep) : "§7Unknown";
+            String repBonus = repManager != null ? repManager.getReputationBonusText(rep) : "§7N/A";
+            double multiplier = repManager != null ? repManager.getReputationMultiplier(rep) : 1.0;
+            
+            ItemStack repCard = createItem(getRepIcon(repLevel),
+                "§6§l★ YOUR REPUTATION",
+                Arrays.asList(
+                    "",
+                    "§7Status: " + repDisplay,
+                    "§7Points: §f" + rep + " §8/ 500",
+                    "",
+                    "§7Price Bonus: " + repBonus,
+                    "§7Multiplier: §a" + String.format("%.2fx", multiplier),
+                    "",
+                    getProgressBar(rep, 500)
+                ));
+            inv.setItem(20, repCard);
+
+            // Next level info
+            String nextLevel = getNextReputationLevel(rep);
+            int pointsToNext = getPointsToNextLevel(rep);
+            ItemStack nextLevelCard = createItem(Material.EXPERIENCE_BOTTLE,
+                "§e§lNext Level: " + nextLevel,
+                Arrays.asList(
+                    "",
+                    "§7Points needed: §f" + pointsToNext,
+                    "",
+                    "§7Earn reputation by:",
+                    "§7• Successful sales",
+                    "§7• Higher value deals",
+                    "§7• Bulk orders"
+                ));
+            inv.setItem(29, nextLevelCard);
+        }
 
         // ═══════════════════════════════════════
         // BUYER INFO (Right side)
         // ═══════════════════════════════════════
         
-        // What they buy
+        // What they buy - enhanced with IndividualBuyer preferences
+        List<String> buyInfoLore = new ArrayList<>();
+        buyInfoLore.add("");
+        buyInfoLore.add("§a✓ §7Packaged Products");
+        buyInfoLore.add("§a✓ §7Joints");
+        
+        if (buyer != null) {
+            // Show buyer-specific preferences
+            buyInfoLore.add("");
+            buyInfoLore.add("§e§lPreferences:");
+            buyInfoLore.add("§7Personality: §f" + buyer.getPersonality().getDisplayName());
+            buyInfoLore.add("§7Favorite Rarity: " + getRarityDisplay(buyer.getFavoriteRarity()));
+            
+            if (buyer.isPrefersQuality()) {
+                buyInfoLore.add("§a✦ §7Prefers High Quality (4-5★)");
+            }
+            if (buyer.isPrefersBulk()) {
+                buyInfoLore.add("§a✦ §7Prefers Large Packages (10g+)");
+            }
+            
+            // Show favorite strains if any
+            List<String> favorites = buyer.getFavoriteStrains();
+            if (!favorites.isEmpty()) {
+                buyInfoLore.add("");
+                buyInfoLore.add("§d§lFavorite Strains:");
+                for (String strainId : favorites) {
+                    com.budlords.strain.Strain strain = plugin.getStrainManager().getStrain(strainId);
+                    if (strain != null) {
+                        buyInfoLore.add("  §7• " + strain.getName());
+                    }
+                }
+            }
+        } else {
+            buyInfoLore.add(getBuyerPreferences(buyerType));
+            buyInfoLore.add("");
+            buyInfoLore.add("§7Base price modifier:");
+            buyInfoLore.add(getBuyerPriceInfo(buyerType));
+        }
+        
         ItemStack buyInfo = createItem(Material.CHEST,
             buyerColor + "§lWhat They Buy",
-            Arrays.asList(
-                "",
-                "§a✓ §7Packaged Products",
-                "§a✓ §7Joints",
-                getBuyerPreferences(buyerType),
-                "",
-                "§7Base price modifier:",
-                getBuyerPriceInfo(buyerType)
-            ));
+            buyInfoLore);
         inv.setItem(24, buyInfo);
 
-        // Tips and perks
-        ItemStack perksCard = createItem(Material.GOLD_NUGGET,
-            "§6§lPerks & Tips",
-            getPerksForLevel(repLevel));
-        inv.setItem(33, perksCard);
+        // Buyer backstory and personality
+        ItemStack personalityCard;
+        if (buyer != null) {
+            List<String> personalityLore = new ArrayList<>();
+            personalityLore.add("");
+            personalityLore.add("§7" + buyer.getBackstory());
+            personalityLore.add("");
+            personalityLore.add("§e§l💬 Latest Comment:");
+            
+            List<String> memories = buyer.getMemoryDialogue();
+            if (!memories.isEmpty()) {
+                personalityLore.add("§7\"" + memories.get(memories.size() - 1) + "\"");
+            } else {
+                personalityLore.add("§7\"" + buyer.getSpecialRequest() + "\"");
+            }
+            
+            personalityCard = createItem(Material.WRITABLE_BOOK,
+                "§6§lBuyer Profile",
+                personalityLore);
+        } else {
+            // Fallback to old system perks
+            personalityCard = createItem(Material.GOLD_NUGGET,
+                "§6§lPerks & Tips",
+                getPerksForLevel(repManager != null ? repManager.getReputationLevel(rep) : "NEUTRAL"));
+        }
+        inv.setItem(33, personalityCard);
 
         // ═══════════════════════════════════════
         // ACTION BUTTONS (Bottom)
@@ -992,6 +1102,76 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             }
         }
         return perks;
+    }
+    
+    // ═══════════════════════════════════════
+    // NEW SYSTEM HELPER METHODS
+    // ═══════════════════════════════════════
+    
+    private Material getRelationshipIcon(int totalPurchases) {
+        if (totalPurchases >= 50) return Material.NETHER_STAR;
+        if (totalPurchases >= 20) return Material.DIAMOND;
+        if (totalPurchases >= 10) return Material.EMERALD;
+        if (totalPurchases >= 5) return Material.GOLD_INGOT;
+        return Material.IRON_INGOT;
+    }
+    
+    private String getMoodDisplay(String mood) {
+        return switch (mood) {
+            case "loyal" -> "§a😊 Very Happy";
+            case "satisfied" -> "§e😊 Content";
+            case "missed_you" -> "§6🤔 Wondering";
+            case "new" -> "§7🆕 New Contact";
+            default -> "§f😐 Neutral";
+        };
+    }
+    
+    private String getRelationshipProgressBar(int purchases) {
+        int nextMilestone;
+        String nextLevel;
+        if (purchases >= 50) {
+            return "§6§l★ MAX RELATIONSHIP LEVEL ★";
+        } else if (purchases >= 20) {
+            nextMilestone = 50;
+            nextLevel = "§6BEST CUSTOMER";
+        } else if (purchases >= 10) {
+            nextMilestone = 20;
+            nextLevel = "§dLOYAL CLIENT";
+        } else if (purchases >= 5) {
+            nextMilestone = 10;
+            nextLevel = "§aREGULAR";
+        } else {
+            nextMilestone = 5;
+            nextLevel = "§eKNOWN";
+        }
+        
+        int percent = Math.min(100, (int) ((purchases / (double) nextMilestone) * 100));
+        int filled = percent / 5; // 20 segments
+        
+        StringBuilder bar = new StringBuilder("§8[");
+        for (int i = 0; i < 20; i++) {
+            if (i < filled) {
+                if (percent >= 80) bar.append("§6");
+                else if (percent >= 50) bar.append("§a");
+                else if (percent >= 25) bar.append("§e");
+                else bar.append("§c");
+                bar.append("█");
+            } else {
+                bar.append("§7░");
+            }
+        }
+        bar.append("§8] §f").append(percent).append("%");
+        bar.append(" §7to ").append(nextLevel);
+        return bar.toString();
+    }
+    
+    private String getRarityDisplay(com.budlords.strain.Strain.Rarity rarity) {
+        return switch (rarity) {
+            case COMMON -> "§7Common";
+            case UNCOMMON -> "§aUncommon";
+            case RARE -> "§9Rare";
+            case LEGENDARY -> "§6Legendary";
+        };
     }
 
     private ItemStack createItem(Material material, String name, List<String> lore) {
