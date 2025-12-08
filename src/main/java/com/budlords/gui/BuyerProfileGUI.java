@@ -3,6 +3,7 @@ package com.budlords.gui;
 import com.budlords.BudLords;
 import com.budlords.economy.EconomyManager;
 import com.budlords.economy.ReputationManager;
+import com.budlords.npc.IndividualBuyer;
 import com.budlords.npc.NPCManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

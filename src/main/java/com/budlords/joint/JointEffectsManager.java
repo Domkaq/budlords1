@@ -228,7 +228,7 @@ public class JointEffectsManager implements Listener {
             // ★★★★★ LEGENDARY QUALITY
             effects.add(new PotionEffect(PotionEffectType.REGENERATION, duration, 1, false, false, true));
             effects.add(new PotionEffect(PotionEffectType.ABSORPTION, duration, 2, false, false, true));
-            effects.add(new PotionEffect(PotionEffectType.RESISTANCE, duration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, 0, false, false, true));
             effects.add(new PotionEffect(PotionEffectType.LUCK, duration * 2, 1, false, false, true));
             effects.add(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, duration, 0, false, false, true));
             activeEffects.add("§6§l★ LEGENDARY BENEFITS ★");
@@ -281,7 +281,7 @@ public class JointEffectsManager implements Listener {
             
         } else if (rarity == Strain.Rarity.UNCOMMON) {
             // UNCOMMON - Utility boost
-            effects.add(new PotionEffect(PotionEffectType.HASTE, duration, 0, false, false, true));
+            effects.add(new PotionEffect(PotionEffectType.FAST_DIGGING, duration, 0, false, false, true));
             activeEffects.add("§a⚒ Mining Speed");
         }
 
