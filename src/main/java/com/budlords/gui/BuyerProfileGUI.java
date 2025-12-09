@@ -593,17 +593,18 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             )));
 
         // Quick stats display
-        int totalRep = 0;
-        if (repManager != null) {
-            for (NPCManager.NPCType type : NPCManager.NPCType.values()) {
-                if (type != NPCManager.NPCType.NONE) {
-                    totalRep += repManager.getReputation(player.getUniqueId(), type.name());
-                }
-            }
-        }
-        
         com.budlords.stats.PlayerStats stats = plugin.getStatsManager() != null ? 
             plugin.getStatsManager().getStats(player) : null;
+        
+        // Calculate buyer network info
+        int totalBuyers = 0;
+        int activeBuyers = 0;
+        if (plugin.getBuyerRegistry() != null) {
+            totalBuyers = plugin.getBuyerRegistry().getAllBuyers().size();
+            activeBuyers = (int) plugin.getBuyerRegistry().getAllBuyers().stream()
+                .filter(b -> b.getTotalPurchases() > 0)
+                .count();
+        }
         
         inv.setItem(11, createItem(Material.EMERALD,
             "§a§lSales Stats",
@@ -626,15 +627,16 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                     stats != null ? stats.getHighestSingleSale() : 0)
             )));
 
-        inv.setItem(15, createItem(Material.NETHER_STAR,
-            "§e§lReputation",
+        inv.setItem(15, createItem(Material.PLAYER_HEAD,
+            "§e§lBuyer Network",
             Arrays.asList(
                 "§8━━━━━━━━━━━━━━━━",
                 "",
-                "§7Total Rep: §f" + totalRep,
+                "§7Total Buyers: §f" + totalBuyers,
+                "§7Active Customers: §a" + activeBuyers,
                 "",
-                "§7Build rep by selling",
-                "§7to buyers consistently!"
+                "§7Build relationships by",
+                "§7selling to buyers consistently!"
             )));
 
         // Weather info
@@ -681,6 +683,10 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             buyer = plugin.getBuyerRegistry().getMarketJoe();
         } else if (buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
             buyer = plugin.getBuyerRegistry().getBlackMarketJoe();
+        } else if (buyerType == NPCManager.NPCType.VILLAGE_VENDOR && entity != null) {
+            // Village vendors are dynamic buyers too - get or create buyer profile for this entity
+            buyer = plugin.getDynamicBuyerManager() != null ? 
+                plugin.getDynamicBuyerManager().getOrCreateBuyer(entity) : null;
         } else if (buyerType == NPCManager.NPCType.CONFIGURABLE_MOB && entity != null) {
             // Try to get dynamic buyer for this entity
             buyer = plugin.getDynamicBuyerManager() != null ? 
@@ -766,41 +772,35 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                 milestoneLore);
             inv.setItem(29, milestonesCard);
         } else {
-            // FALLBACK: Old reputation system (for non-Joe buyers without IndividualBuyer data)
-            String repLevel = repManager != null ? repManager.getReputationLevel(rep) : "NEUTRAL";
-            String repDisplay = repManager != null ? repManager.getReputationDisplay(rep) : "§7Unknown";
-            String repBonus = repManager != null ? repManager.getReputationBonusText(rep) : "§7N/A";
-            double multiplier = repManager != null ? repManager.getReputationMultiplier(rep) : 1.0;
-            
-            ItemStack repCard = createItem(getRepIcon(repLevel),
-                "§6§l★ YOUR REPUTATION",
+            // FALLBACK: Default relationship display for buyers without data yet
+            ItemStack relationshipCard = createItem(Material.PAPER,
+                "§6§l★ NEW BUYER",
                 Arrays.asList(
                     "",
-                    "§7Status: " + repDisplay,
-                    "§7Points: §f" + rep + " §8/ 500",
+                    "§7Status: §eNew Contact",
+                    "§7Purchases: §f0",
+                    "§7Total Spent: §a$0.00",
                     "",
-                    "§7Price Bonus: " + repBonus,
-                    "§7Multiplier: §a" + String.format("%.2fx", multiplier),
+                    "§7Make your first sale to",
+                    "§7build a relationship!",
                     "",
-                    getProgressBar(rep, 500)
+                    "§8▓░░░░░░░░░ §70%"
                 ));
-            inv.setItem(20, repCard);
+            inv.setItem(20, relationshipCard);
 
-            // Next level info
-            String nextLevel = getNextReputationLevel(rep);
-            int pointsToNext = getPointsToNextLevel(rep);
-            ItemStack nextLevelCard = createItem(Material.EXPERIENCE_BOTTLE,
-                "§e§lNext Level: " + nextLevel,
+            // Getting started tips
+            ItemStack tipsCard = createItem(Material.BOOK,
+                "§e§l💡 Getting Started",
                 Arrays.asList(
                     "",
-                    "§7Points needed: §f" + pointsToNext,
+                    "§7Build relationships by:",
+                    "§7• Making successful sales",
+                    "§7• Selling quality products",
+                    "§7• Fulfilling their preferences",
                     "",
-                    "§7Earn reputation by:",
-                    "§7• Successful sales",
-                    "§7• Higher value deals",
-                    "§7• Bulk orders"
+                    "§7Better relationships = better prices!"
                 ));
-            inv.setItem(29, nextLevelCard);
+            inv.setItem(29, tipsCard);
         }
 
         // ═══════════════════════════════════════

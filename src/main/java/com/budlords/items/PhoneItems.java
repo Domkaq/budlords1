@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Factory class for creating Phone items.
- * The phone allows players to view buyer profiles and reputation.
+ * The phone allows players to view buyer profiles and relationships.
  */
 public class PhoneItems {
 
@@ -32,8 +32,8 @@ public class PhoneItems {
             lore.add("");
             lore.add("§e§lUsage:");
             lore.add("§7• Right-click on a buyer to view");
-            lore.add("§7  their profile and your reputation");
-            lore.add("§7• Right-click air to see all contacts");
+            lore.add("§7  their profile and relationship");
+            lore.add("§7• Right-click air to see all buyers");
             lore.add("");
             lore.add("§8Type: dealer_phone");
             meta.setLore(lore);

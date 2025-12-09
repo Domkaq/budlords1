@@ -49,6 +49,8 @@ public class BudLords extends JavaPlugin {
     private QualityItemManager qualityItemManager;
     private MarketShopGUI marketShopGUI;
     private BlackMarketShopGUI blackMarketShopGUI;
+    private com.budlords.gui.BulkOrdersGUI bulkOrdersGUI;
+    private com.budlords.gui.SaleAnalyticsGUI saleAnalyticsGUI;
     private MobSaleGUI mobSaleGUI;
     private RollingShopGUI rollingShopGUI;
     private JointRollingManager jointRollingManager;
@@ -89,6 +91,12 @@ public class BudLords extends JavaPlugin {
     private com.budlords.quality.SeedBagManager seedBagManager;
     private com.budlords.minigames.HarvestMinigame harvestMinigame;
     
+    // v3.4.0 - Traveling Buyers with BossBar
+    private com.budlords.npc.TravelingBuyerManager travelingBuyerManager;
+    
+    // v3.5.0 - Advanced Sale System with Analytics & Negotiation
+    private com.budlords.economy.SaleHistory saleHistory;
+    
     // v3.4.0 - Individual Buyer System
     private com.budlords.npc.BuyerRegistry buyerRegistry;
     private com.budlords.npc.BuyerMatcher buyerMatcher;
@@ -120,6 +128,8 @@ public class BudLords extends JavaPlugin {
             this.qualityItemManager = new QualityItemManager(this);
             this.marketShopGUI = new MarketShopGUI(this, economyManager, qualityItemManager);
             this.blackMarketShopGUI = new BlackMarketShopGUI(this, economyManager, strainManager);
+            this.bulkOrdersGUI = new com.budlords.gui.BulkOrdersGUI(this, bulkOrderManager);
+            this.saleAnalyticsGUI = new com.budlords.gui.SaleAnalyticsGUI(this, saleHistory);
             this.mobSaleGUI = new MobSaleGUI(this, economyManager, packagingManager, strainManager);
             this.rollingShopGUI = new RollingShopGUI(this, economyManager);
             this.jointRollingManager = new JointRollingManager(this, strainManager);
@@ -145,6 +155,12 @@ public class BudLords extends JavaPlugin {
             
             // v3.0.0 - Buyer profile GUI (phone system)
             this.buyerProfileGUI = new com.budlords.gui.BuyerProfileGUI(this, economyManager);
+            
+            // v3.4.0 - Traveling Buyers with BossBar
+            this.travelingBuyerManager = new com.budlords.npc.TravelingBuyerManager(this, buyerRegistry);
+            
+            // v3.5.0 - Advanced Sale System
+            this.saleHistory = new com.budlords.economy.SaleHistory();
             
             // v2.0.0 New Feature Managers
             this.seasonManager = new SeasonManager(this);
@@ -311,6 +327,9 @@ public class BudLords extends JavaPlugin {
             if (buyerRegistry != null) {
                 buyerRegistry.saveBuyers();
             }
+            if (travelingBuyerManager != null) {
+                travelingBuyerManager.shutdown();
+            }
             if (buyerRequestManager != null) {
                 buyerRequestManager.shutdown();
             }
@@ -401,6 +420,9 @@ public class BudLords extends JavaPlugin {
         // v3.0.0 - Enhanced selling commands
         OrdersCommand ordersCommand = new OrdersCommand(this);
         Objects.requireNonNull(getCommand("orders")).setExecutor(ordersCommand);
+        
+        SalesCommand salesCommand = new SalesCommand(this);
+        Objects.requireNonNull(getCommand("sales")).setExecutor(salesCommand);
         
         ReputationCommand reputationCommand = new ReputationCommand(this);
         Objects.requireNonNull(getCommand("reputation")).setExecutor(reputationCommand);
@@ -563,8 +585,24 @@ public class BudLords extends JavaPlugin {
         return bulkOrderManager;
     }
     
+    public com.budlords.npc.TravelingBuyerManager getTravelingBuyerManager() {
+        return travelingBuyerManager;
+    }
+    
+    public com.budlords.gui.BulkOrdersGUI getBulkOrdersGUI() {
+        return bulkOrdersGUI;
+    }
+    
     public com.budlords.gui.BuyerProfileGUI getBuyerProfileGUI() {
         return buyerProfileGUI;
+    }
+    
+    public com.budlords.economy.SaleHistory getSaleHistory() {
+        return saleHistory;
+    }
+    
+    public com.budlords.gui.SaleAnalyticsGUI getSaleAnalyticsGUI() {
+        return saleAnalyticsGUI;
     }
     
     public com.budlords.farming.PlantVisualizationManager getPlantVisualizationManager() {

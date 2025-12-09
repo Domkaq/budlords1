@@ -816,4 +816,134 @@ public class FormationManager {
             return farmingXP;
         }
     }
+    
+    /**
+     * Checks if a plant is part of a triangle breeding formation.
+     * Triangle breeding requires 3 pots with the SAME crossbreed strain in a triangular pattern.
+     * 
+     * Valid triangle patterns (3 pots total):
+     * - Right triangle: (0,0), (1,0), (0,1)
+     * - Right triangle variations with different orientations
+     * 
+     * @param plantLoc The location of the harvested plant
+     * @param strainId The strain ID
+     * @return true if in a valid triangle formation with matching crossbreed strains
+     */
+    public boolean isTriangleBreedingFormation(Location plantLoc, String strainId) {
+        // Triangle patterns - each represents 2 offsets from center plant
+        // Pattern: {{x1, z1}, {x2, z2}} where center plant is at (0, 0)
+        int[][][] TRIANGLE_PATTERNS = {
+            // Right triangles in all 4 orientations
+            {{1, 0}, {0, 1}},    // NE corner
+            {{-1, 0}, {0, 1}},   // NW corner
+            {{1, 0}, {0, -1}},   // SE corner
+            {{-1, 0}, {0, -1}},  // SW corner
+            
+            // Isosceles triangles pointing in 4 directions
+            {{1, 0}, {-1, 0}},   // Horizontal base
+            {{0, 1}, {0, -1}},   // Vertical base
+            {{1, 1}, {-1, -1}},  // Diagonal base \
+            {{1, -1}, {-1, 1}},  // Diagonal base /
+            
+            // Wider triangles
+            {{2, 0}, {1, 1}},    // Wide right
+            {{-2, 0}, {-1, 1}},  // Wide left
+            {{0, 2}, {1, 1}},    // Wide up
+            {{0, -2}, {1, -1}}   // Wide down
+        };
+        
+        // Check each pattern
+        for (int[][] pattern : TRIANGLE_PATTERNS) {
+            if (matchesTrianglePattern(plantLoc, strainId, pattern)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Checks if a specific triangle pattern matches.
+     */
+    private boolean matchesTrianglePattern(Location centerLoc, String strainId, int[][] pattern) {
+        World world = centerLoc.getWorld();
+        if (world == null) return false;
+        
+        // Check if both offset positions have matching plants
+        for (int[] offset : pattern) {
+            Location checkLoc = centerLoc.clone().add(offset[0], 0, offset[1]);
+            Plant plant = farmingManager.getPlantAt(checkLoc);
+            
+            // Must have a plant of the same strain
+            if (plant == null || !plant.getStrainId().equals(strainId)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Assigns male gender to 1-2 plants in a triangle formation (randomly selected).
+     * Male plants will produce seeds but fewer buds.
+     * This should be called when the first plant in the triangle is harvested.
+     * 
+     * @param centerLoc Location of the center plant
+     * @param strainId The strain ID
+     * @return List of plants in the triangle (all 3 plants including center)
+     */
+    public java.util.List<Plant> getTrianglePlantsAndAssignMales(Location centerLoc, String strainId) {
+        java.util.List<Plant> trianglePlants = new java.util.ArrayList<>();
+        
+        // Add center plant
+        Plant centerPlant = farmingManager.getPlantAt(centerLoc);
+        if (centerPlant != null) {
+            trianglePlants.add(centerPlant);
+        }
+        
+        // Find the matching triangle pattern and get other plants
+        int[][][] TRIANGLE_PATTERNS = {
+            {{1, 0}, {0, 1}},    {{-1, 0}, {0, 1}},   {{1, 0}, {0, -1}},   {{-1, 0}, {0, -1}},
+            {{1, 0}, {-1, 0}},   {{0, 1}, {0, -1}},   {{1, 1}, {-1, -1}},  {{1, -1}, {-1, 1}},
+            {{2, 0}, {1, 1}},    {{-2, 0}, {-1, 1}},  {{0, 2}, {1, 1}},    {{0, -2}, {1, -1}}
+        };
+        
+        for (int[][] pattern : TRIANGLE_PATTERNS) {
+            java.util.List<Plant> tempPlants = new java.util.ArrayList<>();
+            tempPlants.add(centerPlant);
+            
+            boolean matches = true;
+            for (int[] offset : pattern) {
+                Location checkLoc = centerLoc.clone().add(offset[0], 0, offset[1]);
+                Plant plant = farmingManager.getPlantAt(checkLoc);
+                
+                if (plant == null || !plant.getStrainId().equals(strainId)) {
+                    matches = false;
+                    break;
+                }
+                tempPlants.add(plant);
+            }
+            
+            if (matches) {
+                trianglePlants = tempPlants;
+                break;
+            }
+        }
+        
+        // If we found a valid triangle (3 plants), randomly assign 1-2 as male
+        if (trianglePlants.size() == 3) {
+            // Randomly choose 1 or 2 males
+            int numMales = ThreadLocalRandom.current().nextInt(1, 3); // 1 or 2
+            
+            // Shuffle to randomly select which plants become male
+            java.util.Collections.shuffle(trianglePlants);
+            
+            // Set first numMales plants as male
+            for (int i = 0; i < numMales; i++) {
+                trianglePlants.get(i).setMalePlant(true);
+            }
+        }
+        
+        return trianglePlants;
+    }
 }

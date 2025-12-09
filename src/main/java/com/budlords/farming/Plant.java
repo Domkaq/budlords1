@@ -26,6 +26,9 @@ public class Plant {
     private double nutrientLevel;
     private UUID potId;
     
+    // Triangle breeding: male plants produce seeds but few buds
+    private boolean isMalePlant = false;
+    
     // Cooldown tracking for watering quality bonus
     private long lastWateringBonusTime;
     // Default cooldown - can be overridden by config via FarmingManager
@@ -270,6 +273,14 @@ public class Plant {
 
     public boolean hasPot() {
         return potId != null || potRating != null;
+    }
+    
+    public boolean isMalePlant() {
+        return isMalePlant;
+    }
+    
+    public void setMalePlant(boolean isMale) {
+        this.isMalePlant = isMale;
     }
 
     /**
