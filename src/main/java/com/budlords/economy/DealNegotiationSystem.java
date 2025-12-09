@@ -66,9 +66,9 @@ public class DealNegotiationSystem {
         switch (buyer.getPersonality()) {
             case VIP_CLIENT -> baseTolerance = 1.4; // VIPs pay premium
             case CONNOISSEUR -> baseTolerance = 1.3; // Quality seekers pay more
-            case BULK_PURCHASER -> baseTolerance = 1.15; // Bulk buyers want deals
+            case BULK_BUYER -> baseTolerance = 1.15; // Bulk buyers want deals
             case CASUAL_USER -> baseTolerance = 1.2; // Average tolerance
-            case URBAN_DEALER -> baseTolerance = 1.25; // Street dealers flexible
+            case MYSTERY_BUYER -> baseTolerance = 1.25; // Mysterious buyers flexible
             default -> baseTolerance = 1.2;
         }
         
@@ -93,7 +93,7 @@ public class DealNegotiationSystem {
                 "This is exactly what I'm looking for!",
                 "A connoisseur's choice indeed!"
             };
-            case BULK_PURCHASER -> new String[]{
+            case BULK_BUYER -> new String[]{
                 "Good bulk pricing, I'll take it!",
                 "Perfect for my operation!",
                 "Solid deal on quantity!"
@@ -103,10 +103,10 @@ public class DealNegotiationSystem {
                 "Yeah, I'll take that!",
                 "Works for me!"
             };
-            case URBAN_DEALER -> new String[]{
-                "Streets are gonna love this!",
-                "My people need this, deal!",
-                "That's what I'm talking about!"
+            case MYSTERY_BUYER -> new String[]{
+                "...",
+                "*nods*",
+                "Interesting."
             };
             default -> new String[]{"Deal!", "Agreed!", "Sold!"};
         };
@@ -129,7 +129,7 @@ public class DealNegotiationSystem {
                 "I appreciate the artistry. §a$%.2f§7?",
                 "For this quality, I can offer §a$%.2f§7."
             };
-            case BULK_PURCHASER -> new String[]{
+            case BULK_BUYER -> new String[]{
                 "Bulk buyers need better margins. §a$%.2f§7?",
                 "I'll take it all at §a$%.2f§7.",
                 "Volume discount? §a$%.2f §7works."
@@ -139,10 +139,10 @@ public class DealNegotiationSystem {
                 "I can do §a$%.2f§7, tops.",
                 "§a$%.2f §7is all I got, friend."
             };
-            case URBAN_DEALER -> new String[]{
-                "Streets don't pay that much. §a$%.2f§7?",
-                "My buyers want deals. §a$%.2f§7?",
-                "Let's keep it real at §a$%.2f§7."
+            case MYSTERY_BUYER -> new String[]{
+                "...",
+                "§a$%.2f§7.",
+                "*writes down §a$%.2f§7*"
             };
             default -> new String[]{"How about §a$%.2f§7?", "I'll pay §a$%.2f§7.", "§a$%.2f §7is my offer."};
         };
@@ -168,7 +168,7 @@ public class DealNegotiationSystem {
                 "A true connoisseur knows fair value.",
                 "Craftsmanship is priceless, but that's not!"
             };
-            case BULK_PURCHASER -> new String[]{
+            case BULK_BUYER -> new String[]{
                 "Those margins won't work for bulk!",
                 "I need volume pricing, not premium!",
                 "That price kills my business model!"
@@ -178,10 +178,10 @@ public class DealNegotiationSystem {
                 "I'm not made of money!",
                 "That's like " + String.format("%.0f%%", overcharge) + " more than I'd pay!"
             };
-            case URBAN_DEALER -> new String[]{
-                "Streets won't pay that much!",
-                "You trying to price me out?",
-                "My buyers would laugh at that price!"
+            case MYSTERY_BUYER -> new String[]{
+                "...",
+                "*shakes head*",
+                "*walks away*"
             };
             default -> new String[]{"Too expensive!", "That's too high!", "Can't do that price!"};
         };

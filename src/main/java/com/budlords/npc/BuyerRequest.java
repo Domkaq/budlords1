@@ -28,6 +28,7 @@ public class BuyerRequest {
     private final int quantity;
     private final double bonusPayment;
     private final long expirationTime;
+    private final long durationHours;
     private final String requestMessage;
     private boolean fulfilled;
     private boolean expired;
@@ -52,6 +53,7 @@ public class BuyerRequest {
         this.minimumQuality = quality;
         this.quantity = quantity;
         this.bonusPayment = bonusPayment;
+        this.durationHours = durationHours;
         this.expirationTime = System.currentTimeMillis() + (durationHours * 60 * 60 * 1000);
         this.requestMessage = generateRequestMessage();
         this.fulfilled = false;
@@ -136,6 +138,7 @@ public class BuyerRequest {
     public StarRating getMinimumQuality() { return minimumQuality; }
     public int getQuantity() { return quantity; }
     public double getBonusPayment() { return bonusPayment; }
+    public long getDurationHours() { return durationHours; }
     public long getExpirationTime() { return expirationTime; }
     public String getRequestMessage() { return requestMessage; }
     public boolean isFulfilled() { return fulfilled; }
