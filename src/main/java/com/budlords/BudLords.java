@@ -93,6 +93,9 @@ public class BudLords extends JavaPlugin {
     // v3.4.0 - Traveling Buyers with BossBar
     private com.budlords.npc.TravelingBuyerManager travelingBuyerManager;
     
+    // v3.5.0 - Advanced Sale System with Analytics & Negotiation
+    private com.budlords.economy.SaleHistory saleHistory;
+    
     // v3.4.0 - Individual Buyer System
     private com.budlords.npc.BuyerRegistry buyerRegistry;
     private com.budlords.npc.BuyerMatcher buyerMatcher;
@@ -153,6 +156,9 @@ public class BudLords extends JavaPlugin {
             
             // v3.4.0 - Traveling Buyers with BossBar
             this.travelingBuyerManager = new com.budlords.npc.TravelingBuyerManager(this, buyerRegistry);
+            
+            // v3.5.0 - Advanced Sale System
+            this.saleHistory = new com.budlords.economy.SaleHistory();
             
             // v2.0.0 New Feature Managers
             this.seasonManager = new SeasonManager(this);
@@ -584,6 +590,10 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.gui.BuyerProfileGUI getBuyerProfileGUI() {
         return buyerProfileGUI;
+    }
+    
+    public com.budlords.economy.SaleHistory getSaleHistory() {
+        return saleHistory;
     }
     
     public com.budlords.farming.PlantVisualizationManager getPlantVisualizationManager() {
