@@ -1376,11 +1376,12 @@ public class MobSaleGUI implements InventoryHolder, Listener {
 
     /**
      * NEW: Counts sellable items in player's inventory
+     * FIXED: Proper null checking
      */
     private int countSellableItemsInInventory(Player player) {
         int count = 0;
         for (ItemStack item : player.getInventory().getContents()) {
-            if (isSellableItem(item)) {
+            if (item != null && isSellableItem(item)) {
                 count += item.getAmount();
             }
         }
@@ -1389,16 +1390,18 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     
     /**
      * NEW: Quick fill - automatically add sellable items to sale slots
+     * FIXED: Proper null checking and single-item removal
      */
     private void quickFillSaleSlots(SaleSession session, Player player) {
         for (int i = 0; i < session.itemsToSell.length; i++) {
             if (session.itemsToSell[i] != null) continue; // Skip filled slots
             
             // Find sellable item in inventory
-            for (ItemStack item : player.getInventory().getContents()) {
-                if (isSellableItem(item)) {
+            for (int slot = 0; slot < player.getInventory().getSize(); slot++) {
+                ItemStack item = player.getInventory().getItem(slot);
+                if (item != null && isSellableItem(item)) {
                     session.itemsToSell[i] = item.clone();
-                    player.getInventory().remove(item);
+                    player.getInventory().setItem(slot, null); // Remove only this specific item
                     break;
                 }
             }

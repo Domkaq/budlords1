@@ -194,9 +194,9 @@ public class PlantVisualizationManager {
                 world.playSound(effectLoc, Sound.BLOCK_NOTE_BLOCK_CHIME, 0.6f, 2.0f);
                 world.playSound(effectLoc, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.4f, 1.8f);
                 
-                // Notify nearby players
-                for (Player player : world.getPlayers()) {
-                    if (player.getLocation().distance(effectLoc) <= 16) {
+                // OPTIMIZED: Notify only nearby players using getNearbyEntities for better performance
+                for (org.bukkit.entity.Entity entity : world.getNearbyEntities(effectLoc, 16, 16, 16)) {
+                    if (entity instanceof Player player) {
                         player.sendMessage("§a§l✓ §aA plant has reached §6§lFULL MATURITY §anearby!");
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.3f, 1.8f);
                     }
