@@ -141,6 +141,16 @@ Convert raw buds into sellable packages:
 3. If the deal succeeds, you receive money!
 4. If the deal fails, you'll have a cooldown before trying again
 
+**🔥 Late Game Bulk Sales Tips:**
+- Package your buds into **64g packages** for maximum efficiency
+- Stack multiple packages of the same strain and quality
+- Higher reputation with buyers = better prices!
+- Use the **Dealer Phone** (Echo Shard) to track buyer relationships:
+  - Right-click in air to open phone
+  - View "Contacts" to see all buyers and their purchase history
+  - Build loyalty with buyers for bonus multipliers (up to +15%)
+- Each buyer has unique preferences - check their profile for favorites
+
 ### Checking Progress
 
 #### View Balance and Rank

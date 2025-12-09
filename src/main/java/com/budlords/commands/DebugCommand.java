@@ -1951,6 +1951,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 "weather", "entity", "spawnnpc",
                 // Strain commands
                 "strains", "effects", "crossbreed", "testmutation",
+                // Buyer/Sales commands
+                "buyers", "refreshbuyers", "buyerstats", "addpurchase", "packaging", "sellbulk",
                 // System commands
                 "toggle", "reload", "save", "config", "clear"
             ));
@@ -1975,6 +1977,17 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 case "market" -> completions.add("set");
                 case "joint" -> completions.addAll(Arrays.asList("give", "info"));
                 case "addskillxp" -> completions.addAll(Arrays.asList("GROWING", "HARVESTING", "BREEDING", "PROCESSING", "SELLING"));
+                case "buyers" -> completions.addAll(Arrays.asList("list", "stats"));
+                case "buyerstats" -> {
+                    if (plugin.getBuyerRegistry() != null) {
+                        plugin.getBuyerRegistry().getAllBuyers().forEach(b -> completions.add(b.getName()));
+                    }
+                }
+                case "addpurchase" -> {
+                    if (plugin.getBuyerRegistry() != null) {
+                        plugin.getBuyerRegistry().getAllBuyers().forEach(b -> completions.add(b.getName()));
+                    }
+                }
                 case "spawnnpc" -> {
                     for (com.budlords.npc.NPCManager.NPCType type : com.budlords.npc.NPCManager.NPCType.values()) {
                         if (type != com.budlords.npc.NPCManager.NPCType.NONE) {
@@ -2015,6 +2028,12 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                     }
                 }
                 case "addskillxp" -> completions.addAll(Arrays.asList("100", "500", "1000", "5000"));
+                case "addpurchase" -> {
+                    // For strain ID (3rd arg)
+                    if (args.length > 2 && plugin.getStrainManager() != null) {
+                        plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
+                    }
+                }
                 case "joint" -> {
                     if (args[1].equalsIgnoreCase("give")) {
                         plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
@@ -2024,11 +2043,16 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         } else if (args.length == 4) {
             switch (args[0].toLowerCase()) {
                 case "givebud" -> completions.addAll(Arrays.asList("1", "10", "32", "64"));
+                case "addpurchase" -> completions.addAll(Arrays.asList("1", "5", "10", "20", "64"));
                 case "reputation" -> {
                     if (args[1].equalsIgnoreCase("add")) {
                         completions.addAll(Arrays.asList("50", "100", "200", "500"));
                     }
                 }
+            }
+        } else if (args.length == 5) {
+            switch (args[0].toLowerCase()) {
+                case "addpurchase" -> completions.addAll(Arrays.asList("100", "500", "1000", "5000", "10000"));
             }
         }
         

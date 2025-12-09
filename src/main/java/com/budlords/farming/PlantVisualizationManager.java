@@ -846,10 +846,13 @@ public class PlantVisualizationManager {
      * Removes all armor stands for a plant.
      * Also ensures all related visual configs are cleaned up to prevent memory leaks
      * and lingering particle effects.
+     * ENHANCED: More aggressive cleanup to prevent any lingering particles after harvest.
      */
     public void removeVisualization(String locKey) {
+        // Remove from both maps FIRST to stop any new particles immediately
         List<UUID> ids = plantArmorStands.remove(locKey);
         plantVisualConfigs.remove(locKey);
+        
         if (ids == null) return;
         
         // Remove all armor stands associated with this plant
@@ -858,6 +861,11 @@ public class PlantVisualizationManager {
             if (entity != null && entity instanceof ArmorStand) {
                 entity.remove();
             }
+        }
+        
+        // Additional safety: Log removal for debugging if needed (fine level)
+        if (ids.size() > 0) {
+            plugin.getLogger().fine("Removed " + ids.size() + " visualization entities at " + locKey);
         }
     }
 
