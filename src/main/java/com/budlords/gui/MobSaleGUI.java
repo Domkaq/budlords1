@@ -57,6 +57,9 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private static final int INFO_SLOT = 4;
     private static final int QUICK_FILL_SLOT = 10; // NEW: Auto-fill button
     private static final int SORT_SLOT = 16; // NEW: Sort items button
+    private static final int PRICE_DOWN_SLOT = 28; // NEW: Decrease price button
+    private static final int PRICE_RESET_SLOT = 31; // NEW: Reset to base price button
+    private static final int PRICE_UP_SLOT = 34; // NEW: Increase price button
     
     // Dose-based success chance penalty constants
     // Large sales (more grams) are riskier
@@ -329,6 +332,51 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 "§7Add multiple items to sort"
             )));
 
+        // NEW: Dynamic Pricing Controls
+        int pricePercent = (int) (session.priceMultiplier * 100);
+        String priceImpact = session.priceMultiplier < 1.0 ? "§a↑ Higher" : 
+                             session.priceMultiplier > 1.0 ? "§c↓ Lower" : "§7Normal";
+        
+        // Price Down Button
+        inv.setItem(PRICE_DOWN_SLOT, createItem(Material.RED_CONCRETE, 
+            "§c§l▼ Lower Price",
+            Arrays.asList(
+                "",
+                "§7Decrease asking price by §e10%",
+                "",
+                "§a✓ Higher success chance",
+                "§c✗ Less profit",
+                "",
+                hasItems ? "§e▶ Click to lower price" : "§7Add items first"
+            )));
+        
+        // Price Reset / Current Price Display
+        inv.setItem(PRICE_RESET_SLOT, createItem(Material.GOLD_NUGGET, 
+            "§6§l◆ PRICE: " + pricePercent + "%",
+            Arrays.asList(
+                "",
+                "§7Current price modifier",
+                "§7Success chance: " + priceImpact,
+                "",
+                "§7Base price: §e100%",
+                "§7Current: §e" + pricePercent + "%",
+                "",
+                hasItems && pricePercent != 100 ? "§e▶ Click to reset to 100%" : ""
+            )));
+        
+        // Price Up Button
+        inv.setItem(PRICE_UP_SLOT, createItem(Material.LIME_CONCRETE, 
+            "§a§l▲ Raise Price",
+            Arrays.asList(
+                "",
+                "§7Increase asking price by §e10%",
+                "",
+                "§a✓ More profit",
+                "§c✗ Lower success chance",
+                "",
+                hasItems ? "§e▶ Click to raise price" : "§7Add items first"
+            )));
+
         // Enhanced Tips with more info
         inv.setItem(44, createItem(Material.ENCHANTED_BOOK, "§6§l★ PRO TIPS",
             Arrays.asList(
@@ -386,7 +434,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             if (item == null) continue;
             total += calculateItemPrice(item, session.buyerType) * item.getAmount();
         }
-        return total;
+        // Apply player's custom price multiplier
+        return total * session.priceMultiplier;
     }
 
     private int countItems(SaleSession session) {
@@ -573,6 +622,13 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             successChance = Math.max(0.1, successChance - penalty);
         }
         
+        // NEW: Dynamic pricing affects success chance
+        // Lower price = higher success chance (buyer more likely to accept)
+        // Higher price = lower success chance (buyer might reject)
+        // Formula: priceMultiplier of 0.5 gives +25% success, 1.5 gives -25% success
+        double pricingAdjustment = (1.0 - session.priceMultiplier) * 0.5; // -0.25 to +0.25 range
+        successChance = Math.max(0.05, Math.min(0.99, successChance + pricingAdjustment));
+        
         return successChance;
     }
     
@@ -729,6 +785,63 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             updateInventory(event.getInventory(), session, player);
             player.sendMessage("§a§l✓ §aSorted by value (highest first)!");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.6f, 1.4f);
+            return;
+        }
+        
+        // NEW: Price Adjustment Buttons
+        if (slot == PRICE_DOWN_SLOT) {
+            if (countItems(session) == 0) {
+                player.sendMessage("§cAdd items to sell first!");
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+                return;
+            }
+            
+            // Decrease price by 10%, minimum 50%
+            session.priceMultiplier = Math.max(0.5, session.priceMultiplier - 0.1);
+            updateInventory(event.getInventory(), session, player);
+            
+            int percent = (int) (session.priceMultiplier * 100);
+            player.sendMessage("§c§l▼ §cPrice lowered to §e" + percent + "%");
+            player.sendMessage("§a§l↑ §7Success chance increased!");
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 0.8f);
+            return;
+        }
+        
+        if (slot == PRICE_RESET_SLOT) {
+            if (countItems(session) == 0) {
+                player.sendMessage("§cAdd items to sell first!");
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+                return;
+            }
+            
+            if (session.priceMultiplier == 1.0) {
+                player.sendMessage("§7Price is already at base value (100%)");
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.0f);
+                return;
+            }
+            
+            session.priceMultiplier = 1.0;
+            updateInventory(event.getInventory(), session, player);
+            player.sendMessage("§6§l◆ §ePrice reset to §a100% §e(base value)");
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.6f, 1.2f);
+            return;
+        }
+        
+        if (slot == PRICE_UP_SLOT) {
+            if (countItems(session) == 0) {
+                player.sendMessage("§cAdd items to sell first!");
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+                return;
+            }
+            
+            // Increase price by 10%, maximum 150%
+            session.priceMultiplier = Math.min(1.5, session.priceMultiplier + 0.1);
+            updateInventory(event.getInventory(), session, player);
+            
+            int percent = (int) (session.priceMultiplier * 100);
+            player.sendMessage("§a§l▲ §aPrice raised to §e" + percent + "%");
+            player.sendMessage("§c§l↓ §7Success chance decreased!");
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.6f, 1.5f);
             return;
         }
     }
@@ -1434,7 +1547,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     }
 
     /**
-     * Session data for a sale - ENHANCED with 6 slots
+     * Session data for a sale - ENHANCED with 6 slots and price adjustment
      */
     private static class SaleSession {
         final UUID playerId;
@@ -1442,6 +1555,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         final NPCManager.NPCType buyerType;
         final ItemStack[] itemsToSell;
         final Map<Integer, ItemStack> items;
+        double priceMultiplier; // Player-adjustable price modifier (0.5 to 1.5)
 
         SaleSession(UUID playerId, UUID buyerId, NPCManager.NPCType buyerType) {
             this.playerId = playerId;
@@ -1449,6 +1563,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             this.buyerType = buyerType;
             this.itemsToSell = new ItemStack[6]; // ENHANCED: 6 slots instead of 4
             this.items = new HashMap<>();
+            this.priceMultiplier = 1.0; // Default to base price
         }
     }
 }

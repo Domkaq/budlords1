@@ -593,17 +593,18 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             )));
 
         // Quick stats display
-        int totalRep = 0;
-        if (repManager != null) {
-            for (NPCManager.NPCType type : NPCManager.NPCType.values()) {
-                if (type != NPCManager.NPCType.NONE) {
-                    totalRep += repManager.getReputation(player.getUniqueId(), type.name());
-                }
-            }
-        }
-        
         com.budlords.stats.PlayerStats stats = plugin.getStatsManager() != null ? 
             plugin.getStatsManager().getStats(player) : null;
+        
+        // Calculate buyer network info
+        int totalBuyers = 0;
+        int activeBuyers = 0;
+        if (plugin.getBuyerRegistry() != null) {
+            totalBuyers = plugin.getBuyerRegistry().getAllBuyers().size();
+            activeBuyers = (int) plugin.getBuyerRegistry().getAllBuyers().stream()
+                .filter(b -> b.getTotalPurchases() > 0)
+                .count();
+        }
         
         inv.setItem(11, createItem(Material.EMERALD,
             "§a§lSales Stats",
@@ -626,15 +627,16 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                     stats != null ? stats.getHighestSingleSale() : 0)
             )));
 
-        inv.setItem(15, createItem(Material.NETHER_STAR,
-            "§e§lReputation",
+        inv.setItem(15, createItem(Material.PLAYER_HEAD,
+            "§e§lBuyer Network",
             Arrays.asList(
                 "§8━━━━━━━━━━━━━━━━",
                 "",
-                "§7Total Rep: §f" + totalRep,
+                "§7Total Buyers: §f" + totalBuyers,
+                "§7Active Customers: §a" + activeBuyers,
                 "",
-                "§7Build rep by selling",
-                "§7to buyers consistently!"
+                "§7Build relationships by",
+                "§7selling to buyers consistently!"
             )));
 
         // Weather info
@@ -681,6 +683,10 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
             buyer = plugin.getBuyerRegistry().getMarketJoe();
         } else if (buyerType == NPCManager.NPCType.BLACKMARKET_JOE) {
             buyer = plugin.getBuyerRegistry().getBlackMarketJoe();
+        } else if (buyerType == NPCManager.NPCType.VILLAGE_VENDOR && entity != null) {
+            // Village vendors are dynamic buyers too - get or create buyer profile for this entity
+            buyer = plugin.getDynamicBuyerManager() != null ? 
+                plugin.getDynamicBuyerManager().getOrCreateBuyer(entity) : null;
         } else if (buyerType == NPCManager.NPCType.CONFIGURABLE_MOB && entity != null) {
             // Try to get dynamic buyer for this entity
             buyer = plugin.getDynamicBuyerManager() != null ? 
