@@ -816,4 +816,70 @@ public class FormationManager {
             return farmingXP;
         }
     }
+    
+    /**
+     * Checks if a plant is part of a triangle breeding formation.
+     * Triangle breeding requires 3 pots with the SAME crossbreed strain in a triangular pattern.
+     * 
+     * Valid triangle patterns (3 pots total):
+     * - Right triangle: (0,0), (1,0), (0,1)
+     * - Right triangle variations with different orientations
+     * 
+     * @param plantLoc The location of the harvested plant
+     * @param strainId The strain ID
+     * @return true if in a valid triangle formation with matching crossbreed strains
+     */
+    public boolean isTriangleBreedingFormation(Location plantLoc, String strainId) {
+        // Triangle patterns - each represents 2 offsets from center plant
+        // Pattern: {{x1, z1}, {x2, z2}} where center plant is at (0, 0)
+        int[][][] TRIANGLE_PATTERNS = {
+            // Right triangles in all 4 orientations
+            {{1, 0}, {0, 1}},    // NE corner
+            {{-1, 0}, {0, 1}},   // NW corner
+            {{1, 0}, {0, -1}},   // SE corner
+            {{-1, 0}, {0, -1}},  // SW corner
+            
+            // Isosceles triangles pointing in 4 directions
+            {{1, 0}, {-1, 0}},   // Horizontal base
+            {{0, 1}, {0, -1}},   // Vertical base
+            {{1, 1}, {-1, -1}},  // Diagonal base \
+            {{1, -1}, {-1, 1}},  // Diagonal base /
+            
+            // Wider triangles
+            {{2, 0}, {1, 1}},    // Wide right
+            {{-2, 0}, {-1, 1}},  // Wide left
+            {{0, 2}, {1, 1}},    // Wide up
+            {{0, -2}, {1, -1}}   // Wide down
+        };
+        
+        // Check each pattern
+        for (int[][] pattern : TRIANGLE_PATTERNS) {
+            if (matchesTrianglePattern(plantLoc, strainId, pattern)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Checks if a specific triangle pattern matches.
+     */
+    private boolean matchesTrianglePattern(Location centerLoc, String strainId, int[][] pattern) {
+        World world = centerLoc.getWorld();
+        if (world == null) return false;
+        
+        // Check if both offset positions have matching plants
+        for (int[] offset : pattern) {
+            Location checkLoc = centerLoc.clone().add(offset[0], 0, offset[1]);
+            Plant plant = farmingManager.getPlantAt(checkLoc);
+            
+            // Must have a plant of the same strain
+            if (plant == null || !plant.getStrainId().equals(strainId)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 }

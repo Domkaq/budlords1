@@ -199,19 +199,29 @@ public class CrossbreedManager implements InventoryHolder {
         inv.setItem(36, createItem(Material.BARRIER, "§c§lClear Selection",
             Arrays.asList("", "§7Remove both parents", "§7and start over.")));
         
-        // Info panel
-        inv.setItem(44, createItem(Material.BOOK, 
-            "§e§l? How Crossbreeding Works",
+        // Enhanced Info/Tutorial panel
+        inv.setItem(44, createItem(Material.ENCHANTED_BOOK, 
+            "§d§l✿ Crossbreeding Guide ✿",
             Arrays.asList(
                 "",
-                "§7• Hybrid inherits traits from both",
-                "§7• Potency: Average + random bonus",
-                "§7• Yield: Average of both parents",
-                "§7• Rarity: Based on parent rarities",
-                "§7• Quality: Average of seed ratings",
+                "§e§l⚡ BASICS:",
+                "§7• Select 2 parent seed strains",
+                "§7• Hybrid inherits both traits",
+                "§7• Potency: Average + bonus",
+                "§7• Yield: Average of parents",
+                "§7• Rarity: Based on parents",
                 "",
-                "§7There's a small chance for",
-                "§6rare mutations §7to occur!"
+                "§6§l✦ ADVANCED:",
+                "§7• Higher star seeds = better hybrids",
+                "§7• §6Rare mutations §7can occur!",
+                "§7• Crossbreed seeds §dcan't be bought",
+                "",
+                "§d§l🌸 TRIANGLE BREEDING:",
+                "§7Place 3 pots in §etriangle formation",
+                "§7with crossbreed seeds for §a50% chance",
+                "§7to get §e+1 bonus seed §7on harvest!",
+                "",
+                "§8§oExperiment to discover new strains!"
             )));
     }
 

@@ -995,6 +995,34 @@ public class FarmingListener implements Listener {
             );
         }
         
+        // NEW: Triangle Breeding Bonus - Give +1 seed for crossbred strains in triangle formation
+        if (strain.isCrossbred() && plugin.getFormationManager() != null) {
+            boolean isTriangle = plugin.getFormationManager().isTriangleBreedingFormation(
+                plant.getLocation(), plant.getStrainId());
+            
+            if (isTriangle) {
+                // 50% chance to get +1 bonus seed
+                if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
+                    ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
+                    HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
+                    if (!seedLeftover.isEmpty()) {
+                        seedLeftover.values().forEach(item -> 
+                            player.getWorld().dropItemNaturally(player.getLocation(), item)
+                        );
+                    }
+                    
+                    player.sendMessage("");
+                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING BONUS! 🌸");
+                    player.sendMessage("§7Your triangle formation yielded §e+1 seed§7!");
+                    player.sendMessage("§8§o(50% chance from 3-pot triangle)");
+                    player.sendMessage("");
+                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.5f);
+                    player.getWorld().spawnParticle(org.bukkit.Particle.HEART, 
+                        plant.getLocation().add(0.5, 1, 0.5), 10, 0.5, 0.5, 0.5, 0.1);
+                }
+            }
+        }
+        
         // Update stats and challenges
         updateHarvestStatsAndChallenges(player, plant, strain, finalRating);
 
@@ -1044,6 +1072,34 @@ public class FarmingListener implements Listener {
             leftover.values().forEach(item -> 
                 player.getWorld().dropItemNaturally(player.getLocation(), item)
             );
+        }
+        
+        // NEW: Triangle Breeding Bonus - Give +1 seed for crossbred strains in triangle formation
+        if (strain.isCrossbred() && plugin.getFormationManager() != null) {
+            boolean isTriangle = plugin.getFormationManager().isTriangleBreedingFormation(
+                plant.getLocation(), plant.getStrainId());
+            
+            if (isTriangle) {
+                // 50% chance to get +1 bonus seed
+                if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
+                    ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
+                    HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
+                    if (!seedLeftover.isEmpty()) {
+                        seedLeftover.values().forEach(item -> 
+                            player.getWorld().dropItemNaturally(player.getLocation(), item)
+                        );
+                    }
+                    
+                    player.sendMessage("");
+                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING BONUS! 🌸");
+                    player.sendMessage("§7Your triangle formation yielded §e+1 seed§7!");
+                    player.sendMessage("§8§o(50% chance from 3-pot triangle)");
+                    player.sendMessage("");
+                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.5f);
+                    player.getWorld().spawnParticle(org.bukkit.Particle.HEART, 
+                        plant.getLocation().add(0.5, 1, 0.5), 10, 0.5, 0.5, 0.5, 0.1);
+                }
+            }
         }
         
         // Update stats and challenges
