@@ -12,7 +12,7 @@ economy:
   # Starting balance for new players
   starting-balance: 0.0
 
-# Farming settings
+# Farming settings - PROFESSIONAL & ENHANCED
 farming:
   # How often to check for plant growth (seconds)
   growth-check-interval-seconds: 60
@@ -33,6 +33,12 @@ farming:
   # Stage 0: Seed, Stage 1: Sprout, Stage 2: Vegetative, Stage 3: Flowering
   # Disable this for performance if you have many plants
   3d-visualization: true
+  # NEW: Bonus yield for perfect conditions
+  perfect-conditions-bonus: 1.25  # 25% extra yield
+  # NEW: Combo multiplier for consecutive perfect harvests
+  combo-multiplier-enabled: true
+  combo-max-streak: 10  # Maximum combo streak
+  combo-bonus-per-streak: 0.05  # +5% per streak
 
 # Star Quality System (★ 1-5)
 quality:
@@ -56,12 +62,33 @@ packaging:
     5g: 1.5
     10g: 2.0
 
-# Trading settings
+# Trading settings - PROFESSIONAL & REWARDING
 trading:
   # Cooldown after failed deal (seconds)
   failed-deal-cooldown-seconds: 30
   # Per-entity cooldown (prevents selling to same entity repeatedly)
   entity-cooldown-seconds: 30
+  
+  # NEW: Volume Discounts - Sell more, earn more!
+  volume-bonuses-enabled: true
+  volume-tiers:
+    tier1: # 10+ items in one sale
+      items: 10
+      bonus: 1.05  # +5% bonus
+    tier2: # 25+ items
+      items: 25
+      bonus: 1.10  # +10% bonus
+    tier3: # 50+ items
+      items: 50
+      bonus: 1.15  # +15% bonus
+    tier4: # 100+ items - whale tier!
+      items: 100
+      bonus: 1.25  # +25% bonus
+  
+  # NEW: Quick Sale Bonus - Sell fast, earn more!
+  quick-sale-bonus-enabled: true
+  quick-sale-time-seconds: 300  # 5 minutes
+  quick-sale-multiplier: 1.10  # +10% if sold within time limit
   
   # Dynamic buyer system
   # When enabled, mobs can become individual buyers with personalities
@@ -207,7 +234,7 @@ diseases:
   # Maximum spread radius in blocks
   spread-radius: 3
 
-# Achievement System settings
+# Achievement System settings - PROFESSIONAL & REWARDING
 achievements:
   # Enable achievement system
   enabled: true
@@ -215,6 +242,12 @@ achievements:
   broadcast-rare: true
   # Show celebration particles on unlock
   celebration-effects: true
+  # NEW: Achievement Rewards System
+  reward-multipliers:
+    bronze: 1.02  # +2% earnings for bronze achievements
+    silver: 1.05  # +5% earnings for silver achievements
+    gold: 1.10    # +10% earnings for gold achievements
+    platinum: 1.15  # +15% earnings for platinum achievements
 
 # Skill System settings
 skills:
@@ -224,6 +257,66 @@ skills:
   points-per-prestige: 3
   # Skill points per 1000 total earnings
   points-per-earnings: 1
+
+# NEW: Daily Login Rewards System - PROFESSIONAL & ENGAGING
+daily-rewards:
+  enabled: true
+  # Streak-based rewards (consecutive daily logins)
+  streak-rewards:
+    day1:
+      money: 100
+      xp: 50
+      message: "§a§l✓ Welcome back! Day 1 reward!"
+    day3:
+      money: 250
+      xp: 100
+      bonus-item: "seed_pack"
+      message: "§6§l★ 3-Day Streak! Bonus seed pack!"
+    day7:
+      money: 500
+      xp: 250
+      bonus-item: "legendary_seed"
+      message: "§5§l✦ 7-DAY STREAK! Legendary seed!"
+    day14:
+      money: 1000
+      xp: 500
+      bonus-multiplier: 1.15  # +15% earnings for 24h
+      message: "§d§l♦ 2-WEEK STREAK! +15% earnings bonus!"
+    day30:
+      money: 5000
+      xp: 2000
+      bonus-multiplier: 1.25  # +25% earnings for 48h
+      message: "§6§l★★★ MONTHLY CHAMPION! +25% earnings!"
+  # Participation rewards (play time)
+  hourly-play-rewards:
+    enabled: true
+    reward-per-hour:
+      money: 50
+      xp: 25
+    max-hours-per-day: 8  # Prevent grinding
+
+# NEW: Lucky Events System - EXCITEMENT & RANDOMNESS
+lucky-events:
+  enabled: true
+  # Random chance per hour for lucky event
+  chance-per-hour: 0.15  # 15% chance each hour
+  events:
+    double-money:
+      name: "§6§l★ DOUBLE MONEY HOUR!"
+      duration-minutes: 30
+      multiplier: 2.0
+    triple-xp:
+      name: "§b§l★ TRIPLE XP HOUR!"
+      duration-minutes: 20
+      xp-multiplier: 3.0
+    golden-harvest:
+      name: "§e§l★ GOLDEN HARVEST!"
+      duration-minutes: 45
+      quality-boost: 2  # +2 star rating to all harvests
+    lucky-buyer:
+      name: "§d§l★ PREMIUM BUYER!"
+      duration-minutes: 15
+      price-multiplier: 2.5  # Buyer pays 2.5x normal price
 
 # Collection Book settings
 collection:
