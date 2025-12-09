@@ -1295,14 +1295,34 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
                     
                     // Contact card clicks
                     if (line.startsWith("§8ID: contact_")) {
-                        String typeName = line.substring(14);
-                        try {
-                            NPCManager.NPCType type = NPCManager.NPCType.valueOf(typeName);
-                            openBuyerProfile(player, type, null);
+                        String idValue = line.substring(14); // Remove "§8ID: contact_"
+                        
+                        // Check if it's a fixed NPC type
+                        if (idValue.equals("market_joe")) {
+                            openBuyerProfile(player, NPCManager.NPCType.MARKET_JOE, null);
                             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
                             return;
-                        } catch (IllegalArgumentException e) {
-                            // Invalid type, ignore
+                        } else if (idValue.equals("blackmarket_joe")) {
+                            openBuyerProfile(player, NPCManager.NPCType.BLACKMARKET_JOE, null);
+                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
+                            return;
+                        } else if (idValue.startsWith("buyer_")) {
+                            // Dynamic buyer - extract UUID and open their detail GUI
+                            try {
+                                String uuidStr = idValue.substring(6); // Remove "buyer_"
+                                UUID buyerId = UUID.fromString(uuidStr);
+                                com.budlords.npc.IndividualBuyer buyer = plugin.getBuyerRegistry().getBuyer(buyerId);
+                                if (buyer != null) {
+                                    player.closeInventory();
+                                    plugin.getBuyerDetailGUI().open(player, buyer);
+                                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
+                                } else {
+                                    player.sendMessage("§cBuyer not found!");
+                                }
+                                return;
+                            } catch (IllegalArgumentException e) {
+                                player.sendMessage("§cInvalid buyer ID!");
+                            }
                         }
                     }
                 }

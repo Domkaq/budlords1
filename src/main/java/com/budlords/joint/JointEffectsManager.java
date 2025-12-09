@@ -382,7 +382,7 @@ public class JointEffectsManager implements Listener {
             }
         }.runTaskTimer(plugin, 0L, 2L);
         
-        // Rarity-based color explosion
+        // Rarity-based SPECTACULAR color explosion
         Particle rarityParticle = getRarityParticle(rarity);
         new BukkitRunnable() {
             @Override
@@ -393,26 +393,45 @@ public class JointEffectsManager implements Listener {
                 }
                 Location effectLoc = player.getLocation().add(0, 1.2, 0);
                 
-                // Expanding ring of colored particles
-                for (int i = 0; i < 20; i++) {
-                    double angle = Math.PI * 2 * i / 20.0;
-                    double radius = 0.8;
+                // ENHANCED: Expanding ring of colored particles with multiple layers
+                for (int i = 0; i < 24; i++) {
+                    double angle = Math.PI * 2 * i / 24.0;
+                    double radius = 0.9;
                     double x = Math.cos(angle) * radius;
                     double z = Math.sin(angle) * radius;
                     
                     player.getWorld().spawnParticle(
                         rarityParticle,
                         effectLoc.clone().add(x, 0, z),
-                        1, 0, 0, 0, 0
+                        2, 0.05, 0.05, 0.05, 0
                     );
                 }
                 
-                // Upward spiral
+                // ENHANCED: Upward spiral with more intensity
                 player.getWorld().spawnParticle(
                     Particle.END_ROD,
                     effectLoc,
-                    10, 0.3, 0.5, 0.3, 0.05
+                    15, 0.4, 0.6, 0.4, 0.06
                 );
+                
+                // NEW: Additional firework-style burst for high quality
+                if (stars >= 4) {
+                    player.getWorld().spawnParticle(
+                        Particle.FIREWORKS_SPARK,
+                        effectLoc,
+                        20, 0.5, 0.5, 0.5, 0.1
+                    );
+                }
+                
+                // NEW: Legendary gets extra special effect
+                if (rarity == Strain.Rarity.LEGENDARY) {
+                    player.getWorld().spawnParticle(
+                        Particle.TOTEM,
+                        effectLoc,
+                        10, 0.6, 0.6, 0.6, 0
+                    );
+                    player.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.5f);
+                }
             }
         }.runTaskLater(plugin, 10L);
 
@@ -504,30 +523,47 @@ public class JointEffectsManager implements Listener {
 
                 // ═══ QUALITY EFFECTS (5-star = Best) ═══
                 if (stars >= 5 && ticks % 20 == 0) {
-                    // Legendary quality golden sparkles
+                    // Legendary quality - SPECTACULAR golden display
                     player.getWorld().spawnParticle(
                         Particle.TOTEM,
                         playerLoc.clone().add(0, 2, 0),
-                        3, 0.3, 0.2, 0.3, 0
+                        5, 0.4, 0.3, 0.4, 0
                     );
                     player.getWorld().spawnParticle(
                         Particle.END_ROD,
                         playerLoc.clone().add(0, 0.5, 0),
-                        1, 0.2, 0.2, 0.2, 0.02
+                        2, 0.3, 0.3, 0.3, 0.03
+                    );
+                    // Extra golden sparkle burst
+                    player.getWorld().spawnParticle(
+                        Particle.FIREWORKS_SPARK,
+                        playerLoc.clone().add(0, 1.5, 0),
+                        3, 0.2, 0.3, 0.2, 0.01
+                    );
+                    // Ambient glow
+                    player.getWorld().spawnParticle(
+                        Particle.SOUL_FIRE_FLAME,
+                        playerLoc.clone().add(0, 1, 0),
+                        1, 0.15, 0.15, 0.15, 0.01
                     );
                 } else if (stars >= 4 && ticks % 30 == 0) {
-                    // High quality heart particles
+                    // High quality - Enhanced heart and note particles
                     player.getWorld().spawnParticle(
                         Particle.HEART,
                         playerLoc.clone().add(0, 2.1, 0),
-                        1, 0.25, 0.15, 0.25, 0
+                        2, 0.3, 0.2, 0.3, 0
+                    );
+                    player.getWorld().spawnParticle(
+                        Particle.NOTE,
+                        playerLoc.clone().add(0, 1.5, 0),
+                        1, 0.2, 0.2, 0.2, 0
                     );
                 } else if (stars >= 3 && ticks % 40 == 0) {
-                    // Good quality villager particles
+                    // Good quality - Multiple happy particles
                     player.getWorld().spawnParticle(
                         Particle.VILLAGER_HAPPY,
                         playerLoc.clone().add(0, 1.8, 0),
-                        2, 0.3, 0.2, 0.3, 0
+                        3, 0.4, 0.3, 0.4, 0
                     );
                 }
                 

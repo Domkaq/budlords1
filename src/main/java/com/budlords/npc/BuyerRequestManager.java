@@ -162,9 +162,19 @@ public class BuyerRequestManager {
         Collection<IndividualBuyer> buyers = buyerRegistry.getAllBuyers();
         if (buyers.isEmpty()) return;
         
-        // Select a random buyer
-        List<IndividualBuyer> buyerList = new ArrayList<>(buyers);
-        IndividualBuyer buyer = buyerList.get(ThreadLocalRandom.current().nextInt(buyerList.size()));
+        // IMPORTANT: Only generate requests from buyers who have made at least one purchase
+        // This ensures only REAL, interacted-with buyers generate requests
+        List<IndividualBuyer> eligibleBuyers = buyers.stream()
+            .filter(b -> b.getTotalPurchases() > 0)
+            .collect(Collectors.toList());
+            
+        if (eligibleBuyers.isEmpty()) {
+            // No buyers with purchase history yet - don't generate fake requests
+            return;
+        }
+        
+        // Select a random buyer from eligible ones
+        IndividualBuyer buyer = eligibleBuyers.get(ThreadLocalRandom.current().nextInt(eligibleBuyers.size()));
         
         // Generate request based on buyer personality
         BuyerRequest request = generateRequestForBuyer(buyer);
@@ -173,23 +183,21 @@ public class BuyerRequestManager {
             activeRequests.put(request.getRequestId(), request);
             buyerRequests.computeIfAbsent(buyer.getId(), k -> new ArrayList<>()).add(request.getRequestId());
             
-            // Only notify players who have sold to this buyer before (have relationship)
+            // Notify all online players about this request
+            // (Since this buyer has purchase history, they're a real buyer)
             for (Player player : Bukkit.getOnlinePlayers()) {
-                // Check if player has purchase history with this buyer
-                if (buyer.getTotalPurchases() > 0) {
-                    player.sendMessage("");
-                    player.sendMessage("§6§l📋 NEW REQUEST!");
-                    player.sendMessage("§e" + buyer.getName() + "§7: " + request.getRequestMessage());
-                    player.sendMessage("§7Bonus: §a+$" + String.format("%.2f", request.getBonusPayment()));
-                    player.sendMessage("§7Expires in: §e" + request.getHoursRemaining() + " hours");
-                    
-                    if (request.getBonusPayment() >= HIGH_VALUE_THRESHOLD) {
-                        player.sendMessage("§6§l🔥 HIGH VALUE REQUEST - Check your bossbar!");
-                    }
-                    
-                    player.sendMessage("");
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.7f, 1.5f);
+                player.sendMessage("");
+                player.sendMessage("§6§l📋 NEW REQUEST!");
+                player.sendMessage("§e" + buyer.getName() + "§7: " + request.getRequestMessage());
+                player.sendMessage("§7Bonus: §a+$" + String.format("%.2f", request.getBonusPayment()));
+                player.sendMessage("§7Expires in: §e" + request.getHoursRemaining() + " hours");
+                
+                if (request.getBonusPayment() >= HIGH_VALUE_THRESHOLD) {
+                    player.sendMessage("§6§l🔥 HIGH VALUE REQUEST - Check your bossbar!");
                 }
+                
+                player.sendMessage("");
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.7f, 1.5f);
             }
         }
     }

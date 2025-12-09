@@ -265,8 +265,9 @@ public class BuyerListGUI implements InventoryHolder, Listener {
             return;
         }
         
-        // Check for analytics
-        if (clicked.getType() == Material.SPYGLASS) {
+        // Check for analytics button (slot 48 specifically, not just any SPYGLASS)
+        if (event.getRawSlot() == 48 && clicked.getType() == Material.SPYGLASS && 
+            meta.getDisplayName().contains("Analytics")) {
             player.closeInventory();
             plugin.getBuyerAnalyticsGUI().open(player);
             return;
