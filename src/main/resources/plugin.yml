@@ -95,6 +95,11 @@ commands:
     usage: /<command> [new]
     aliases: [bulkorders, order]
     permission: budlords.use
+  sales:
+    description: View your sale history and analytics
+    usage: /<command>
+    aliases: [salehistory, analytics]
+    permission: budlords.use
   reputation:
     description: View your reputation with buyers
     usage: /<command>

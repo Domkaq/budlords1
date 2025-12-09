@@ -50,6 +50,7 @@ public class BudLords extends JavaPlugin {
     private MarketShopGUI marketShopGUI;
     private BlackMarketShopGUI blackMarketShopGUI;
     private com.budlords.gui.BulkOrdersGUI bulkOrdersGUI;
+    private com.budlords.gui.SaleAnalyticsGUI saleAnalyticsGUI;
     private MobSaleGUI mobSaleGUI;
     private RollingShopGUI rollingShopGUI;
     private JointRollingManager jointRollingManager;
@@ -128,6 +129,7 @@ public class BudLords extends JavaPlugin {
             this.marketShopGUI = new MarketShopGUI(this, economyManager, qualityItemManager);
             this.blackMarketShopGUI = new BlackMarketShopGUI(this, economyManager, strainManager);
             this.bulkOrdersGUI = new com.budlords.gui.BulkOrdersGUI(this, bulkOrderManager);
+            this.saleAnalyticsGUI = new com.budlords.gui.SaleAnalyticsGUI(this, saleHistory);
             this.mobSaleGUI = new MobSaleGUI(this, economyManager, packagingManager, strainManager);
             this.rollingShopGUI = new RollingShopGUI(this, economyManager);
             this.jointRollingManager = new JointRollingManager(this, strainManager);
@@ -419,6 +421,9 @@ public class BudLords extends JavaPlugin {
         OrdersCommand ordersCommand = new OrdersCommand(this);
         Objects.requireNonNull(getCommand("orders")).setExecutor(ordersCommand);
         
+        SalesCommand salesCommand = new SalesCommand(this);
+        Objects.requireNonNull(getCommand("sales")).setExecutor(salesCommand);
+        
         ReputationCommand reputationCommand = new ReputationCommand(this);
         Objects.requireNonNull(getCommand("reputation")).setExecutor(reputationCommand);
         
@@ -594,6 +599,10 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.economy.SaleHistory getSaleHistory() {
         return saleHistory;
+    }
+    
+    public com.budlords.gui.SaleAnalyticsGUI getSaleAnalyticsGUI() {
+        return saleAnalyticsGUI;
     }
     
     public com.budlords.farming.PlantVisualizationManager getPlantVisualizationManager() {
