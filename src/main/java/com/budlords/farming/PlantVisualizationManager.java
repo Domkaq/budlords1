@@ -146,9 +146,63 @@ public class PlantVisualizationManager {
         
         plantArmorStands.put(locKey, armorStandIds);
         
+        // NEW: Play professional growth stage transition effects
+        playGrowthStageEffects(loc, plant.getGrowthStage());
+        
         // Note: The flower pot block is already placed at the block BELOW the plant location
         // by the FarmingListener when the player initially places the pot.
         // We don't need to set it here - the armor stands provide the visual.
+    }
+    
+    /**
+     * NEW: Plays professional sound and particle effects when plant grows to new stage
+     * Enhanced feedback for player engagement
+     */
+    private void playGrowthStageEffects(Location loc, int growthStage) {
+        if (loc.getWorld() == null) return;
+        
+        World world = loc.getWorld();
+        Location effectLoc = loc.clone().add(0.5, 0.5, 0.5);
+        
+        switch (growthStage) {
+            case 0 -> { // Seed planted
+                world.spawnParticle(Particle.BLOCK_CRACK, effectLoc, 8, 0.2, 0.1, 0.2, 
+                    Material.DIRT.createBlockData());
+                world.playSound(effectLoc, Sound.ITEM_HOE_TILL, 0.6f, 1.2f);
+            }
+            case 1 -> { // Sprout emerging
+                world.spawnParticle(Particle.VILLAGER_HAPPY, effectLoc, 10, 0.3, 0.3, 0.3, 0);
+                world.spawnParticle(Particle.COMPOSTER, effectLoc, 5, 0.2, 0.2, 0.2, 0);
+                world.playSound(effectLoc, Sound.BLOCK_GRASS_BREAK, 0.5f, 1.5f);
+                world.playSound(effectLoc, Sound.BLOCK_AZALEA_LEAVES_BREAK, 0.4f, 1.3f);
+            }
+            case 2 -> { // Vegetative growth
+                world.spawnParticle(Particle.VILLAGER_HAPPY, effectLoc.clone().add(0, 0.5, 0), 15, 0.4, 0.4, 0.4, 0);
+                world.spawnParticle(Particle.BLOCK_CRACK, effectLoc, 5, 0.2, 0.1, 0.2, 
+                    Material.OAK_LEAVES.createBlockData());
+                world.playSound(effectLoc, Sound.BLOCK_AZALEA_LEAVES_PLACE, 0.7f, 1.1f);
+                world.playSound(effectLoc, Sound.BLOCK_NOTE_BLOCK_CHIME, 0.3f, 1.8f);
+            }
+            case 3 -> { // Flowering/Mature - PREMIUM CELEBRATION!
+                // Big celebration for mature plant!
+                world.spawnParticle(Particle.FIREWORKS_SPARK, effectLoc.clone().add(0, 1, 0), 20, 0.5, 0.8, 0.5, 0.05);
+                world.spawnParticle(Particle.VILLAGER_HAPPY, effectLoc.clone().add(0, 0.8, 0), 25, 0.6, 0.6, 0.6, 0);
+                world.spawnParticle(Particle.END_ROD, effectLoc.clone().add(0, 1.2, 0), 10, 0.3, 0.5, 0.3, 0.02);
+                
+                // Celebration sounds
+                world.playSound(effectLoc, Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.5f);
+                world.playSound(effectLoc, Sound.BLOCK_NOTE_BLOCK_CHIME, 0.6f, 2.0f);
+                world.playSound(effectLoc, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.4f, 1.8f);
+                
+                // Notify nearby players
+                for (Player player : world.getPlayers()) {
+                    if (player.getLocation().distance(effectLoc) <= 16) {
+                        player.sendMessage("§a§l✓ §aA plant has reached §6§lFULL MATURITY §anearby!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.3f, 1.8f);
+                    }
+                }
+            }
+        }
     }
     
     /**
@@ -1008,6 +1062,57 @@ public class PlantVisualizationManager {
                loc.getBlockX() + "," + 
                loc.getBlockY() + "," + 
                loc.getBlockZ();
+    }
+    
+    /**
+     * NEW: Spawns special premium effects for high-quality plants
+     * Professional visual feedback for legendary/5-star plants
+     */
+    public void spawnPremiumPlantEffects(Location loc, StarRating rating, Strain strain) {
+        if (loc.getWorld() == null) return;
+        
+        // Only for high-quality plants (4-5 stars)
+        if (rating == null || rating.getStars() < 4) return;
+        
+        int stars = rating.getStars();
+        Location effectLoc = loc.clone().add(0.5, 1.0, 0.5);
+        World world = loc.getWorld();
+        
+        // 5-star legendary effects
+        if (stars >= 5) {
+            // Golden sparkles
+            world.spawnParticle(Particle.END_ROD, effectLoc, 3, 0.3, 0.5, 0.3, 0.02);
+            world.spawnParticle(Particle.FIREWORKS_SPARK, effectLoc, 2, 0.2, 0.3, 0.2, 0.01);
+            
+            // Legendary glow
+            if (Math.random() < 0.1) { // 10% chance per tick
+                world.spawnParticle(Particle.SPELL_WITCH, effectLoc, 5, 0.4, 0.6, 0.4, 0.05);
+                world.playSound(effectLoc, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.2f, 1.8f);
+            }
+        }
+        
+        // 4-star premium effects
+        if (stars >= 4) {
+            // Green sparkles
+            world.spawnParticle(Particle.VILLAGER_HAPPY, effectLoc, 2, 0.3, 0.4, 0.3, 0.01);
+            
+            // Rare glow pulse
+            if (Math.random() < 0.05) { // 5% chance
+                world.spawnParticle(Particle.ENCHANTMENT_TABLE, effectLoc, 8, 0.5, 0.5, 0.5, 0.5);
+            }
+        }
+        
+        // Strain-specific color effects (legendary strains only)
+        if (strain != null && strain.getRarity() == Strain.Rarity.LEGENDARY) {
+            // Purple/pink aura for legendary strains
+            world.spawnParticle(Particle.DRAGON_BREATH, effectLoc, 1, 0.2, 0.3, 0.2, 0.01);
+            
+            // Occasional burst
+            if (Math.random() < 0.02) {  // 2% chance
+                world.spawnParticle(Particle.SOUL_FIRE_FLAME, effectLoc, 10, 0.4, 0.6, 0.4, 0.02);
+                world.playSound(effectLoc, Sound.BLOCK_RESPAWN_ANCHOR_CHARGE, 0.15f, 2.0f);
+            }
+        }
     }
 
     /**
