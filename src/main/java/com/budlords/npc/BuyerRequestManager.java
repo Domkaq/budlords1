@@ -30,20 +30,24 @@ public class BuyerRequestManager {
     private final BuyerRegistry buyerRegistry;
     private final Map<UUID, BuyerRequest> activeRequests; // requestId -> request
     private final Map<UUID, List<UUID>> buyerRequests; // buyerId -> list of requestIds
+    private final Map<UUID, org.bukkit.boss.BossBar> requestBossBars; // requestId -> bossbar
     
     // Request generation settings
     private static final int MAX_ACTIVE_REQUESTS = 10;
     private static final int REQUEST_GENERATION_INTERVAL = 6000; // 5 minutes in ticks
     private static final double REQUEST_GENERATION_CHANCE = 0.3; // 30% chance per cycle
+    private static final double HIGH_VALUE_THRESHOLD = 5000.0; // Show bossbar for requests > $5000
     
     public BuyerRequestManager(BudLords plugin, BuyerRegistry buyerRegistry) {
         this.plugin = plugin;
         this.buyerRegistry = buyerRegistry;
         this.activeRequests = new ConcurrentHashMap<>();
         this.buyerRequests = new ConcurrentHashMap<>();
+        this.requestBossBars = new ConcurrentHashMap<>();
         
         startRequestGenerationTask();
         startExpirationCheckTask();
+        startBossBarUpdateTask();
     }
     
     /**
@@ -91,10 +95,64 @@ public class BuyerRequestManager {
                         if (buyerReqs != null) {
                             buyerReqs.remove(id);
                         }
+                        
+                        // Remove bossbar if exists
+                        org.bukkit.boss.BossBar bossBar = requestBossBars.remove(id);
+                        if (bossBar != null) {
+                            bossBar.removeAll();
+                        }
                     }
                 }
             }
         }.runTaskTimer(plugin, 1200, 1200); // Every minute
+    }
+    
+    /**
+     * Starts the bossbar update task for high-value requests.
+     */
+    private void startBossBarUpdateTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Map.Entry<UUID, BuyerRequest> entry : activeRequests.entrySet()) {
+                    BuyerRequest request = entry.getValue();
+                    
+                    // Only show bossbar for high-value requests
+                    if (request.getBonusPayment() >= HIGH_VALUE_THRESHOLD) {
+                        org.bukkit.boss.BossBar bossBar = requestBossBars.get(entry.getKey());
+                        
+                        if (bossBar == null) {
+                            // Create new bossbar
+                            bossBar = Bukkit.createBossBar(
+                                "§6§l🔥 HIGH VALUE REQUEST §f" + request.getBuyerName() + " §7(+§a$" + String.format("%.0f", request.getBonusPayment()) + "§7)",
+                                org.bukkit.boss.BarColor.YELLOW,
+                                org.bukkit.boss.BarStyle.SEGMENTED_10
+                            );
+                            bossBar.setVisible(true);
+                            requestBossBars.put(entry.getKey(), bossBar);
+                            
+                            // Add all online players
+                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                bossBar.addPlayer(player);
+                            }
+                        }
+                        
+                        // Update progress based on time remaining
+                        long timeRemaining = request.getExpirationTime() - System.currentTimeMillis();
+                        long totalDuration = request.getDurationHours() * 3600000L;
+                        double progress = Math.max(0.0, Math.min(1.0, (double) timeRemaining / totalDuration));
+                        bossBar.setProgress(progress);
+                        
+                        // Change color based on urgency
+                        if (progress < 0.2) {
+                            bossBar.setColor(org.bukkit.boss.BarColor.RED);
+                        } else if (progress < 0.5) {
+                            bossBar.setColor(org.bukkit.boss.BarColor.YELLOW);
+                        }
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 40, 40); // Every 2 seconds
     }
     
     /**
@@ -124,6 +182,11 @@ public class BuyerRequestManager {
                     player.sendMessage("§e" + buyer.getName() + "§7: " + request.getRequestMessage());
                     player.sendMessage("§7Bonus: §a+$" + String.format("%.2f", request.getBonusPayment()));
                     player.sendMessage("§7Expires in: §e" + request.getHoursRemaining() + " hours");
+                    
+                    if (request.getBonusPayment() >= HIGH_VALUE_THRESHOLD) {
+                        player.sendMessage("§6§l🔥 HIGH VALUE REQUEST - Check your bossbar!");
+                    }
+                    
                     player.sendMessage("");
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.7f, 1.5f);
                 }
@@ -315,6 +378,11 @@ public class BuyerRequestManager {
      * Cleans up on shutdown.
      */
     public void shutdown() {
+        // Remove all bossbars
+        for (org.bukkit.boss.BossBar bossBar : requestBossBars.values()) {
+            bossBar.removeAll();
+        }
+        requestBossBars.clear();
         activeRequests.clear();
         buyerRequests.clear();
     }
