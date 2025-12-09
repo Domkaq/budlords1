@@ -49,6 +49,7 @@ public class BudLords extends JavaPlugin {
     private QualityItemManager qualityItemManager;
     private MarketShopGUI marketShopGUI;
     private BlackMarketShopGUI blackMarketShopGUI;
+    private com.budlords.gui.BulkOrdersGUI bulkOrdersGUI;
     private MobSaleGUI mobSaleGUI;
     private RollingShopGUI rollingShopGUI;
     private JointRollingManager jointRollingManager;
@@ -89,6 +90,9 @@ public class BudLords extends JavaPlugin {
     private com.budlords.quality.SeedBagManager seedBagManager;
     private com.budlords.minigames.HarvestMinigame harvestMinigame;
     
+    // v3.4.0 - Traveling Buyers with BossBar
+    private com.budlords.npc.TravelingBuyerManager travelingBuyerManager;
+    
     // v3.4.0 - Individual Buyer System
     private com.budlords.npc.BuyerRegistry buyerRegistry;
     private com.budlords.npc.BuyerMatcher buyerMatcher;
@@ -120,6 +124,7 @@ public class BudLords extends JavaPlugin {
             this.qualityItemManager = new QualityItemManager(this);
             this.marketShopGUI = new MarketShopGUI(this, economyManager, qualityItemManager);
             this.blackMarketShopGUI = new BlackMarketShopGUI(this, economyManager, strainManager);
+            this.bulkOrdersGUI = new com.budlords.gui.BulkOrdersGUI(this, bulkOrderManager);
             this.mobSaleGUI = new MobSaleGUI(this, economyManager, packagingManager, strainManager);
             this.rollingShopGUI = new RollingShopGUI(this, economyManager);
             this.jointRollingManager = new JointRollingManager(this, strainManager);
@@ -145,6 +150,9 @@ public class BudLords extends JavaPlugin {
             
             // v3.0.0 - Buyer profile GUI (phone system)
             this.buyerProfileGUI = new com.budlords.gui.BuyerProfileGUI(this, economyManager);
+            
+            // v3.4.0 - Traveling Buyers with BossBar
+            this.travelingBuyerManager = new com.budlords.npc.TravelingBuyerManager(this, buyerRegistry);
             
             // v2.0.0 New Feature Managers
             this.seasonManager = new SeasonManager(this);
@@ -310,6 +318,9 @@ public class BudLords extends JavaPlugin {
             // v3.4.0 shutdown
             if (buyerRegistry != null) {
                 buyerRegistry.saveBuyers();
+            }
+            if (travelingBuyerManager != null) {
+                travelingBuyerManager.shutdown();
             }
             if (buyerRequestManager != null) {
                 buyerRequestManager.shutdown();
@@ -561,6 +572,14 @@ public class BudLords extends JavaPlugin {
     
     public com.budlords.economy.BulkOrderManager getBulkOrderManager() {
         return bulkOrderManager;
+    }
+    
+    public com.budlords.npc.TravelingBuyerManager getTravelingBuyerManager() {
+        return travelingBuyerManager;
+    }
+    
+    public com.budlords.gui.BulkOrdersGUI getBulkOrdersGUI() {
+        return bulkOrdersGUI;
     }
     
     public com.budlords.gui.BuyerProfileGUI getBuyerProfileGUI() {

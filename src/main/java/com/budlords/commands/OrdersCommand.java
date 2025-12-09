@@ -29,34 +29,15 @@ public class OrdersCommand implements CommandExecutor {
             return true;
         }
         
-        // Check if player is operator - regular players must use phone
-        if (!player.isOp() && !player.hasPermission("budlords.admin")) {
-            player.sendMessage("");
-            player.sendMessage("§c§l✗ Access Denied!");
-            player.sendMessage("§7This command is for operators only.");
-            player.sendMessage("");
-            player.sendMessage("§7Use your §bDealer Phone §7to view orders!");
-            player.sendMessage("§7Get a phone from §aMarket Joe§7's shop.");
-            player.sendMessage("");
+        // Open the bulk orders GUI
+        com.budlords.gui.BulkOrdersGUI gui = plugin.getBulkOrdersGUI();
+        if (gui == null) {
+            player.sendMessage("§cBulk orders system is not available!");
             return true;
         }
         
-        BulkOrderManager orderManager = plugin.getBulkOrderManager();
-        if (orderManager == null) {
-            player.sendMessage("§cBulk order system is not available!");
-            return true;
-        }
-        
-        if (args.length > 0 && args[0].equalsIgnoreCase("new")) {
-            // Generate new order
-            long cooldown = orderManager.getTimeUntilRefresh(player.getUniqueId());
-            if (cooldown > 0) {
-                player.sendMessage("§cYou must wait " + (cooldown / 60000) + " minutes before getting a new order!");
-                return true;
-            }
-            orderManager.generateOrder(player.getUniqueId());
-            return true;
-        }
+        gui.open(player);
+        return true;
         
         // Display current order
         BulkOrderManager.BulkOrder order = orderManager.getActiveOrder(player.getUniqueId());
