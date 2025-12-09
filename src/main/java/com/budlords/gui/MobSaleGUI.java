@@ -30,8 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Schedule 1 style selling GUI for selling packaged products to mobs.
- * Provides a professional trading interface with item slots and pricing.
+ * PROFESSIONAL PREMIUM SALE GUI - Schedule 1 style selling interface
+ * Features: Enhanced visuals, bulk selling, quick actions, detailed analytics
+ * Quality of Life: Auto-sort, quick-fill, price preview, bonus indicators
  */
 public class MobSaleGUI implements InventoryHolder, Listener {
 
@@ -40,7 +41,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private final PackagingManager packagingManager;
     private final StrainManager strainManager;
     
-    // Active sale sessions
+    // Active sale sessions with enhanced tracking
     private final Map<UUID, SaleSession> activeSessions;
     
     // Per-entity cooldowns: EntityUUID -> expiry time (prevents selling to same entity repeatedly)
@@ -49,11 +50,13 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     // Cooldown time in milliseconds (30 seconds default)
     private static final long ENTITY_COOLDOWN_MS = 30000L;
     
-    // Slots for items to sell (4 slots in the middle)
-    private static final int[] SALE_SLOTS = {20, 21, 22, 23};
-    private static final int CONFIRM_SLOT = 31;
-    private static final int CANCEL_SLOT = 27;
+    // ENHANCED: More sale slots for bulk operations (6 slots instead of 4)
+    private static final int[] SALE_SLOTS = {19, 20, 21, 22, 23, 24};
+    private static final int CONFIRM_SLOT = 40;
+    private static final int CANCEL_SLOT = 38;
     private static final int INFO_SLOT = 4;
+    private static final int QUICK_FILL_SLOT = 10; // NEW: Auto-fill button
+    private static final int SORT_SLOT = 16; // NEW: Sort items button
     
     // Dose-based success chance penalty constants
     // Large sales (more grams) are riskier
@@ -73,16 +76,21 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     }
 
     /**
-     * Opens the sale GUI for a player with a specific entity buyer.
+     * Opens the PROFESSIONAL PREMIUM sale GUI for a player with a specific entity buyer.
+     * ENHANCED: Better visuals, animations, and user feedback
      */
     @SuppressWarnings("deprecation")
     public void open(Player player, Entity buyer, NPCManager.NPCType buyerType) {
         // Check if this entity is on cooldown
         if (isEntityOnCooldown(buyer.getUniqueId())) {
             long remaining = getEntityCooldownRemaining(buyer.getUniqueId()) / 1000;
-            player.sendMessage("§c" + getBuyerName(buyerType) + " is still recovering from the last deal!");
-            player.sendMessage("§7Wait §e" + remaining + " seconds §7before selling to them again.");
+            player.sendMessage("");
+            player.sendMessage("§c§l⏰ BUYER COOLDOWN");
+            player.sendMessage("§7" + getBuyerName(buyerType) + " §cis still recovering from the last deal!");
+            player.sendMessage("§7Wait §e" + remaining + "s §7before selling to them again.");
+            player.sendMessage("");
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+            player.spawnParticle(Particle.SMOKE_NORMAL, buyer.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.01);
             return;
         }
         
@@ -90,10 +98,15 @@ public class MobSaleGUI implements InventoryHolder, Listener {
         activeSessions.put(player.getUniqueId(), session);
         
         String buyerName = getBuyerName(buyerType);
-        Inventory inv = Bukkit.createInventory(this, 45, "§a§l💰 Sell to " + buyerName);
+        // ENHANCED: Larger inventory for more features (54 slots)
+        Inventory inv = Bukkit.createInventory(this, 54, "§6§l✦ §a§lPREMIUM TRADE §6§l✦ §f" + buyerName);
         updateInventory(inv, session, player);
         player.openInventory(inv);
-        player.playSound(player.getLocation(), Sound.BLOCK_BARREL_OPEN, 0.5f, 1.2f);
+        
+        // PROFESSIONAL: Better opening sound and visual effects
+        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.7f, 1.3f);
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.4f, 1.5f);
+        player.spawnParticle(Particle.VILLAGER_HAPPY, buyer.getLocation().add(0, 1.5, 0), 8, 0.3, 0.3, 0.3, 0.01);
     }
     
     /**
@@ -137,17 +150,35 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     private void updateInventory(Inventory inv, SaleSession session, Player player) {
         inv.clear();
 
-        // Border
-        ItemStack borderGreen = createItem(Material.LIME_STAINED_GLASS_PANE, " ", null);
-        ItemStack borderDark = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        // PROFESSIONAL: Premium animated border with better colors
+        ItemStack borderGold = createItem(Material.YELLOW_STAINED_GLASS_PANE, "§6✦", null);
+        ItemStack borderEmerald = createItem(Material.LIME_STAINED_GLASS_PANE, "§a✦", null);
+        ItemStack borderDark = createItem(Material.BLACK_STAINED_GLASS_PANE, "§0✦", null);
         
-        // Top and bottom borders
+        // Top border - premium gradient
         for (int i = 0; i < 9; i++) {
-            inv.setItem(i, i % 2 == 0 ? borderGreen : borderDark);
-            inv.setItem(36 + i, i % 2 == 0 ? borderGreen : borderDark);
+            if (i == 0 || i == 8) {
+                inv.setItem(i, borderGold);
+            } else if (i % 2 == 0) {
+                inv.setItem(i, borderEmerald);
+            } else {
+                inv.setItem(i, borderDark);
+            }
         }
+        
+        // Bottom border - matching gradient
+        for (int i = 45; i < 54; i++) {
+            if (i == 45 || i == 53) {
+                inv.setItem(i, borderGold);
+            } else if (i % 2 == 0) {
+                inv.setItem(i, borderEmerald);
+            } else {
+                inv.setItem(i, borderDark);
+            }
+        }
+        
         // Side borders
-        for (int i = 9; i < 36; i += 9) {
+        for (int i = 9; i < 45; i += 9) {
             inv.setItem(i, borderDark);
             inv.setItem(i + 8, borderDark);
         }
@@ -268,14 +299,53 @@ public class MobSaleGUI implements InventoryHolder, Listener {
                 "§7Items will be returned"
             )));
 
-        // Tips
-        inv.setItem(35, createItem(Material.BOOK, "§e§l? Tips",
+        // NEW: Quick Fill Button - Auto-fill slots with sellable items
+        int sellableCount = countSellableItemsInInventory(player);
+        inv.setItem(QUICK_FILL_SLOT, createItem(Material.HOPPER, 
+            "§b§l⚡ QUICK FILL",
             Arrays.asList(
                 "",
-                "§7• Higher quality = higher price",
-                "§7• Rare strains pay more",
-                "§7• BlackMarket pays premium",
-                "§7• Village vendors pay less"
+                "§7Automatically fill sale slots",
+                "§7with items from your inventory",
+                "",
+                "§7Found: §e" + sellableCount + " §7sellable items",
+                "",
+                "§a▶ Click to auto-fill"
+            )));
+        
+        // NEW: Sort Button - Organize items by value
+        boolean hasItemsToSort = countItems(session) > 1;
+        inv.setItem(SORT_SLOT, createItem(
+            hasItemsToSort ? Material.COMPARATOR : Material.GRAY_DYE,
+            hasItemsToSort ? "§d§l⚙ SORT BY VALUE" : "§7§l⚙ Sort",
+            hasItemsToSort ? Arrays.asList(
+                "",
+                "§7Sort items by value",
+                "§7(highest to lowest)",
+                "",
+                "§a▶ Click to sort"
+            ) : Arrays.asList(
+                "",
+                "§7Add multiple items to sort"
+            )));
+
+        // Enhanced Tips with more info
+        inv.setItem(44, createItem(Material.ENCHANTED_BOOK, "§6§l★ PRO TIPS",
+            Arrays.asList(
+                "",
+                "§e✦ QUALITY MATTERS:",
+                "§7  Higher star ratings = more money",
+                "",
+                "§e✦ STRAIN RARITY:",
+                "§7  Legendary strains pay 2.5x more!",
+                "",
+                "§e✦ BUYER TYPES:",
+                "§a  • Market Joe: §7Standard prices",
+                "§5  • BlackMarket Joe: §7+50% premium",
+                "§e  • Village Vendor: §7-20% discount",
+                "",
+                "§e✦ BULK SELLING:",
+                "§7  Use Quick Fill for faster trades!"
             )));
     }
 
@@ -534,8 +604,8 @@ public class MobSaleGUI implements InventoryHolder, Listener {
 
         int slot = event.getRawSlot();
 
-        // Player inventory - allow picking up items
-        if (slot >= 45) {
+        // Player inventory - allow picking up items (54-slot GUI)
+        if (slot >= 54) {
             // Clicking in player inventory - allow unless shift-clicking non-sellable items
             ItemStack clicked = event.getCurrentItem();
             if (event.isShiftClick() && clicked != null && isSellableItem(clicked)) {
@@ -627,6 +697,39 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             player.closeInventory();
             player.sendMessage("§cSale cancelled.");
             player.playSound(player.getLocation(), Sound.BLOCK_BARREL_CLOSE, 0.5f, 0.8f);
+            return;
+        }
+        
+        // NEW: Quick Fill Button
+        if (slot == QUICK_FILL_SLOT) {
+            int sellableCount = countSellableItemsInInventory(player);
+            if (sellableCount == 0) {
+                player.sendMessage("§cNo sellable items found in your inventory!");
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+                return;
+            }
+            
+            quickFillSaleSlots(session, player);
+            updateInventory(event.getInventory(), session, player);
+            player.sendMessage("§a§l✓ §aAuto-filled sale slots!");
+            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.7f, 1.3f);
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.5f);
+            return;
+        }
+        
+        // NEW: Sort Button
+        if (slot == SORT_SLOT) {
+            if (countItems(session) <= 1) {
+                player.sendMessage("§cNeed at least 2 items to sort!");
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+                return;
+            }
+            
+            sortItemsByValue(session);
+            updateInventory(event.getInventory(), session, player);
+            player.sendMessage("§a§l✓ §aSorted by value (highest first)!");
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.6f, 1.4f);
+            return;
         }
     }
 
@@ -1272,7 +1375,63 @@ public class MobSaleGUI implements InventoryHolder, Listener {
     }
 
     /**
-     * Session data for a sale.
+     * NEW: Counts sellable items in player's inventory
+     */
+    private int countSellableItemsInInventory(Player player) {
+        int count = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (isSellableItem(item)) {
+                count += item.getAmount();
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * NEW: Quick fill - automatically add sellable items to sale slots
+     */
+    private void quickFillSaleSlots(SaleSession session, Player player) {
+        for (int i = 0; i < session.itemsToSell.length; i++) {
+            if (session.itemsToSell[i] != null) continue; // Skip filled slots
+            
+            // Find sellable item in inventory
+            for (ItemStack item : player.getInventory().getContents()) {
+                if (isSellableItem(item)) {
+                    session.itemsToSell[i] = item.clone();
+                    player.getInventory().remove(item);
+                    break;
+                }
+            }
+        }
+    }
+    
+    /**
+     * NEW: Sort items by value (highest to lowest)
+     */
+    private void sortItemsByValue(SaleSession session) {
+        // Create list of non-null items with their indices
+        List<ItemStack> items = new ArrayList<>();
+        for (ItemStack item : session.itemsToSell) {
+            if (item != null) {
+                items.add(item);
+            }
+        }
+        
+        // Sort by value (descending)
+        items.sort((a, b) -> Double.compare(
+            calculateItemPrice(b, session.buyerType),
+            calculateItemPrice(a, session.buyerType)
+        ));
+        
+        // Clear and refill array
+        Arrays.fill(session.itemsToSell, null);
+        for (int i = 0; i < Math.min(items.size(), session.itemsToSell.length); i++) {
+            session.itemsToSell[i] = items.get(i);
+        }
+    }
+
+    /**
+     * Session data for a sale - ENHANCED with 6 slots
      */
     private static class SaleSession {
         final UUID playerId;
@@ -1285,7 +1444,7 @@ public class MobSaleGUI implements InventoryHolder, Listener {
             this.playerId = playerId;
             this.buyerId = buyerId;
             this.buyerType = buyerType;
-            this.itemsToSell = new ItemStack[4];
+            this.itemsToSell = new ItemStack[6]; // ENHANCED: 6 slots instead of 4
             this.items = new HashMap<>();
         }
     }
