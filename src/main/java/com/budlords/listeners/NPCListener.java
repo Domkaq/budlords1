@@ -160,6 +160,34 @@ public class NPCListener implements Listener {
         }
 
         // PRIORITY 4: Default NPC interaction - show trader info for Village Vendors and others
+        
+        // For Village Vendors, check if they have a dynamic buyer profile
+        if (npcType == NPCManager.NPCType.VILLAGE_VENDOR) {
+            if (plugin.getDynamicBuyerManager() != null) {
+                com.budlords.npc.IndividualBuyer buyer = plugin.getDynamicBuyerManager().getOrCreateBuyer(entity);
+                if (buyer != null) {
+                    // Show buyer greeting with their actual name
+                    player.sendMessage("");
+                    player.sendMessage(buyer.getGreeting());
+                    player.sendMessage("§7Personality: §e" + buyer.getPersonality().getDisplayName());
+                    
+                    // Show demand indicator
+                    if (plugin.getDynamicBuyerManager().hasDemand(entity)) {
+                        player.sendMessage("§a✦ §7Looking to buy right now!");
+                    } else {
+                        player.sendMessage("§7Not interested in buying at the moment.");
+                    }
+                    
+                    player.sendMessage("§7Hold a packaged product or joint to sell!");
+                    player.sendMessage(PHONE_HINT);
+                    player.sendMessage("");
+                    player.sendMessage("§e§oLower prices, but always willing to buy.");
+                    return;
+                }
+            }
+        }
+        
+        // Default trader name for NPCs without dynamic profiles
         String traderName = switch (npcType) {
             case MARKET_JOE -> "§a§lMarket Joe";
             case BLACKMARKET_JOE -> "§5§lBlackMarket Joe";
