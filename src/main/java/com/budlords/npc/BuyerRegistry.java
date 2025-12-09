@@ -190,6 +190,49 @@ public class BuyerRegistry {
     }
     
     /**
+     * Reloads buyer data from storage file.
+     * FIXED: Ensures phone contacts show latest buyer statistics after purchases.
+     */
+    public void reloadFromStorage() {
+        if (!buyersFile.exists()) {
+            return;
+        }
+        
+        // Reload config from disk
+        buyersConfig = YamlConfiguration.loadConfiguration(buyersFile);
+        ConfigurationSection buyersSection = buyersConfig.getConfigurationSection("buyers");
+        
+        if (buyersSection == null) {
+            return;
+        }
+        
+        // Update existing buyers with latest data from storage
+        for (String key : buyersSection.getKeys(false)) {
+            try {
+                ConfigurationSection buyerSection = buyersSection.getConfigurationSection(key);
+                if (buyerSection == null) continue;
+                
+                UUID id = UUID.fromString(buyerSection.getString("id"));
+                IndividualBuyer buyer = buyers.get(id);
+                
+                if (buyer != null) {
+                    // Update stats from storage
+                    int totalPurchases = buyerSection.getInt("total-purchases", 0);
+                    double totalSpent = buyerSection.getDouble("total-spent", 0.0);
+                    long lastSeen = buyerSection.getLong("last-seen", System.currentTimeMillis());
+                    
+                    // Force update internal state
+                    buyer.setTotalPurchases(totalPurchases);
+                    buyer.setTotalMoneySpent(totalSpent);
+                    buyer.setLastSeenTimestamp(lastSeen);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to reload buyer: " + key + " - " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
      * Generates initial diverse buyer population.
      */
     private void generateInitialBuyers(int count) {

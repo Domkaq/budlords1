@@ -433,4 +433,31 @@ public class IndividualBuyer {
         
         return "§6§lAll milestones achieved!";
     }
+    
+    // ═══════════════════════════════════════
+    // SETTER METHODS (for reload from storage)
+    // ═══════════════════════════════════════
+    
+    /**
+     * Sets total purchases (used when reloading from storage).
+     */
+    public void setTotalPurchases(int totalPurchases) {
+        this.totalPurchases = totalPurchases;
+        updateMood();
+    }
+    
+    /**
+     * Sets total money spent (used when reloading from storage).
+     */
+    public void setTotalMoneySpent(double totalMoneySpent) {
+        this.totalMoneySpent = totalMoneySpent;
+    }
+    
+    /**
+     * Sets last seen timestamp (used when reloading from storage).
+     */
+    public void setLastSeenTimestamp(long lastSeenTimestamp) {
+        this.lastSeenTimestamp = lastSeenTimestamp;
+        updateMood();
+    }
 }

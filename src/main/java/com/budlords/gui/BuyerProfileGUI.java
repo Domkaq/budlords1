@@ -80,10 +80,17 @@ public class BuyerProfileGUI implements InventoryHolder, Listener {
     
     /**
      * Opens the contacts page.
+     * FIXED: Force refresh buyer data from registry to ensure latest stats are shown
      */
     @SuppressWarnings("deprecation")
     public void openContactsPage(Player player) {
         currentPage.put(player.getUniqueId(), "contacts");
+        
+        // Force reload buyer data from storage to ensure fresh stats
+        if (plugin.getBuyerRegistry() != null) {
+            plugin.getBuyerRegistry().reloadFromStorage();
+        }
+        
         Inventory inv = Bukkit.createInventory(this, 45, "§b§l📱 Phone - Contacts");
         updateContactsPage(inv, player);
         player.openInventory(inv);
