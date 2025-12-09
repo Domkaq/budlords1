@@ -1020,7 +1020,7 @@ public class FarmingListener implements Listener {
             // Only male plants drop seeds (50% chance)
             if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
-                    ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
+                    ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, finalRating);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
                     if (!seedLeftover.isEmpty()) {
                         seedLeftover.values().forEach(item -> 
@@ -1116,7 +1116,7 @@ public class FarmingListener implements Listener {
             // Only male plants drop seeds (50% chance)
             if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
-                    ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
+                    ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, finalRating);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
                     if (!seedLeftover.isEmpty()) {
                         seedLeftover.values().forEach(item -> 
@@ -1341,7 +1341,7 @@ public class FarmingListener implements Listener {
             // Only male plants drop seeds (50% chance)
             if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
-                    ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
+                    ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, finalRating);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
                     if (!seedLeftover.isEmpty()) {
                         seedLeftover.values().forEach(item -> 
@@ -1455,7 +1455,7 @@ public class FarmingListener implements Listener {
             // Only male plants drop seeds (50% chance)
             if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
-                    ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
+                    ItemStack bonusSeed = strainManager.createSeedItem(strain, 1, finalRating);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
                     if (!seedLeftover.isEmpty()) {
                         seedLeftover.values().forEach(item -> 

@@ -89,7 +89,7 @@ public class BulkOrdersGUI implements InventoryHolder, Listener {
         } else {
             // Show active order
             Strain strain = plugin.getStrainManager().getStrain(order.strainId);
-            Material icon = strain != null ? strain.getIconMaterial() : Material.GRASS;
+            Material icon = strain != null ? strain.getIconMaterial() : Material.SHORT_GRASS;
             
             List<String> lore = new ArrayList<>();
             lore.add("");

@@ -39,10 +39,10 @@ public class TravelingBuyerManager {
         new TravelingBuyerTemplate("The Connoisseur", "§d§l🏆 ELITE COLLECTOR", CustomerType.CONNOISSEUR, BarColor.PURPLE, 1.8),
         new TravelingBuyerTemplate("Fast Eddie", "§a§l⚡ QUICK DEALER", CustomerType.CASUAL_USER, BarColor.GREEN, 1.3),
         new TravelingBuyerTemplate("Mr. Premium", "§6§l✦ PREMIUM BUYER", CustomerType.VIP_CLIENT, BarColor.YELLOW, 1.6),
-        new TravelingBuyerTemplate("The Collector", "§b§l📦 BULK BUYER", CustomerType.BULK_PURCHASER, BarColor.BLUE, 1.4),
+        new TravelingBuyerTemplate("The Collector", "§b§l📦 BULK BUYER", CustomerType.BULK_BUYER, BarColor.BLUE, 1.4),
         new TravelingBuyerTemplate("Lucky Lou", "§e§l🍀 FORTUNE BUYER", CustomerType.CASUAL_USER, BarColor.YELLOW, 1.7),
         new TravelingBuyerTemplate("High Roller", "§c§l💎 HIGH STAKES", CustomerType.VIP_CLIENT, BarColor.RED, 2.0),
-        new TravelingBuyerTemplate("Night Owl", "§5§l🦉 NIGHT TRADER", CustomerType.URBAN_DEALER, BarColor.PURPLE, 1.5)
+        new TravelingBuyerTemplate("Night Owl", "§5§l🦉 NIGHT TRADER", CustomerType.MYSTERY_BUYER, BarColor.PURPLE, 1.5)
     };
     
     // Spawn settings

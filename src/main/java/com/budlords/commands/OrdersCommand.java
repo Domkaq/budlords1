@@ -38,40 +38,5 @@ public class OrdersCommand implements CommandExecutor {
         
         gui.open(player);
         return true;
-        
-        // Display current order
-        BulkOrderManager.BulkOrder order = orderManager.getActiveOrder(player.getUniqueId());
-        
-        player.sendMessage("");
-        player.sendMessage("§6§l═══════════════════════════════════");
-        player.sendMessage("§e§l         BULK ORDERS §7(Admin View)");
-        player.sendMessage("§6§l═══════════════════════════════════");
-        player.sendMessage("");
-        
-        if (order == null) {
-            player.sendMessage("§7No active bulk order.");
-            player.sendMessage("§7Use §e/orders new §7to get a new order!");
-            
-            long cooldown = orderManager.getTimeUntilRefresh(player.getUniqueId());
-            if (cooldown > 0) {
-                player.sendMessage("§7Next order available in: §e" + (cooldown / 60000) + " minutes");
-            }
-        } else {
-            player.sendMessage("§7Buyer: §f" + order.buyerName);
-            player.sendMessage("§7Tier: " + order.tier.displayName);
-            player.sendMessage("");
-            player.sendMessage("§7Wants: §e" + order.quantity + "x §f" + order.strainName);
-            player.sendMessage("§7Bonus: §a+" + String.format("%.0f%%", (order.priceMultiplier - 1) * 100) + " §7price!");
-            player.sendMessage("");
-            player.sendMessage("§7Time remaining: §e" + order.getTimeRemainingText());
-            player.sendMessage("");
-            player.sendMessage("§7§oSell the requested items to any buyer to complete!");
-        }
-        
-        player.sendMessage("");
-        player.sendMessage("§6§l═══════════════════════════════════");
-        player.sendMessage("");
-        
-        return true;
     }
 }
