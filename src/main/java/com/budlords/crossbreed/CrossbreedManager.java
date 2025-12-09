@@ -217,9 +217,10 @@ public class CrossbreedManager implements InventoryHolder {
                 "§7• Crossbreed seeds §dcan't be bought",
                 "",
                 "§d§l🌸 TRIANGLE BREEDING:",
-                "§7Place 3 pots in §etriangle formation",
-                "§7with crossbreed seeds for §a50% chance",
-                "§7to get §e+1 bonus seed §7on harvest!",
+                "§7Place 3 crossbreed pots in §etriangle",
+                "§7§e1-2 plants §7become §e§l♂ MALE",
+                "§7§l♂ Males: §7Produce seeds, few buds (1-2)",
+                "§7§l♀ Females: §7Full buds, no seeds",
                 "",
                 "§8§oExperiment to discover new strains!"
             )));

@@ -882,4 +882,68 @@ public class FormationManager {
         
         return true;
     }
+    
+    /**
+     * Assigns male gender to 1-2 plants in a triangle formation (randomly selected).
+     * Male plants will produce seeds but fewer buds.
+     * This should be called when the first plant in the triangle is harvested.
+     * 
+     * @param centerLoc Location of the center plant
+     * @param strainId The strain ID
+     * @return List of plants in the triangle (all 3 plants including center)
+     */
+    public java.util.List<Plant> getTrianglePlantsAndAssignMales(Location centerLoc, String strainId) {
+        java.util.List<Plant> trianglePlants = new java.util.ArrayList<>();
+        
+        // Add center plant
+        Plant centerPlant = farmingManager.getPlantAt(centerLoc);
+        if (centerPlant != null) {
+            trianglePlants.add(centerPlant);
+        }
+        
+        // Find the matching triangle pattern and get other plants
+        int[][][] TRIANGLE_PATTERNS = {
+            {{1, 0}, {0, 1}},    {{-1, 0}, {0, 1}},   {{1, 0}, {0, -1}},   {{-1, 0}, {0, -1}},
+            {{1, 0}, {-1, 0}},   {{0, 1}, {0, -1}},   {{1, 1}, {-1, -1}},  {{1, -1}, {-1, 1}},
+            {{2, 0}, {1, 1}},    {{-2, 0}, {-1, 1}},  {{0, 2}, {1, 1}},    {{0, -2}, {1, -1}}
+        };
+        
+        for (int[][] pattern : TRIANGLE_PATTERNS) {
+            java.util.List<Plant> tempPlants = new java.util.ArrayList<>();
+            tempPlants.add(centerPlant);
+            
+            boolean matches = true;
+            for (int[] offset : pattern) {
+                Location checkLoc = centerLoc.clone().add(offset[0], 0, offset[1]);
+                Plant plant = farmingManager.getPlantAt(checkLoc);
+                
+                if (plant == null || !plant.getStrainId().equals(strainId)) {
+                    matches = false;
+                    break;
+                }
+                tempPlants.add(plant);
+            }
+            
+            if (matches) {
+                trianglePlants = tempPlants;
+                break;
+            }
+        }
+        
+        // If we found a valid triangle (3 plants), randomly assign 1-2 as male
+        if (trianglePlants.size() == 3) {
+            // Randomly choose 1 or 2 males
+            int numMales = ThreadLocalRandom.current().nextInt(1, 3); // 1 or 2
+            
+            // Shuffle to randomly select which plants become male
+            java.util.Collections.shuffle(trianglePlants);
+            
+            // Set first numMales plants as male
+            for (int i = 0; i < numMales; i++) {
+                trianglePlants.get(i).setMalePlant(true);
+            }
+        }
+        
+        return trianglePlants;
+    }
 }

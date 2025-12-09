@@ -946,6 +946,11 @@ public class FarmingListener implements Listener {
         double qualityMultiplier = 0.5 + (plant.getQuality() / 100.0);
         int yieldWithQuality = Math.max(1, (int) Math.round(baseYield * qualityMultiplier));
         int actualYield = scissors.calculateFinalYield(yieldWithQuality);
+        
+        // Male plants produce fewer buds (1-2 maximum)
+        if (plant.isMalePlant()) {
+            actualYield = Math.min(actualYield, java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 3));
+        }
 
         // Calculate final bud star rating
         StarRating finalRating = plant.calculateFinalBudRating(scissorsRating);
@@ -995,13 +1000,25 @@ public class FarmingListener implements Listener {
             );
         }
         
-        // NEW: Triangle Breeding Bonus - Give +1 seed for crossbred strains in triangle formation
+        // NEW: Triangle Breeding System - Male plants produce seeds, female plants produce buds
         if (strain.isCrossbred() && plugin.getFormationManager() != null) {
             boolean isTriangle = plugin.getFormationManager().isTriangleBreedingFormation(
                 plant.getLocation(), plant.getStrainId());
             
-            if (isTriangle) {
-                // 50% chance to get +1 bonus seed
+            if (isTriangle && !plant.isMalePlant()) {
+                // First harvest in triangle - assign genders to all 3 plants (1-2 become male)
+                java.util.List<com.budlords.farming.Plant> trianglePlants = 
+                    plugin.getFormationManager().getTrianglePlantsAndAssignMales(
+                        plant.getLocation(), plant.getStrainId());
+                
+                // Check if this plant became male after assignment
+                if (plant.isMalePlant()) {
+                    player.sendMessage("§e§l♂ This plant is now MALE - produces seeds but fewer buds!");
+                }
+            }
+            
+            // Only male plants drop seeds (50% chance)
+            if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
                     ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
@@ -1012,9 +1029,9 @@ public class FarmingListener implements Listener {
                     }
                     
                     player.sendMessage("");
-                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING BONUS! 🌸");
-                    player.sendMessage("§7Your triangle formation yielded §e+1 seed§7!");
-                    player.sendMessage("§8§o(50% chance from 3-pot triangle)");
+                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING - MALE PLANT! 🌸");
+                    player.sendMessage("§7Male plant in triangle yielded §e+1 seed§7!");
+                    player.sendMessage("§8§o(Male plants: 1-2 buds, 50% seed drop)");
                     player.sendMessage("");
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.5f);
                     player.getWorld().spawnParticle(org.bukkit.Particle.HEART, 
@@ -1041,6 +1058,11 @@ public class FarmingListener implements Listener {
         int baseYield = strain.getYield();
         double qualityMultiplier = 0.5 + (plant.getQuality() / 100.0);
         int actualYield = Math.max(1, (int) Math.round(baseYield * qualityMultiplier));
+        
+        // Male plants produce fewer buds (1-2 maximum)
+        if (plant.isMalePlant()) {
+            actualYield = Math.min(actualYield, java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 3));
+        }
 
         // Calculate final bud star rating (without scissors bonus)
         StarRating finalRating = plant.calculateFinalBudRating(null);
@@ -1074,13 +1096,25 @@ public class FarmingListener implements Listener {
             );
         }
         
-        // NEW: Triangle Breeding Bonus - Give +1 seed for crossbred strains in triangle formation
+        // NEW: Triangle Breeding System - Male plants produce seeds, female plants produce buds
         if (strain.isCrossbred() && plugin.getFormationManager() != null) {
             boolean isTriangle = plugin.getFormationManager().isTriangleBreedingFormation(
                 plant.getLocation(), plant.getStrainId());
             
-            if (isTriangle) {
-                // 50% chance to get +1 bonus seed
+            if (isTriangle && !plant.isMalePlant()) {
+                // First harvest in triangle - assign genders to all 3 plants (1-2 become male)
+                java.util.List<com.budlords.farming.Plant> trianglePlants = 
+                    plugin.getFormationManager().getTrianglePlantsAndAssignMales(
+                        plant.getLocation(), plant.getStrainId());
+                
+                // Check if this plant became male after assignment
+                if (plant.isMalePlant()) {
+                    player.sendMessage("§e§l♂ This plant is now MALE - produces seeds but fewer buds!");
+                }
+            }
+            
+            // Only male plants drop seeds (50% chance)
+            if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
                     ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
@@ -1091,9 +1125,9 @@ public class FarmingListener implements Listener {
                     }
                     
                     player.sendMessage("");
-                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING BONUS! 🌸");
-                    player.sendMessage("§7Your triangle formation yielded §e+1 seed§7!");
-                    player.sendMessage("§8§o(50% chance from 3-pot triangle)");
+                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING - MALE PLANT! 🌸");
+                    player.sendMessage("§7Male plant in triangle yielded §e+1 seed§7!");
+                    player.sendMessage("§8§o(Male plants: 1-2 buds, 50% seed drop)");
                     player.sendMessage("");
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.5f);
                     player.getWorld().spawnParticle(org.bukkit.Particle.HEART, 
@@ -1258,6 +1292,11 @@ public class FarmingListener implements Listener {
         double qualityMultiplier = 0.5 + (plant.getQuality() / 100.0);
         int yieldWithQuality = Math.max(1, (int) Math.round(baseYield * qualityMultiplier));
         int actualYield = (int) Math.round(yieldWithQuality * result.getYieldMultiplier());
+        
+        // Male plants produce fewer buds (1-2 maximum)
+        if (plant.isMalePlant()) {
+            actualYield = Math.min(actualYield, java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 3));
+        }
 
         // Apply quality bonus from minigame
         int enhancedQuality = Math.min(100, plant.getQuality() + result.getQualityBonus());
@@ -1282,13 +1321,25 @@ public class FarmingListener implements Listener {
             );
         }
         
-        // NEW: Triangle Breeding Bonus - Give +1 seed for crossbred strains in triangle formation
+        // NEW: Triangle Breeding System - Male plants produce seeds, female plants produce buds
         if (strain.isCrossbred() && plugin.getFormationManager() != null) {
             boolean isTriangle = plugin.getFormationManager().isTriangleBreedingFormation(
                 plant.getLocation(), plant.getStrainId());
             
-            if (isTriangle) {
-                // 50% chance to get +1 bonus seed
+            if (isTriangle && !plant.isMalePlant()) {
+                // First harvest in triangle - assign genders to all 3 plants (1-2 become male)
+                java.util.List<com.budlords.farming.Plant> trianglePlants = 
+                    plugin.getFormationManager().getTrianglePlantsAndAssignMales(
+                        plant.getLocation(), plant.getStrainId());
+                
+                // Check if this plant became male after assignment
+                if (plant.isMalePlant()) {
+                    player.sendMessage("§e§l♂ This plant is now MALE - produces seeds but fewer buds!");
+                }
+            }
+            
+            // Only male plants drop seeds (50% chance)
+            if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
                     ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
@@ -1299,9 +1350,9 @@ public class FarmingListener implements Listener {
                     }
                     
                     player.sendMessage("");
-                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING BONUS! 🌸");
-                    player.sendMessage("§7Your triangle formation yielded §e+1 seed§7!");
-                    player.sendMessage("§8§o(50% chance from 3-pot triangle)");
+                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING - MALE PLANT! 🌸");
+                    player.sendMessage("§7Male plant in triangle yielded §e+1 seed§7!");
+                    player.sendMessage("§8§o(Male plants: 1-2 buds, 50% seed drop)");
                     player.sendMessage("");
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.5f);
                     player.getWorld().spawnParticle(org.bukkit.Particle.HEART, 
@@ -1336,6 +1387,11 @@ public class FarmingListener implements Listener {
         int yieldWithQuality = Math.max(1, (int) Math.round(baseYield * qualityMultiplier));
         int yieldWithScissors = scissors.calculateFinalYield(yieldWithQuality);
         int actualYield = (int) Math.round(yieldWithScissors * result.getYieldMultiplier());
+        
+        // Male plants produce fewer buds (1-2 maximum)
+        if (plant.isMalePlant()) {
+            actualYield = Math.min(actualYield, java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 3));
+        }
 
         // Apply quality bonus from minigame
         int enhancedQuality = Math.min(100, plant.getQuality() + result.getQualityBonus());
@@ -1379,13 +1435,25 @@ public class FarmingListener implements Listener {
             );
         }
         
-        // NEW: Triangle Breeding Bonus - Give +1 seed for crossbred strains in triangle formation
+        // NEW: Triangle Breeding System - Male plants produce seeds, female plants produce buds
         if (strain.isCrossbred() && plugin.getFormationManager() != null) {
             boolean isTriangle = plugin.getFormationManager().isTriangleBreedingFormation(
                 plant.getLocation(), plant.getStrainId());
             
-            if (isTriangle) {
-                // 50% chance to get +1 bonus seed
+            if (isTriangle && !plant.isMalePlant()) {
+                // First harvest in triangle - assign genders to all 3 plants (1-2 become male)
+                java.util.List<com.budlords.farming.Plant> trianglePlants = 
+                    plugin.getFormationManager().getTrianglePlantsAndAssignMales(
+                        plant.getLocation(), plant.getStrainId());
+                
+                // Check if this plant became male after assignment
+                if (plant.isMalePlant()) {
+                    player.sendMessage("§e§l♂ This plant is now MALE - produces seeds but fewer buds!");
+                }
+            }
+            
+            // Only male plants drop seeds (50% chance)
+            if (plant.isMalePlant()) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.5) {
                     ItemStack bonusSeed = strainManager.createSeedItem(strain, finalRating, 1);
                     HashMap<Integer, ItemStack> seedLeftover = player.getInventory().addItem(bonusSeed);
@@ -1396,9 +1464,9 @@ public class FarmingListener implements Listener {
                     }
                     
                     player.sendMessage("");
-                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING BONUS! 🌸");
-                    player.sendMessage("§7Your triangle formation yielded §e+1 seed§7!");
-                    player.sendMessage("§8§o(50% chance from 3-pot triangle)");
+                    player.sendMessage("§d§l🌸 TRIANGLE BREEDING - MALE PLANT! 🌸");
+                    player.sendMessage("§7Male plant in triangle yielded §e+1 seed§7!");
+                    player.sendMessage("§8§o(Male plants: 1-2 buds, 50% seed drop)");
                     player.sendMessage("");
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.5f);
                     player.getWorld().spawnParticle(org.bukkit.Particle.HEART, 
