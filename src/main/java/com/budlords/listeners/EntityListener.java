@@ -1,16 +1,18 @@
 package com.budlords.listeners;
 
 import com.budlords.BudLords;
+import com.budlords.npc.IndividualBuyer;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Listener for entity-related events.
- * Handles dynamic buyer profile generation on entity spawn.
+ * Handles dynamic buyer profile generation on entity spawn and cleanup on entity death.
  */
 public class EntityListener implements Listener {
     
@@ -51,5 +53,34 @@ public class EntityListener implements Listener {
                 plugin.getDynamicBuyerManager().getOrCreateBuyer(entity);
             }
         }.runTaskLater(plugin, 1L);
+    }
+    
+    /**
+     * ENHANCED: Cleans up buyer profiles when their associated entity dies.
+     * This prevents "buggy" behavior where dead buyers remain in the registry.
+     * Only removes dynamic buyers (villagers, etc.) - fixed NPCs like Market Joe are permanent.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityDeath(EntityDeathEvent event) {
+        // Skip if dynamic buyer manager is not available
+        if (plugin.getDynamicBuyerManager() == null || plugin.getBuyerRegistry() == null) {
+            return;
+        }
+        
+        Entity entity = event.getEntity();
+        
+        // Try to get the buyer associated with this entity
+        IndividualBuyer buyer = plugin.getDynamicBuyerManager().getBuyer(entity);
+        
+        if (buyer != null) {
+            // Remove the buyer from the registry
+            boolean removed = plugin.getBuyerRegistry().removeBuyer(buyer.getId());
+            
+            if (removed) {
+                plugin.getLogger().info("Removed buyer '" + buyer.getName() + "' from registry (entity died: " + 
+                    entity.getType() + " at " + entity.getLocation().getBlockX() + "," + 
+                    entity.getLocation().getBlockY() + "," + entity.getLocation().getBlockZ() + ")");
+            }
+        }
     }
 }

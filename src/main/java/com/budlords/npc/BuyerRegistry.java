@@ -396,6 +396,35 @@ public class BuyerRegistry {
     }
     
     /**
+     * Removes a buyer from the registry.
+     * ENHANCED: Used when buyer entity dies to prevent buggy behavior.
+     * Fixed NPCs (Market Joe, BlackMarket Joe) cannot be removed.
+     * 
+     * @param buyerId The UUID of the buyer to remove
+     * @return true if the buyer was removed, false if not found or is a fixed NPC
+     */
+    public boolean removeBuyer(UUID buyerId) {
+        if (buyerId == null) {
+            return false;
+        }
+        
+        // Protect fixed NPCs from removal
+        if (buyerId.equals(MARKET_JOE_ID) || buyerId.equals(BLACKMARKET_JOE_ID)) {
+            plugin.getLogger().warning("Attempted to remove fixed NPC (Market Joe or BlackMarket Joe) - operation blocked");
+            return false;
+        }
+        
+        IndividualBuyer removed = buyers.remove(buyerId);
+        
+        if (removed != null) {
+            saveBuyers();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
      * Records a purchase for a buyer.
      */
     public void recordPurchase(UUID buyerId, String strainId, int amount, double price) {
