@@ -190,6 +190,49 @@ public class BuyerRegistry {
     }
     
     /**
+     * Reloads buyer data from storage file.
+     * FIXED: Ensures phone contacts show latest buyer statistics after purchases.
+     */
+    public void reloadFromStorage() {
+        if (!buyersFile.exists()) {
+            return;
+        }
+        
+        // Reload config from disk
+        buyersConfig = YamlConfiguration.loadConfiguration(buyersFile);
+        ConfigurationSection buyersSection = buyersConfig.getConfigurationSection("buyers");
+        
+        if (buyersSection == null) {
+            return;
+        }
+        
+        // Update existing buyers with latest data from storage
+        for (String key : buyersSection.getKeys(false)) {
+            try {
+                ConfigurationSection buyerSection = buyersSection.getConfigurationSection(key);
+                if (buyerSection == null) continue;
+                
+                UUID id = UUID.fromString(buyerSection.getString("id"));
+                IndividualBuyer buyer = buyers.get(id);
+                
+                if (buyer != null) {
+                    // Update stats from storage
+                    int totalPurchases = buyerSection.getInt("total-purchases", 0);
+                    double totalSpent = buyerSection.getDouble("total-spent", 0.0);
+                    long lastSeen = buyerSection.getLong("last-seen", System.currentTimeMillis());
+                    
+                    // Force update internal state
+                    buyer.setTotalPurchases(totalPurchases);
+                    buyer.setTotalMoneySpent(totalSpent);
+                    buyer.setLastSeenTimestamp(lastSeen);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to reload buyer: " + key + " - " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
      * Generates initial diverse buyer population.
      */
     private void generateInitialBuyers(int count) {
@@ -350,6 +393,35 @@ public class BuyerRegistry {
             buyers.put(buyer.getId(), buyer);
             saveBuyers();
         }
+    }
+    
+    /**
+     * Removes a buyer from the registry.
+     * ENHANCED: Used when buyer entity dies to prevent buggy behavior.
+     * Fixed NPCs (Market Joe, BlackMarket Joe) cannot be removed.
+     * 
+     * @param buyerId The UUID of the buyer to remove
+     * @return true if the buyer was removed, false if not found or is a fixed NPC
+     */
+    public boolean removeBuyer(UUID buyerId) {
+        if (buyerId == null) {
+            return false;
+        }
+        
+        // Protect fixed NPCs from removal
+        if (buyerId.equals(MARKET_JOE_ID) || buyerId.equals(BLACKMARKET_JOE_ID)) {
+            plugin.getLogger().warning("Attempted to remove fixed NPC (Market Joe or BlackMarket Joe) - operation blocked");
+            return false;
+        }
+        
+        IndividualBuyer removed = buyers.remove(buyerId);
+        
+        if (removed != null) {
+            saveBuyers();
+            return true;
+        }
+        
+        return false;
     }
     
     /**

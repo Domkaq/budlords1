@@ -90,7 +90,14 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
             case "vampire" -> handleVampire(sender, args);
             case "666" -> handleVampire(sender, args);
             case "buyers" -> handleBuyers(sender, args);
+            case "refreshbuyers" -> handleRefreshBuyers(sender);
+            case "buyerstats" -> handleBuyerStats(sender, args);
+            case "addpurchase" -> handleAddPurchase(sender, args);
+            case "removebuyer" -> handleRemoveBuyer(sender, args);
+            case "cleanbuyers" -> handleCleanBuyers(sender);
             case "formations" -> handleFormations(sender, args);
+            case "packaging" -> handlePackaging(sender, args);
+            case "sellbulk" -> handleSellBulk(sender, args);
             case "teleport" -> handleTeleport(sender, args);
             case "speed" -> handleSpeed(sender, args);
             case "heal" -> handleHeal(sender, args);
@@ -166,6 +173,13 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§c  /debug vampire [give|info|spawn] §7- 666 Vampire Seed");
         sender.sendMessage("§c  /debug 666 [give|info|spawn] §7- Same as vampire");
         sender.sendMessage("§e  /debug buyers [list|stats] §7- Buyer registry info");
+        sender.sendMessage("§e  /debug refreshbuyers §7- Reload buyer data");
+        sender.sendMessage("§e  /debug buyerstats <buyer_name> §7- Specific buyer stats");
+        sender.sendMessage("§e  /debug addpurchase <buyer> <strain> <amount> <price> §7- Add test purchase");
+        sender.sendMessage("§e  /debug removebuyer <buyer_name> §7- Remove buyer from registry");
+        sender.sendMessage("§e  /debug cleanbuyers §7- Remove orphaned buyers");
+        sender.sendMessage("§e  /debug packaging §7- Package items debug");
+        sender.sendMessage("§e  /debug sellbulk §7- Bulk sales debug");
         sender.sendMessage("§e  /debug formations §7- Formation detection info");
         sender.sendMessage("§e  /debug analytics §7- Full system analytics");
         sender.sendMessage("§e  /debug dump <type> §7- Dump data (json)");
@@ -1737,6 +1751,299 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    /**
+     * Refreshes buyer data from storage - useful for debugging phone contact updates.
+     */
+    private void handleRefreshBuyers(CommandSender sender) {
+        if (plugin.getBuyerRegistry() == null) {
+            sender.sendMessage("§cBuyer registry not initialized!");
+            return;
+        }
+        
+        plugin.getBuyerRegistry().reloadFromStorage();
+        sender.sendMessage("§a§l[DEBUG] §7Buyer data reloaded from storage!");
+        sender.sendMessage("§7All phone contacts should now show updated stats.");
+    }
+    
+    /**
+     * Shows detailed stats for a specific buyer by name.
+     */
+    private void handleBuyerStats(CommandSender sender, String[] args) {
+        if (plugin.getBuyerRegistry() == null) {
+            sender.sendMessage("§cBuyer registry not initialized!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug buyerstats <buyer_name>");
+            sender.sendMessage("§7Example: /debug buyerstats \"Market Joe\"");
+            return;
+        }
+        
+        // Join remaining args as buyer name (supports spaces)
+        String buyerName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        
+        // Find buyer by name
+        com.budlords.npc.IndividualBuyer buyer = null;
+        for (com.budlords.npc.IndividualBuyer b : plugin.getBuyerRegistry().getAllBuyers()) {
+            if (b.getName().equalsIgnoreCase(buyerName)) {
+                buyer = b;
+                break;
+            }
+        }
+        
+        if (buyer == null) {
+            sender.sendMessage("§cBuyer not found: " + buyerName);
+            sender.sendMessage("§7Use /debug buyers list to see all buyers");
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Buyer Stats: " + buyer.getName());
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7UUID: §e" + buyer.getId());
+        sender.sendMessage("§7Personality: §f" + buyer.getPersonality().getDisplayName());
+        sender.sendMessage("§7Status: " + buyer.getRelationshipSummary());
+        sender.sendMessage("");
+        sender.sendMessage("§7Total Purchases: §e" + buyer.getTotalPurchases());
+        sender.sendMessage("§7Total Spent: §a$" + String.format("%.2f", buyer.getTotalMoneySpent()));
+        sender.sendMessage("§7Loyalty Bonus: §a" + String.format("%.1f%%", (buyer.getLoyaltyBonus() - 1.0) * 100));
+        sender.sendMessage("§7Current Mood: §f" + buyer.getCurrentMood());
+        sender.sendMessage("");
+        sender.sendMessage("§7Favorite Rarity: " + getRarityDisplay(buyer.getFavoriteRarity()));
+        sender.sendMessage("§7Prefers Quality: " + (buyer.isPrefersQuality() ? "§aYes" : "§7No"));
+        sender.sendMessage("§7Prefers Bulk: " + (buyer.isPrefersBulk() ? "§aYes" : "§7No"));
+        sender.sendMessage("");
+        
+        if (!buyer.getFavoriteStrains().isEmpty()) {
+            sender.sendMessage("§7Favorite Strains:");
+            for (String strainId : buyer.getFavoriteStrains()) {
+                int count = buyer.getPurchaseHistory().getOrDefault(strainId, 0);
+                sender.sendMessage("§7  • §e" + strainId + " §7(" + count + " purchases)");
+            }
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    /**
+     * Adds a test purchase to a buyer - useful for testing phone contact updates.
+     */
+    private void handleAddPurchase(CommandSender sender, String[] args) {
+        if (plugin.getBuyerRegistry() == null) {
+            sender.sendMessage("§cBuyer registry not initialized!");
+            return;
+        }
+        
+        if (args.length < 5) {
+            sender.sendMessage("§cUsage: /debug addpurchase <buyer_name> <strain> <amount> <price>");
+            sender.sendMessage("§7Example: /debug addpurchase \"Market Joe\" og_kush 10 500");
+            return;
+        }
+        
+        String buyerName = args[1];
+        String strainId = args[2];
+        int amount = parseInt(args[3], 10);
+        double price = Double.parseDouble(args[4]);
+        
+        // Find buyer
+        com.budlords.npc.IndividualBuyer buyer = null;
+        for (com.budlords.npc.IndividualBuyer b : plugin.getBuyerRegistry().getAllBuyers()) {
+            if (b.getName().equalsIgnoreCase(buyerName)) {
+                buyer = b;
+                break;
+            }
+        }
+        
+        if (buyer == null) {
+            sender.sendMessage("§cBuyer not found: " + buyerName);
+            return;
+        }
+        
+        // Record purchase
+        plugin.getBuyerRegistry().recordPurchase(buyer.getId(), strainId, amount, price);
+        
+        sender.sendMessage("§a§l[DEBUG] §7Added purchase to " + buyer.getName());
+        sender.sendMessage("§7Strain: §e" + strainId + " §7x" + amount);
+        sender.sendMessage("§7Price: §a$" + String.format("%.2f", price));
+        sender.sendMessage("§7New Total Purchases: §e" + buyer.getTotalPurchases());
+        sender.sendMessage("§7New Total Spent: §a$" + String.format("%.2f", buyer.getTotalMoneySpent()));
+        sender.sendMessage("§7§oPhone contacts will now show updated stats!");
+    }
+    
+    /**
+     * Shows packaging debug info for bulk sales.
+     */
+    private void handlePackaging(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return;
+        }
+        
+        var packagingManager = plugin.getPackagingManager();
+        if (packagingManager == null) {
+            sender.sendMessage("§cPackaging manager not initialized!");
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Packaging Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7Packaging allows combining buds into larger packages:");
+        sender.sendMessage("§7  • §e1g Package §7- Base unit");
+        sender.sendMessage("§7  • §e5g Package §7- Medium pack");
+        sender.sendMessage("§7  • §e10g Package §7- Standard pack");
+        sender.sendMessage("§7  • §e64g Package §7- Bulk pack");
+        sender.sendMessage("");
+        sender.sendMessage("§7Late game tip: Use §e/package §7command to");
+        sender.sendMessage("§7create 64g packages for easier bulk sales!");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    /**
+     * Shows bulk sales debug info.
+     */
+    private void handleSellBulk(CommandSender sender, String[] args) {
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Bulk Sales Debug");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7For easier late game sales with 4x64 packs:");
+        sender.sendMessage("");
+        sender.sendMessage("§e1. Package your buds:");
+        sender.sendMessage("§7   Use §e/package §7to create 64g packages");
+        sender.sendMessage("");
+        sender.sendMessage("§e2. Stack packages:");
+        sender.sendMessage("§7   Packages of same strain/quality stack");
+        sender.sendMessage("");
+        sender.sendMessage("§e3. Sell in bulk:");
+        sender.sendMessage("§7   Right-click buyer with packaged products");
+        sender.sendMessage("§7   Buyers accept multiple packages at once");
+        sender.sendMessage("");
+        sender.sendMessage("§a✓ TIP: Higher reputation = better bulk prices!");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    /**
+     * Removes a specific buyer from the registry - useful for cleaning up buggy entries.
+     */
+    private void handleRemoveBuyer(CommandSender sender, String[] args) {
+        if (plugin.getBuyerRegistry() == null) {
+            sender.sendMessage("§cBuyer registry not initialized!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /debug removebuyer <buyer_name>");
+            sender.sendMessage("§7Example: /debug removebuyer \"Big Tony\"");
+            sender.sendMessage("§7Note: Cannot remove Market Joe or BlackMarket Joe");
+            return;
+        }
+        
+        // Join remaining args as buyer name (supports spaces)
+        String buyerName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        
+        // Find buyer by name
+        com.budlords.npc.IndividualBuyer buyer = null;
+        for (com.budlords.npc.IndividualBuyer b : plugin.getBuyerRegistry().getAllBuyers()) {
+            if (b.getName().equalsIgnoreCase(buyerName)) {
+                buyer = b;
+                break;
+            }
+        }
+        
+        if (buyer == null) {
+            sender.sendMessage("§cBuyer not found: " + buyerName);
+            sender.sendMessage("§7Use /debug buyers list to see all buyers");
+            return;
+        }
+        
+        boolean removed = plugin.getBuyerRegistry().removeBuyer(buyer.getId());
+        
+        if (removed) {
+            sender.sendMessage("§a§l[DEBUG] §7Removed buyer: " + buyer.getName());
+            sender.sendMessage("§7Buyer had " + buyer.getTotalPurchases() + " purchases");
+            sender.sendMessage("§7Total spent: $" + String.format("%.2f", buyer.getTotalMoneySpent()));
+        } else {
+            sender.sendMessage("§c§l[DEBUG] §7Failed to remove buyer!");
+            sender.sendMessage("§7This buyer might be a protected fixed NPC.");
+        }
+    }
+    
+    /**
+     * Cleans up orphaned buyers (buyers whose entities no longer exist).
+     * ENHANCED: Makes the system more robust by removing buggy entries.
+     */
+    private void handleCleanBuyers(CommandSender sender) {
+        if (plugin.getBuyerRegistry() == null || plugin.getDynamicBuyerManager() == null) {
+            sender.sendMessage("§cBuyer system not initialized!");
+            return;
+        }
+        
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§6§l  Cleaning Buyer Registry");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+        sender.sendMessage("§7Scanning for orphaned buyers...");
+        
+        int totalBuyers = plugin.getBuyerRegistry().getAllBuyers().size();
+        int removed = 0;
+        int protected = 0;
+        
+        // Get all loaded entities in all worlds
+        Set<UUID> activeBuyerIds = new HashSet<>();
+        
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            for (org.bukkit.entity.Entity entity : world.getEntities()) {
+                com.budlords.npc.IndividualBuyer buyer = plugin.getDynamicBuyerManager().getBuyer(entity);
+                if (buyer != null) {
+                    activeBuyerIds.add(buyer.getId());
+                }
+            }
+        }
+        
+        // Fixed NPCs are always "active"
+        if (plugin.getBuyerRegistry().getMarketJoe() != null) {
+            activeBuyerIds.add(plugin.getBuyerRegistry().getMarketJoe().getId());
+        }
+        if (plugin.getBuyerRegistry().getBlackMarketJoe() != null) {
+            activeBuyerIds.add(plugin.getBuyerRegistry().getBlackMarketJoe().getId());
+        }
+        
+        // Remove buyers that don't have active entities
+        List<com.budlords.npc.IndividualBuyer> allBuyers = new ArrayList<>(plugin.getBuyerRegistry().getAllBuyers());
+        for (com.budlords.npc.IndividualBuyer buyer : allBuyers) {
+            if (!activeBuyerIds.contains(buyer.getId())) {
+                boolean wasRemoved = plugin.getBuyerRegistry().removeBuyer(buyer.getId());
+                if (wasRemoved) {
+                    removed++;
+                    sender.sendMessage("§7  Removed: §e" + buyer.getName() + " §7(no entity found)");
+                } else {
+                    protected++;
+                }
+            }
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage("§7Total Buyers: §e" + totalBuyers);
+        sender.sendMessage("§7Active Entities: §a" + activeBuyerIds.size());
+        sender.sendMessage("§7Removed: §c" + removed);
+        if (protected > 0) {
+            sender.sendMessage("§7Protected: §6" + protected + " §7(fixed NPCs)");
+        }
+        sender.sendMessage("§7Remaining: §e" + plugin.getBuyerRegistry().getAllBuyers().size());
+        sender.sendMessage("");
+        sender.sendMessage(removed > 0 ? "§a✓ Cleanup complete!" : "§a✓ No orphaned buyers found!");
+        sender.sendMessage("§8§m════════════════════════════════════════");
+    }
+    
+    private String getRarityDisplay(com.budlords.strain.Strain.Rarity rarity) {
+        return switch (rarity) {
+            case COMMON -> "§7Common";
+            case UNCOMMON -> "§aUncommon";
+            case RARE -> "§9Rare";
+            case LEGENDARY -> "§6Legendary";
+        };
+    }
+    
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (!sender.hasPermission("budlords.admin")) {
@@ -1760,6 +2067,8 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 "weather", "entity", "spawnnpc",
                 // Strain commands
                 "strains", "effects", "crossbreed", "testmutation",
+                // Buyer/Sales commands
+                "buyers", "refreshbuyers", "buyerstats", "addpurchase", "removebuyer", "cleanbuyers", "packaging", "sellbulk",
                 // System commands
                 "toggle", "reload", "save", "config", "clear"
             ));
@@ -1784,6 +2093,17 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                 case "market" -> completions.add("set");
                 case "joint" -> completions.addAll(Arrays.asList("give", "info"));
                 case "addskillxp" -> completions.addAll(Arrays.asList("GROWING", "HARVESTING", "BREEDING", "PROCESSING", "SELLING"));
+                case "buyers" -> completions.addAll(Arrays.asList("list", "stats"));
+                case "buyerstats", "removebuyer" -> {
+                    if (plugin.getBuyerRegistry() != null) {
+                        plugin.getBuyerRegistry().getAllBuyers().forEach(b -> completions.add(b.getName()));
+                    }
+                }
+                case "addpurchase" -> {
+                    if (plugin.getBuyerRegistry() != null) {
+                        plugin.getBuyerRegistry().getAllBuyers().forEach(b -> completions.add(b.getName()));
+                    }
+                }
                 case "spawnnpc" -> {
                     for (com.budlords.npc.NPCManager.NPCType type : com.budlords.npc.NPCManager.NPCType.values()) {
                         if (type != com.budlords.npc.NPCManager.NPCType.NONE) {
@@ -1824,6 +2144,12 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
                     }
                 }
                 case "addskillxp" -> completions.addAll(Arrays.asList("100", "500", "1000", "5000"));
+                case "addpurchase" -> {
+                    // For strain ID (3rd arg)
+                    if (args.length > 2 && plugin.getStrainManager() != null) {
+                        plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
+                    }
+                }
                 case "joint" -> {
                     if (args[1].equalsIgnoreCase("give")) {
                         plugin.getStrainManager().getAllStrains().forEach(s -> completions.add(s.getId()));
@@ -1833,11 +2159,16 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
         } else if (args.length == 4) {
             switch (args[0].toLowerCase()) {
                 case "givebud" -> completions.addAll(Arrays.asList("1", "10", "32", "64"));
+                case "addpurchase" -> completions.addAll(Arrays.asList("1", "5", "10", "20", "64"));
                 case "reputation" -> {
                     if (args[1].equalsIgnoreCase("add")) {
                         completions.addAll(Arrays.asList("50", "100", "200", "500"));
                     }
                 }
+            }
+        } else if (args.length == 5) {
+            switch (args[0].toLowerCase()) {
+                case "addpurchase" -> completions.addAll(Arrays.asList("100", "500", "1000", "5000", "10000"));
             }
         }
         
