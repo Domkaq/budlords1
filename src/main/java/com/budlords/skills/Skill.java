@@ -24,21 +24,21 @@ public enum Skill {
     
     // Tier 2 - Advanced Farming
     RAPID_HARVEST("Rapid Harvest", "§e", Material.IRON_HOE,
-        "35% faster harvest (35% fewer minigame rounds)", SkillTree.FARMING, 2, 100, 1,
+        "35% faster harvest (35% fewer minigame rounds)", SkillTree.FARMING, 2, 50, 1,
         new SkillBonus(BonusType.MINIGAME_SPEED, 0.35)),
     
+    INSTANT_HARVEST("Instant Harvest", "§6", Material.DIAMOND_HOE,
+        "Skip harvest minigame completely!", SkillTree.FARMING, 2, 75, 2,
+        new SkillBonus(BonusType.SKIP_MINIGAME, 1)),
+    
     ACCELERATED_GROWTH("Accelerated Growth", "§2", Material.BONE_MEAL,
-        "Plants grow 10% faster", SkillTree.FARMING, 2, 100, 2,
+        "Plants grow 10% faster", SkillTree.FARMING, 2, 50, 3,
         new SkillBonus(BonusType.GROWTH_SPEED, 0.10)),
     
-    WATER_EFFICIENCY("Water Efficiency", "§b", Material.WATER_BUCKET,
-        "Plants need 20% less water", SkillTree.FARMING, 2, 100, 3,
-        new SkillBonus(BonusType.WATER_EFFICIENCY, 0.20)),
-    
     // Tier 3 - Master Farming
-    INSTANT_HARVEST("Instant Harvest", "§6§l", Material.DIAMOND_HOE,
-        "Skip harvest minigame completely - Ultimate convenience!", SkillTree.FARMING, 3, 500, 1,
-        new SkillBonus(BonusType.SKIP_MINIGAME, 1)),
+    WATER_EFFICIENCY("Water Efficiency", "§b", Material.WATER_BUCKET,
+        "Plants need 25% less water", SkillTree.FARMING, 3, 200, 1,
+        new SkillBonus(BonusType.WATER_EFFICIENCY, 0.25)),
     
     MASTER_FARMER("Master Farmer", "§6", Material.NETHERITE_HOE,
         "+1 bonus bud per harvest", SkillTree.FARMING, 3, 500, 2,

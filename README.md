@@ -37,7 +37,7 @@ A comprehensive, high-performance weed farming RPG with black market economy, ad
 ### 🌾 Advanced Farming System
 - **3D Plant Visualization** - Realistic armor stand-based plant models with 4 growth stages
 - **Star Quality System** (★☆☆☆☆ to ★★★★★) - Quality affects every aspect of growth and harvest
-- **Progressive Harvest Skills** - Tier 1: 15% faster → Tier 2: 35% faster → Tier 3: Instant harvest (Ultimate endgame reward!)
+- **Progressive Harvest Skills** - Tier 1: 15% faster → Tier 2: 35% faster + Auto-harvest (unlockable within ~1 hour!)
 - **Growing Pots** - Place pots anywhere, not just on farmland
 - **Smart Watering System** - Watering cans with capacity and quality bonuses
 - **Fertilizer System** - Boost nutrients and growth speed with star-rated fertilizers
