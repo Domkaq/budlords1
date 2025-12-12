@@ -9,56 +9,44 @@ import org.bukkit.Material;
 public enum Skill {
     
     // ===== FARMING TREE =====
-    // Tier 1 - Harvest Speed Progression
+    // Tier 1 - Basic Farming Skills
     QUICK_HARVEST("Quick Harvest", "§a", Material.GOLDEN_HOE,
-        "20% faster harvest (20% fewer minigame rounds)", SkillTree.FARMING, 1, 0, 1,
-        new SkillBonus(BonusType.MINIGAME_SPEED, 0.20)),
-    
-    RAPID_HARVEST("Rapid Harvest", "§a", Material.IRON_HOE,
-        "55% faster harvest (55% fewer minigame rounds)", SkillTree.FARMING, 1, 0, 2,
-        new SkillBonus(BonusType.MINIGAME_SPEED, 0.55)),
-    
-    INSTANT_HARVEST("Instant Harvest", "§6", Material.DIAMOND_HOE,
-        "Skip harvest minigame completely", SkillTree.FARMING, 1, 0, 3,
-        new SkillBonus(BonusType.SKIP_MINIGAME, 1)),
+        "15% faster harvest (15% fewer minigame rounds)", SkillTree.FARMING, 1, 0, 1,
+        new SkillBonus(BonusType.MINIGAME_SPEED, 0.15)),
     
     HARVEST_BONUS("Harvest Bonus", "§e", Material.GOLD_INGOT,
-        "+5% sale price from all harvests", SkillTree.FARMING, 1, 0, 4,
+        "+5% sale price from all harvests", SkillTree.FARMING, 1, 0, 2,
         new SkillBonus(BonusType.PRICE_BONUS, 0.05)),
     
     GREEN_FINGERS("Green Fingers", "§a", Material.GREEN_DYE,
-        "Plants grow 5% faster", SkillTree.FARMING, 1, 0, 5,
+        "Plants grow 5% faster", SkillTree.FARMING, 1, 0, 3,
         new SkillBonus(BonusType.GROWTH_SPEED, 0.05)),
     
-    WATER_EFFICIENCY("Water Efficiency", "§b", Material.WATER_BUCKET,
-        "Plants need 15% less water", SkillTree.FARMING, 1, 0, 6,
-        new SkillBonus(BonusType.WATER_EFFICIENCY, 0.15)),
-    
-    // Tier 2
-    EXPERT_HARVESTER("Expert Harvester", "§a", Material.DIAMOND_HOE,
-        "Harvest 20% faster", SkillTree.FARMING, 2, 100, 1,
-        new SkillBonus(BonusType.HARVEST_SPEED, 0.20)),
+    // Tier 2 - Advanced Farming
+    RAPID_HARVEST("Rapid Harvest", "§e", Material.IRON_HOE,
+        "35% faster harvest (35% fewer minigame rounds)", SkillTree.FARMING, 2, 100, 1,
+        new SkillBonus(BonusType.MINIGAME_SPEED, 0.35)),
     
     ACCELERATED_GROWTH("Accelerated Growth", "§2", Material.BONE_MEAL,
         "Plants grow 10% faster", SkillTree.FARMING, 2, 100, 2,
         new SkillBonus(BonusType.GROWTH_SPEED, 0.10)),
     
-    DROUGHT_RESISTANT("Drought Resistant", "§6", Material.CACTUS,
-        "Plants survive 25% longer without water", SkillTree.FARMING, 2, 100, 3,
-        new SkillBonus(BonusType.WATER_EFFICIENCY, 0.25)),
+    WATER_EFFICIENCY("Water Efficiency", "§b", Material.WATER_BUCKET,
+        "Plants need 20% less water", SkillTree.FARMING, 2, 100, 3,
+        new SkillBonus(BonusType.WATER_EFFICIENCY, 0.20)),
     
-    // Tier 3
+    // Tier 3 - Master Farming
+    INSTANT_HARVEST("Instant Harvest", "§6§l", Material.DIAMOND_HOE,
+        "Skip harvest minigame completely - Ultimate convenience!", SkillTree.FARMING, 3, 500, 1,
+        new SkillBonus(BonusType.SKIP_MINIGAME, 1)),
+    
     MASTER_FARMER("Master Farmer", "§6", Material.NETHERITE_HOE,
-        "+1 bonus bud per harvest", SkillTree.FARMING, 3, 500, 1,
+        "+1 bonus bud per harvest", SkillTree.FARMING, 3, 500, 2,
         new SkillBonus(BonusType.YIELD_BONUS, 1)),
     
     NATURE_BLESSING("Nature's Blessing", "§2", Material.EMERALD,
-        "5% chance for instant growth stage", SkillTree.FARMING, 3, 500, 2,
+        "5% chance for instant growth stage", SkillTree.FARMING, 3, 500, 3,
         new SkillBonus(BonusType.INSTANT_GROWTH_CHANCE, 0.05)),
-    
-    DISEASE_IMMUNITY("Disease Immunity", "§c", Material.GOLDEN_APPLE,
-        "20% reduced disease chance", SkillTree.FARMING, 3, 500, 3,
-        new SkillBonus(BonusType.DISEASE_RESISTANCE, 0.20)),
     
     // ===== QUALITY TREE =====
     // Tier 1
