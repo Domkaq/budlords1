@@ -77,7 +77,7 @@ The game is designed to create multiple overlapping short-term and long-term goa
 
 **Features:**
 - 4 skill trees (Farming, Trading, Genetics, Effects)
-- 20% → 55% → Instant harvest progression
+- 15% faster (Tier 1) → 35% faster (Tier 2) → Instant harvest (Tier 3) progression
 - Visible power increases
 - Skill point allocation choice
 
